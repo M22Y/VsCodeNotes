@@ -1,0 +1,144 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+['Actual', {'2010', '2011', '2012', '2013'}] = STET;
+['Forecast', {'2010', '2011', '2012', '2013'}] = STET;
+['Budget', {'2010', '2011', '2012', '2013', '2014'}] = STET;
+['Rolling_Fct_Adj', {'2010', '2011', '2012', '2013', '2014'}] = STET;
+
+
+
+
+
+['Std_Hrs_Replacement_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replacement_per_Unit');
+['Std_Hrs_Replac_Prepar_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replac_Prepar_per_Unit');
+['Std_Hrs_Replac_Bought_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replac_Bought_per_Unit');
+['Std_Hrs_Replac_Mobile_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replac_Mobile_per_Unit');
+['Std_Hrs_Repair_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_per_Unit');
+['Std_Hrs_Repair_Prepar_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_Prepar_per_Unit');
+['Std_Hrs_Repair_Bought_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_Bought_per_Unit');
+['Std_Hrs_Repair_Mobile_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_Mobile_per_Unit');
+['$_Flat_Glass_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_$_Flat_Glass_per_Std_Hrs');
+['$_Alcometer_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_$_Alcometer_per_Std_Hrs');
+['$_Other_Sales_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_$_Other_Sales_per_Std_Hrs');
+
+
+
+['Units_Replacement', {'Forecast', 'Rolling_Fct_Adj'}] = N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0,
+			DB('10_SalesCOS', !Org_Structure, 'Replacement', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Total_Units'));
+['Units_Replacement', {'Actual', 'Budget'}] = N: DB('10_SalesCOS', !Org_Structure, 'Replacement', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Total_Units');
+
+['Units_Repair', {'Forecast', 'Rolling_Fct_Adj'}] = N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0,
+			DB('10_SalesCOS', !Org_Structure, 'Repairs', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Total_Units'));
+['Units_Repair', {'Actual', 'Budget'}] = N: DB('10_SalesCOS', !Org_Structure, 'Repairs', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Total_Units');
+
+['Sales$_Flat_Glass', {'Forecast', 'Rolling_Fct_Adj'}] = N:
+		 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0,
+			DB('11_SalesCOS_NonPrime', !Org_Structure, 'Flat_Glass', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales'));
+['Sales$_Flat_Glass', {'Actual', 'Budget'}]= N: DB('11_SalesCOS_NonPrime', !Org_Structure, 'Flat_Glass', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales');
+
+['Sales$_Alcometer', {'Forecast', 'Rolling_Fct_Adj'}] = N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0,
+			DB('11_SalesCOS_NonPrime', !Org_Structure, 'Alcometer&DriveSafe', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales'));
+['Sales$_Alcometer', {'Actual', 'Budget'}] = N: DB('11_SalesCOS_NonPrime', !Org_Structure, 'Alcometer&DriveSafe', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales');
+
+['Sales$_Other_Sales', {'Forecast', 'Rolling_Fct_Adj'}] = N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0,
+			DB('11_SalesCOS_NonPrime', !Org_Structure, 'Total_Other_Sales_Excl_Glass_Related', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales'));
+['Sales$_Other_Sales', {'Actual', 'Budget'}] = N: DB('11_SalesCOS_NonPrime', !Org_Structure, 'Total_Other_Sales_Excl_Glass_Related', 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales');
+
+##  STD Hrs calc are only usefull for Retail(NONE VANFAX).
+['Total_Std_Hrs_Replacement', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] = N:
+		IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, ['Units_Replacement' ]  * ['Total_Std_Hrs_Replacement_per_Unit']);
+
+['Total_Std_Hrs_Repair', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}]  = N:
+		 IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, ['Units_Repair' ]  * ['Total_Std_Hrs_Repair_per_Unit']);
+
+['Total_Std_Hrs_Flat_Glass', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] = N:
+		 IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, ['Sales$_Flat_Glass' ] \ ['$_Flat_Glass_per_Std_Hrs' ]);
+
+['Total_Std_Hrs_Alco', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] = N:
+		 IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, ['Sales$_Alcometer' ] \ ['$_Alcometer_per_Std_Hrs' ]);
+
+['Total_Std_Hrs_Other', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] = N:
+		IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, ['Sales$_Other_Sales' ] \ ['$_Other_Sales_per_Std_Hrs' ]);
+
+#Conso AVG new line finsih with _Calc
+['Total_Std_Hrs_Replacement_per_Unit_Calc'] = ['Total_Std_Hrs_Replacement'] \ ['Units_Replacement'];
+['Total_Std_Hrs_Repair_per_Unit_Calc'] = ['Total_Std_Hrs_Repair'] \ ['Units_Repair'];
+['$_Flat_Glass_per_Std_Hrs_Calc'] = ['Sales$_Flat_Glass'] \ ['Total_Std_Hrs_Flat_Glass'];
+['$_Alcometer_per_Std_Hrs_Calc'] = ['Sales$_Alcometer'] \ ['Total_Std_Hrs_Alco'];
+['$_Other_Sales_per_Std_Hrs_Calc'] = ['Sales$_Other_Sales'] \ ['Total_Std_Hrs_Other'];
+
+## Conso calculation created new line _Calc
+##Mart 24-09-2014 AVG Conso and Total Month for all other version dimension
+#['Std_Hrs_Replacement_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Std_Hrs_Replac_Prepar_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Std_Hrs_Replac_Bought_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Std_Hrs_Replac_Mobile_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Std_Hrs_Repair_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Std_Hrs_Repair_Prepar_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Std_Hrs_Repair_Bought_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Std_Hrs_Repair_Mobile_per_Unit'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['$_Flat_Glass_per_Std_Hrs'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['$_Alcometer_per_Std_Hrs'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['$_Other_Sales_per_Std_Hrs'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+
+
+#['Total_Std_Hrs_Replacement_per_Unit'] = C:  ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#['Total_Std_Hrs_Repair_per_Unit'] = C:  ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Time_Needed);
+#
+#
+
+
+
+###############################FEEDERS#######################################################################
+FEEDERS;
+
+['Units_Replacement'] => ['Total_Std_Hrs_Replacement_per_Unit_Calc'];
+['Units_Repair'] => ['Total_Std_Hrs_Repair_per_Unit_Calc'];
+['Total_Std_Hrs_Flat_Glass'] => ['$_Flat_Glass_per_Std_Hrs_Calc'];
+['Total_Std_Hrs_Alco'] => ['$_Alcometer_per_Std_Hrs_Calc'];
+['Total_Std_Hrs_Other'] => ['$_Other_Sales_per_Std_Hrs_Calc'];
+
+
+['Units_Replacement', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Replacement'),
+					['Total_Std_Hrs_Replacement_per_Unit' ],
+					DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_Std_Hrs_Replacement_per_Unit'),
+					DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Hrs_per_FTE') ;
+
+['Units_Repair', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Repair'),
+					['Total_Std_Hrs_Repair_per_Unit' ],
+					DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_Std_Hrs_Repair_per_Unit') ,
+					DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Hrs_per_FTE') ;
+
+['Sales$_Flat_Glass', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Flat_Glass' ), ['T
+otal_Std_Hrs_NonPrime' ] ,
+					DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Hrs_per_FTE') ;
+
+['Sales$_Flat_Glass', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, '$_Flat_Glass_per_Std_Hrs' );
+
+['Sales$_Alcometer', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}]  => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Alco') , ['Total_S
+td_Hrs_NonPrime' ] ,
+					DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Hrs_per_FTE') ;
+
+['Sales$_Alcometer', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}]  => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, '$_Alcometer_per_Std_Hrs');
+
+['Sales$_Other_Sales', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Other' ), ['Total
+_Std_Hrs_NonPrime' ] ,
+					DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Hrs_per_FTE') ;
+
+['Sales$_Other_Sales', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, '$_Other_Sales_per_Std_Hrs' ) ;
+
+['Total_Std_Hrs_Prime', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}]  => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Prime_Needed');
+
+['Total_Std_Hrs_Flat_Glass', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Flat_Glass_Needed');
+
+['Total_Std_Hrs_Alco', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Alco_Needed');
+
+['Total_Std_Hrs_Other', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Other_Needed');
+
+['Total_Std_Hrs_Needed', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Hrs_per_FTE'), DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total
+_OVT_Convert%');

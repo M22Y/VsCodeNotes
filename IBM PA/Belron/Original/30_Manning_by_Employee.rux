@@ -1,0 +1,144 @@
+
+SKIPCHECK;
+FEEDSTRINGS;
+	########################################################################
+	########################################################################
+	## DESCRIPTION
+	#
+	#  Description
+	#
+	#
+	#
+	#
+	## HISTORIQUE
+	#
+	## 2014-08-05  CSJ  Ajout OVERFEED pour le 33 (pour permettre les changements de Jobs.
+	## 2014-08-06  CSJ  Empecher de remplir Job-Vanfax et Job-Retail en meme temps.
+	#	2023-02-14 CSJ	Modif feeders for 33
+	#
+	#
+	########################################################################
+	########################################################################
+##
+
+#*********MR 01/06/2018 New Call Center
+#To put in grey Job-Vanfax if select Job-Retail, Avoid double Job possibility
+['Job-Vanfax'] = S: IF(LONG(DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail')) > 0, '', STET);
+['Job-Call_Center'] = S: IF(LONG(DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail')) > 0, '', STET);
+#['Job-Call_Center'] = S: IF(LONG(DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax')) > 0, '', STET);
+
+
+#To put Salary$ at O if Job-Retail or Job-Vanfax = ##NA##
+[{'Salary_Impact$', 'Increase$_Impact$', 'Increase%_Impact$', 'Bonus%_Impact$', 'Comission%_Impact$', 'Other_Premium$_Impact$'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: IF(DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years,
+ !t_Months, 'Job-Retail') @='##NA##', 0, CONTINUE);
+[{'Salary_Impact$', 'Increase$_Impact$', 'Increase%_Impact$', 'Bonus%_Impact$', 'Comission%_Impact$', 'Other_Premium$_Impact$'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: IF(DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years,
+ !t_Months, 'Job-Vanfax') @='##NA##', 0, CONTINUE);
+
+#*********MR 01/06/2018 New Call Center 6116 and 6701
+[{'Salary_Impact$', 'Increase$_Impact$', 'Increase%_Impact$', 'Bonus%_Impact$', 'Comission%_Impact$', 'Other_Premium$_Impact$'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: IF(DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years,
+ !t_Months, 'Job-Call_Center') @='##NA##', 0, CONTINUE);
+
+
+
+['Number_Week', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: IF(['Reg_Week_Hrs'] = 0, 0, CONTINUE);
+
+#To put at 0 Forecast month with Flag 1
+[{'Forecast', 'Rolling_Fct_Adj'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, CONTINUE);
+
+
+#Total Salary
+['Salary_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Number_Week'] * ['Reg_Week_Hrs']) * ['Rate_Hrs'];
+['Increase$_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Number_Week'] * ['Reg_Week_Hrs']) * ['Increase$'];
+['Increase%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (((['Number_Week'] * ['Reg_Week_Hrs']) * (['Rate_Hrs'] + ['Increase$'])) * ['Increase%']);
+['Bonus%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']) * ['Bonus%'] ;
+
+['Other_Premium$_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: ['Other_Premium$'];
+['Fringes%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: ['Salary$'] * ['Fringes%'];
+
+['Comission%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']) * ['Comission%'] ;
+
+#C level Calcs
+['Fringes%'] = C: ['Fringes%_Impact$']\ ['Salary$'] ;
+['Increase%'] = C: ['Increase%_Impact$']\(['Salary_Impact$'] + ['Increase$_Impact$']);
+['Bonus%']  = C: ['Bonus%_Impact$']\(['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']);
+['Comission%'] = C: ['Comission%_Impact$']\(['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']);
+
+
+#Average Rate at Conso level
+['Rate_Hrs']= C:  ['Salary$'] \ (['Number_Week'] * ['Reg_Week_Hrs']);
+['Head_Count', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] =  N:IF (['Total_Salary$'] > 1 , 1, 0);
+
+#Mart 14082014 Modified formula
+['Head_Count', 'Total_Months'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+#Mart 14082014 Modified formula
+['Number_Week', 'Total_Months'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+
+
+#Mart 14082014 Modified formula
+['Reg_Week_Hrs_Calc', 'Total_Months'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+#Mart 14082014 Modified formula
+['Reg_Week_Hrs_Calc', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  N: ['Reg_Week_Hrs'];
+['Reg_Week_Hrs_Calc', 'Total' ] =  C: ['Reg_Week_Hrs'] \ ['Head_Count'];
+
+['Number_Week', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = DB('96_Accounting_Calendar', 'C' | !t_Years | '-' | !t_Months , 'work_week');
+
+#Mart 2015-10-19 Conso calculation
+['Number_Week'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Employee , !Versions, !t_Years, !t_Months, !m_Manning_by_Employee);
+
+
+
+#####################################FEEDERS###########################################
+FEEDERS;
+
+['Job-Retail'] => ['Job-Vanfax'];
+
+##['Number_Week'] => ['Total_Salary$'];
+['Reg_Week_Hrs'] => ['Salary_Impact$'], ['Number_Week' ], ['Reg_Week_Hrs_Calc'];
+['Increase$'] => ['Increase$_Impact$'];
+['Increase%'] => ['Increase%_Impact$'] ;
+['Other_Premium$'] => ['Other_Premium$_Impact$'];
+['Fringes%'] => ['Fringes%_Impact$'];
+['Bonus%'] => ['Bonus%_Impact$'];
+['Comission%'] => ['Comission%_Impact$'];
+['Total_Salary$'] => ['Head_Count'];
+#Conso
+['Rate_Hrs'] => ['Fringes%'];
+['Rate_Hrs'] => ['Increase%'];
+['Rate_Hrs'] => ['Bonus%'];
+['Rate_Hrs'] => ['Comission%'];
+
+
+##
+## Feeding 33
+##
+##For Resave pour Feeder 2019-02-19 FK6
+
+##
+## CSJ 2014-08-05 OVERFEED to permit Job_Retail changes in 30.
+[] => DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '33_Manning_Time_Available', ''), !Org_Structure, !Employee, 'Total_Jobs', !Versions, !t_Years, !t_Months, !m_Manning_by_Employee );
+[] => DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '33_Manning_Time_Available', ''), !Org_Structure, !Employee, 'Total_Jobs', !Versions, !t_Years, !t_Months, !m_Manning_by_Employee );
+#*********MR 01/06/2018 New Call Center
+[{'Job-Retail', 'Job-Vanfax','Job-Call_Center'}] =>
+	DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '33_Manning_Time_Available', ''), !Org_Structure, !Employee, 'Total_Jobs', !Versions, !t_Years, !t_Months, !m_Manning_by_Employee );
+
+#[] => DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '33_Manning_Time_Available', ''), !Org_Structure, !Employee, DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail'), !Versions, !t_Years, !t_Months, !m_Manning_by_Employee );
+#[] => DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '33_Manning_Time_Available', ''), !Org_Structure, !Employee, DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax'), !Versions, !t_Years, !t_Months, !m_Manning_by_Employee );
+#[{'Job-Retail', 'Job-Vanfax'}] =>
+#	DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '33_Manning_Time_Available', ''), !Org_Structure, !Employee, DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail'), !Versions, !t_Years, !t_Months, !m_Manning_by_Employee );
+
+
+
+
+
+
+
+
+
+

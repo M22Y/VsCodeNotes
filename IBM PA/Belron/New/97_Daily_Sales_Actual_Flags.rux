@@ -1,0 +1,47 @@
+
+SKIPCHECK;
+FEEDSTRINGS;
+
+#Stet
+['Actual', {'2010', '2011', '2012', '2013'}]= 0;
+['Budget', {'2010', '2011', '2012', '2013'}]= 0;
+[{'Forecast', 'Rolling_Fct_Adj'}, {'2010', '2011', '2012', '2013', '2014'}]= 0;
+
+
+
+#['Actual', '2015', 'Jan',  'WK01']=N: ['W5', 'Dec', '2016'];
+#['Actual', '2015', 'Jan',  'WK01']=N: ['2016'];
+#['Actual', '2015', {'Mar', 'Apr', 'Jun', 'Jul', 'Sep', 'Oct', 'Dec'},  'WK01'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  '2016, ATTRS('t_Months', !t_Months, 'Prev_Month'), 'WK04', !t_Days);
+#['Actual', '2015', {'Feb', 'May', 'Aug', 'Nov'}, 'Wk01']=N: DB('97_Daily_Sales_Actual_Flags', !Versions,  '2016', ATTRS('t_Months', !t_Months, 'Prev_Month'), 'WK05', !t_Days);
+#['Actual', '2015'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  '2016', !t_Months,  ATTRS('t_Weeks', !t_Weeks, 'Prev_Weeks'), !t_Days);
+
+
+#['Actual', '2014'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+#['Actual', '2015'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+#['Actual', '2016'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+#['Actual', '2017'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+#['Actual', '2018'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+#['Actual', '2019'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+#['Actual', '2020'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+ #['Actual', '2021'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+#['Actual', '2022'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+['Actual', '2023'] = N: DB('97_Daily_Sales_Actual_Flags', !Versions,  STR(NUMBR(!t_Years)+1,4,0), !t_Months, !t_Weeks, !t_Days);
+[{'Budget', 'Budget_Final'}] = N: ['Actual'];
+
+
+#['Rolling_Fct_Adj'] = N: 1;
+
+
+
+
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FEEDERS;
+
+['Actual'] =>  ['Budget'],
+                ['Budget_Final'];
+
+#['Actual', '2016'] => ['2015'];
+
+#Force feeders from cube 98

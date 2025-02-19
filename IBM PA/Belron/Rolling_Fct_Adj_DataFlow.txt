@@ -1,0 +1,470 @@
+﻿File: 09_SalesCOS_by_Customer.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['Rolling_Fct_Adj']= N: 0;
+
+File: 10_SalesCOS.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, {'2009', '2010', '2011', '2012'}]= N: 0;
+Calculation Rule for Rolling_Fct_Adj: ['Rolling_Fct_Adj', {'2009', '2010', '2011', '2012', '2014'}] = N: 0;
+Calculation Rule for Rolling_Fct_Adj: ['Units_Baseline', {'Forecast', 'Rolling_Fct_Adj'}]= N:0;
+Calculation Rule for Rolling_Fct_Adj: ['Sales_Baseline', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['ASP']*  ['Total_Units'];
+Calculation Rule for Rolling_Fct_Adj: ['Economic_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]=N: ['Economic%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Advertising_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['Advertising%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Weather_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['Weather%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Reinspection_Other_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['Reinspection_Other%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Adjustment_Days_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['Adjustment_Days%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Titanium_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['Titanium%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Other_Adj_Mkgt_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['Other_Adj_Mkgt%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Other_Adj_Fin_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['Other_Adj_Fin%']*['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Price_Impact$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']*['Price_Impact%'];
+Calculation Rule for Rolling_Fct_Adj: ['Deductible_Wave$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']*['Deductible_Wave%'];
+Calculation Rule for Rolling_Fct_Adj: ['Product_Mix$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']* ['Product_Mix%'];
+Calculation Rule for Rolling_Fct_Adj: ['Cash_Pricing$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']* ['Cash_Pricing%'];
+Calculation Rule for Rolling_Fct_Adj: ['Titanium$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']* ['Titanium_Impact%'];
+Calculation Rule for Rolling_Fct_Adj: ['ASP_Other%', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['ASP_Other$'] \ ['AIP_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Price_Impact$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']*['Price_Impact%'];
+Calculation Rule for Rolling_Fct_Adj: ['Deductible_Wave$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']*['Deductible_Wave%'];
+Calculation Rule for Rolling_Fct_Adj: ['Product_Mix$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']* ['Product_Mix%'];
+Calculation Rule for Rolling_Fct_Adj: ['Cash_Pricing$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']* ['Cash_Pricing%'];
+Calculation Rule for Rolling_Fct_Adj: ['Titanium$', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['AIP_Baseline']* ['Titanium_Impact%'];
+Calculation Rule for Rolling_Fct_Adj: ['ASP_Other%', {'Forecast', 'Rolling_Fct_Adj', 'Budget'}]= N: ['ASP_Other$'] \ ['AIP_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['Total_Units', 'Rolling_Fct_Adj', {'Windshield', 'Repairs'}] => DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline');
+Calculation Rule for Rolling_Fct_Adj: ['ASP', 'Rolling_Fct_Adj', {'Windshield', 'Repairs', 'Sales_Discounts'}]=> DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'AIP_Baseline');
+Calculation Rule for Rolling_Fct_Adj: ['AAC_Pure', 'Rolling_Fct_Adj'] => DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Material_Cost_Baseline');
+Calculation Rule for Rolling_Fct_Adj: ['Units_Baseline',{'Forecast', 'Budget', 'Rolling_Fct_Adj'}] =>['Economic%'], ['Advertising%'], ['Weather%'], ['Reinspection_Other%'];
+Calculation Rule for Rolling_Fct_Adj: ['Total_Units', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=>DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales_Units');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=>DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=>DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'COS$');
+Calculation Rule for Rolling_Fct_Adj: ['AAC', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB( '85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'AAC');
+Calculation Rule for Rolling_Fct_Adj: ['BuyOut$', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'BuyOut$');
+Calculation Rule for Rolling_Fct_Adj: ['Inventory_Revaluation$', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Inventory_Revaluation$');
+Calculation Rule for Rolling_Fct_Adj: ['Exchange_Rate$_Impact', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Exchange_Rate$_Impact');
+Calculation Rule for Rolling_Fct_Adj: ['Unrealized_Profit_on_Trans$', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Unrealized_Profit_on_Trans$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=>DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'PPV$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=>DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Breakage$');
+Calculation Rule for Rolling_Fct_Adj:  ['Net_Sales', 'Windshield', {'Externe', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000120', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Net_Sales', 'Repairs', {'Externe', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000110', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Net_Sales', {'Windshield', 'Repairs'}, 'Interne', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002310', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Net_Sales', 'Sales_Discounts', 'Interne', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002330', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Net_Sales', 'Sales_Discounts', {'Externe', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000150', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['COS$', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002120', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['COS$', 'Repairs', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002110', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['COS$', 'Kits_Retail', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002145', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['COS$', {'Windshield', 'Repairs'}, 'Interne', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002420', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['BuyOut$', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003120', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Exchange_Rate$_Impact', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003158', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Unrealized_Profit_on_Trans$', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '4691', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['PPV$', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB( '86_ETL_GL', !Org_Structure, '003145', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Inventory_Revaluation$', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003145', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj:  ['Breakage$', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004100', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['AAC_STD', 'Rolling_Fct_Adj'] => DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Material_Cost_Baseline_STD');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_STD_Pure', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=>DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'COS$_STD');
+Calculation Rule for Rolling_Fct_Adj: ['AAC_STD', {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'AAC_STD');
+Calculation Rule for Rolling_Fct_Adj: ['Replacement', 'Total_Units', {'Actual', 'Budget','Forecast', 'Rolling_Fct_Adj'}] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Units_Replacement');
+Calculation Rule for Rolling_Fct_Adj: ['Repairs', 'Total_Units', {'Actual', 'Budget','Forecast', 'Rolling_Fct_Adj'}] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Units_Repair');
+
+File: 11_SalesCOS_NonPrime.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{'PPV$', 'Breakage$'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]=N: 0;
+Calculation Rule for Rolling_Fct_Adj: [{'PPV$','Breakage$'}, {'Labour_Flat_Glass','Flat_Glass_Commission','Remove&Reinstall','Alcometer','Disposal_Fees'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=N:0;
+Calculation Rule for Rolling_Fct_Adj: [{'PPV$','Breakage$'}, 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=N:0;
+Calculation Rule for Rolling_Fct_Adj: ['GM%_Revised', {'Labour_Flat_Glass','Flat_Glass_Commission','Remove&Reinstall','Alcometer','Disposal_Fees'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=N:1;
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]=N: ['Net_Sales']-['GM$'];
+Calculation Rule for Rolling_Fct_Adj: ['COS$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}, {'Wipers', 'Aquapel', 'Disposal_Fees', 'Cabin_Filter'}] => DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months, 'GM$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months, 'COS$_Pure');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales','Rolling_Fct_Adj']=> DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Sales_Baseline');
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'COS$_Pure']=>  DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'COS$');
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'PPV$']=>  DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'PPV$');
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Breakage$']=>  DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Breakage$');
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'BuyOut$']=>  DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'BuyOut$');
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Inventory_Revaluation$']=>  DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Inventory_Revaluation$');
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Exchange_Rate$_Impact']=>  DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Exchange_Rate$_Impact');
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Net_Sales']=>  DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Laminated_Glass', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000180', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Replacement', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000181', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Mirrors', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000182', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Insulating_Glass', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000183', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Glass_Doors', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000184', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Glass_Other', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000185', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Labour_Flat_Glass', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000186', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Glass_Contracts', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000187' , !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Architectural_Metal', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000188', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Glass_Commission', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000189', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Remove&Reinstall', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000195' , !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Glass_Accessories', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000210', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Car_Radio', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000220', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Mobile_Video', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000245', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Other_Electronic', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000239', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Remote&Starters', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000235', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Calibration_Camera', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000236', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Alcometer', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000241', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'DriveSafe', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000242', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Miscellaneous_Glass', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000199', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Cellular_Phones', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000225', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Tires', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000255', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Car&Truck_Accessories', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000273', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Upholstery', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000274', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Other_Products', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000279', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Alarm_System', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000261', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Boomerang', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000262', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Sherlock', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000263', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Disposal_Fees', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000266', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Wipers', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000267', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Aquapel', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000268', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Cabin_Filter', {'Externe', 'Retail'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '000269', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Laminated_Glass', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002345', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Replacement', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002342', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Mirrors', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002343', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Insulating_Glass', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002344', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Glass_Doors', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002346', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Flat_Glass_Other', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002347', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Architectural_Metal', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002349', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Glass_Accessories', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002365', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Other_Electronic', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002375', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Miscellaneous_Glass', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002350', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Car&Truck_Accessories', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002386', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Upholstery', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002387', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Other_Products', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002389', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Wipers', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002367', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Net_Sales', 'Aquapel', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002368', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Laminated_Glass',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002180', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Replacement',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002181', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Mirrors',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002182', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Insulating_Glass',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002183', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Glass_Doors',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002184', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Glass_Other',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002185', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Glass_Contracts',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002186', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Architectural_Metal',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002187', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Glass_Accessories',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002210', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Car_Radio',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002220', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Mobile_Video',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002245', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Other_Electronic',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002239', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Remote&Starters',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002235', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', ' Calibration_Camera ', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002236', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'DriveSafe',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002242', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Miscellaneous_Glass',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002195', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Cellular_Phones',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002225', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Tires',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002255', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Car&Truck_Accessories',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002273', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Upholstery',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002274', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Other_Products',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002279', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Alarm_System',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002261', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Boomerang',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002262', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Sherlock',{'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002263', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Wipers',{'Retail', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002267', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Aquapel',{'Retail', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002268', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Cabin_Filter',{'Retail', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002269', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Laminated_Glass', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002480', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Replacement', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002481', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Mirrors', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002482', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Insulating_Glass', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002483', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Glass_Doors', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002484', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Glass_Other', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002485', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Flat_Glass_Contracts', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002486', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Architectural_Metal', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002487', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Glass_Accessories', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002510', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Other_Electronic', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002530', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Car&Truck_Accessories', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002586', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Upholstery', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002587', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Other_Products', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002579', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Wipers', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002567', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['COS$_Pure', 'Aquapel', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002568', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Laminated_Glass', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003180', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Flat_Replacement', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003181', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Mirrors', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003182', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Insulating_Glass', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003183', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Flat_Glass_Doors', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003184', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Flat_Glass_Other', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003185', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Flat_Glass_Contracts', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003186', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Architectural_Metal', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003187', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Glass_Accessories', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003210', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Car_Radio', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003220', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Mobile_Video', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003245', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Other_Electronic', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003239', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Remote&Starters', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003235', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', ' Calibration_Camera ', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003236', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'DriveSafe', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003252', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Miscellaneous_Glass', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003195', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Cellular_Phones', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003225', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Tires', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003255', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Car&Truck_Accessories', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003273', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Upholstery', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003274', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Other_Products', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003279', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Alarm_System', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003261', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Boomerang', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003262', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Sherlock', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003263', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Wipers', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003267', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Aquapel', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003268', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['PPV$', 'Cabin_Filter', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '003269', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Laminated_Glass', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004180', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Flat_Replacement', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004181', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Mirrors', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004182', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Insulating_Glass', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004183', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Flat_Glass_Doors', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004184', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Flat_Glass_Other', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004185', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Flat_Glass_Contracts', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004186', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Architectural_Metal', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004187', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Glass_Accessories', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004210', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Car_Radio', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004220', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Mobile_Video', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004245', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Other_Electronic', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004239', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Remote&Starters', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004235', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', ' Calibration_Camera ', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004236', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'DriveSafe', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004252', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Cellular_Phones', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004225', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Tires', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004255', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Car&Truck_Accessories', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004273', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Upholstery', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004274', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Other_Products', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004279', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Alarm_System', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004261', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Boomerang', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004262', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Sherlock', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004263', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Wipers', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004267', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Aquapel', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004268', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Breakage$', 'Cabin_Filter', {'No_Segment', 'No_Segment_Ext'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '004269', !Versions, !t_Years, !t_Months, 'Dollars$');
+Calculation Rule for Rolling_Fct_Adj: ['Flat_Glass', 'Net_Sales', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB ('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, '$_Flat_Glass_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Alcometer&DriveSafe', 'Net_Sales', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, '$_Alcometer_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Total_Other_Sales_Excl_Glass_Related', 'Net_Sales', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, '$_Other_Sales_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Flat_Glass', 'Net_Sales', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Sales$_Flat_Glass');
+Calculation Rule for Rolling_Fct_Adj: ['Alcometer&DriveSafe', 'Net_Sales', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'} ] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Sales$_Alcometer');
+Calculation Rule for Rolling_Fct_Adj: ['Total_Other_Sales_Excl_Glass_Related', 'Net_Sales', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'} ] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Sales$_Other_Sales');
+
+File: 12_Sales&Marketing.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['Economic_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Economic%']*['Units_Baseline']);
+Calculation Rule for Rolling_Fct_Adj: ['Advertising_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N:IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Advertising%']*['Units_Baseline']);
+Calculation Rule for Rolling_Fct_Adj: ['Weather_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Weather%']*['Units_Baseline']);
+Calculation Rule for Rolling_Fct_Adj: ['Reinspection_Other_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Reinspection_Other%']*['Units_Baseline']);
+Calculation Rule for Rolling_Fct_Adj: ['Adjustment_Days_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Adjustment_Days%']*['Units_Baseline']);
+
+File: 13_Internal_Transfer.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['Sales_Baseline', 'Kits_Retail', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: ['AIP_Baseline'] * ['Units_Baseline', 'Replacement'];
+Calculation Rule for Rolling_Fct_Adj: ['Sales_Baseline', 'Glass_Accessories', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: ['AIP_Baseline'] * ['Units_Baseline', 'Total_Prime'];
+Calculation Rule for Rolling_Fct_Adj: ['Sales_Baseline', {'Windshield', 'Repairs'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: ['AIP_Baseline'] * ['Units_Baseline'];
+Calculation Rule for Rolling_Fct_Adj: ['ASP', 'Windshield',  'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('10_SalesCOS', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'AIP_Baseline');
+Calculation Rule for Rolling_Fct_Adj: ['Total_Units', 'Windshield', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('10_SalesCOS', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'Units_Baseline');
+Calculation Rule for Rolling_Fct_Adj: ['AAC', 'Windshield', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('10_SalesCOS', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'Material_Cost_Baseline');
+
+File: 20_OtherGL.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['Adjusted_Total', 'Rolling_Fct_Adj'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Baseline');
+Calculation Rule for Rolling_Fct_Adj: ['Adjusted_Total', {'Forecast','Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, !GL_Accounts_Line, !Versions, !t_Years, !t_Months, 'Dollars$');
+
+File: 30_Manning_by_Employee.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['Number_Week', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: IF(['Reg_Week_Hrs'] = 0, 0, CONTINUE);
+Calculation Rule for Rolling_Fct_Adj: ['Salary_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Number_Week'] * ['Reg_Week_Hrs']) * ['Rate_Hrs'];
+Calculation Rule for Rolling_Fct_Adj: ['Increase$_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Number_Week'] * ['Reg_Week_Hrs']) * ['Increase$'];
+Calculation Rule for Rolling_Fct_Adj: ['Increase%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (((['Number_Week'] * ['Reg_Week_Hrs']) * (['Rate_Hrs'] + ['Increase$'])) * ['Increase%']);
+Calculation Rule for Rolling_Fct_Adj: ['Bonus%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']) * ['Bonus%'] ;
+Calculation Rule for Rolling_Fct_Adj: ['Other_Premium$_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: ['Other_Premium$'];
+Calculation Rule for Rolling_Fct_Adj: ['Fringes%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: ['Salary$'] * ['Fringes%'];
+Calculation Rule for Rolling_Fct_Adj: ['Comission%_Impact$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]= N: (['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']) * ['Comission%'] ;
+Calculation Rule for Rolling_Fct_Adj: ['Head_Count', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] =  N:IF (['Total_Salary$'] > 1 , 1, 0);
+Calculation Rule for Rolling_Fct_Adj: ['Reg_Week_Hrs_Calc', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  N: ['Reg_Week_Hrs'];
+Calculation Rule for Rolling_Fct_Adj: ['Number_Week', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = DB('96_Accounting_Calendar', 'C' | !t_Years | '-' | !t_Months , 'work_week');
+
+File: 32_Manning_Assump.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Rate', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  DB('31_Manning_Assump_Global', !Versions, !t_Years, !m_Manning_Assump);
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Replacement_per_Unit', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  DB('31_Manning_Assump_Global', !Versions, !t_Years, !m_Manning_Assump);
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Repair_per_Unit', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  DB('31_Manning_Assump_Global', !Versions, !t_Years, !m_Manning_Assump);
+Calculation Rule for Rolling_Fct_Adj: ['$_Flat_Glass_per_Std_Hrs', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  DB('31_Manning_Assump_Global', !Versions, !t_Years, !m_Manning_Assump);
+Calculation Rule for Rolling_Fct_Adj: ['$_Alcometer_per_Std_Hrs', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  DB('31_Manning_Assump_Global', !Versions, !t_Years, !m_Manning_Assump);
+Calculation Rule for Rolling_Fct_Adj: ['$_Other_Sales_per_Std_Hrs', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  DB('31_Manning_Assump_Global', !Versions, !t_Years, !m_Manning_Assump);
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Convert%', {'Actual','Forecast', 'Budget', 'Rolling_Fct_Adj'}] =  DB('31_Manning_Assump_Global', !Versions, !t_Years, !m_Manning_Assump);
+Calculation Rule for Rolling_Fct_Adj: ['Total_$_Flat_Glass_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, 'Total_Months', '$_Flat_Glass_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Total_$_Alcometer_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, 'Total_Months', '$_Alcometer_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Total_$_Other_Sales_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, 'Total_Months', '$_Other_Sales_per_Std_Hrs');
+
+File: 33_Manning_Time_Available.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '022400', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051315', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '020400', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:' CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051357', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051371', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '020800', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '020300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '020300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '020050', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '020800', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051357', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+File: 34_Manning_Time_Needed.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['Rolling_Fct_Adj', {'2010', '2011', '2012', '2013', '2014'}] = STET;
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Replacement_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replacement_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Replac_Prepar_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replac_Prepar_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Replac_Bought_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replac_Bought_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Replac_Mobile_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Replac_Mobile_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Repair_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Repair_Prepar_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_Prepar_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Repair_Bought_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_Bought_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['Std_Hrs_Repair_Mobile_per_Unit', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Std_Hrs_Repair_Mobile_per_Unit');
+Calculation Rule for Rolling_Fct_Adj: ['$_Flat_Glass_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_$_Flat_Glass_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['$_Alcometer_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_$_Alcometer_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['$_Other_Sales_per_Std_Hrs', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] =  N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_$_Other_Sales_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Sales$_Flat_Glass', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, '$_Flat_Glass_per_Std_Hrs' );
+Calculation Rule for Rolling_Fct_Adj: ['Sales$_Alcometer', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}]  => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, '$_Alcometer_per_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Sales$_Other_Sales', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB( IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', '', '34_Manning_Time_Needed'), !Org_Structure, !Versions, !t_Years, !t_Months, '$_Other_Sales_per_Std_Hrs' ) ;
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Prime', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}]  => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Prime_Needed');
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Flat_Glass', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Flat_Glass_Needed');
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Alco', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Alco_Needed');
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Other', {'Actual', 'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Other_Needed');
+
+File: 35_Manning_Output_FTE.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{'Actual', 'Budget', 'Rolling_Fct_Adj'}, {'2010', '2011', '2012', '2013'}] = N: STET;
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Prime_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Prime'));
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Alco_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Alco'));
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Other_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Other'));
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Available', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Std_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['Total_Std_Hrs_Vanfax_Needed', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', ['Total_Std_Hrs_Available' ], 0);
+Calculation Rule for Rolling_Fct_Adj: ['Reg_Work_Salary$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N:  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Std_Reg_Salary$');
+Calculation Rule for Rolling_Fct_Adj: ['Reg_Salary$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Salary$');
+Calculation Rule for Rolling_Fct_Adj: ['Fringe$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]  = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$');
+Calculation Rule for Rolling_Fct_Adj: ['Fringe_Work$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]  = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Std_Reg_Fringe$');
+Calculation Rule for Rolling_Fct_Adj: ['Var_Needed-Available', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Total_Std_Hrs_Needed' ] - ['Total_Std_Hrs_Including_Efficiency_Impact_Available' ] ;
+Calculation Rule for Rolling_Fct_Adj: ['Var_Needed-Available_converted_if_gt_0', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] =N: IF (['Var_Needed-Available' ] > 0, ['Var_Needed-Available' ], 0);
+Calculation Rule for Rolling_Fct_Adj: ['Total_OVT_Rate', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]  = DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_OVT_Rate');
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Work_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Var_Needed-Available_converted_if_gt_0' ] * ['Total_OVT_Convert%' ];
+Calculation Rule for Rolling_Fct_Adj: ['Reg_Work_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Total_Std_Hrs_Available' ] ;
+Calculation Rule for Rolling_Fct_Adj: ['Reg_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Hrs');
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N:['OVT_Work_Hrs' ];
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Work$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, ['OVT_Work_Hrs' ] * ['Total_OVT_Rate' ] );
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Fringe_Work$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] =N: ['OVT_Work$' ] * DB('31_Manning_Assump_Global', !Versions, !t_Years, 'OVT_Fringe_%');
+Calculation Rule for Rolling_Fct_Adj: ['Premium & Other SALARY', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code') @= 'WH', 0, STET);
+Calculation Rule for Rolling_Fct_Adj: ['Premium & Other FRINGE', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code') @= 'WH', 0, ['Premium & Other SALARY']  * DB('31_Manning_Assump_Global', !Versions, !t_Years, 'OVT_Fringe_%') );
+Calculation Rule for Rolling_Fct_Adj: [ 'Overtime Structurel FRINGE', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Overtime Structurel SALARY']    * DB('31_Manning_Assump_Global', !Versions, !t_Years, 'OVT_Fringe_%');
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Work$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] => DB('20_OtherGL', !Org_Structure, '020600', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: ['OVT_Fringe_Work$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: ['Premium & Other SALARY', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: ['Premium & Other FRINGE', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: ['Overtime Structurel SALARY', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '020500', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: [ 'Overtime Structurel FRINGE', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: ['Sick_Time_Pay$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '020700', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+Calculation Rule for Rolling_Fct_Adj: ['Spec_Projects_Salaries$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '021000', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+File: 56_Capex_Dep.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: ['Rolling_Fct_Adj']= STET;
+Calculation Rule for Rolling_Fct_Adj: ['Frcst_Capex', 'Rolling_Fct_Adj', {'Oct-15', 'Nov-15', 'Dec-15'}] =N: 0;
+Calculation Rule for Rolling_Fct_Adj: ['WorthIt_CumulAmort', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N: ['WorthtIt'];
+Calculation Rule for Rolling_Fct_Adj: ['WorthtIt',  {'Forecast', 'Budget','Rolling_Fct_Adj'}] => ['WorthIt_CumulAmort'];
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029', '9014'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0860B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', '5029A', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0820B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', '5029B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0857B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', '5029C', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0867B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029E', '9014E'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0850B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029F', '9014F'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0830B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029I', '9014I'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0880B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029L', '9014L'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0862B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029P', '9014P'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0840B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029R', '9014R'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0861B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', '5029S', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0807B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Adjustement', {'5029V', '9014V'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0870B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+Calculation Rule for Rolling_Fct_Adj: ['Total_CumAmort', 'CY', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('51_BS_Manual', '120000', !Versions,!t_Months_Continuous, 'Inc_Dec$');
+
+File: 57_Capex_Dep_Items.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{ 'Depreciation', 'CumAmort'}, 'Rolling_Fct_Adj']= N: ['Budget_Final'] + ['Forecast_Final'];
+
+File: 60_DailySales_Stats_Std.rux
+====================
+
+File: 60_DailySales_Stats_Std_Vanfax.rux
+====================
+
+File: 67_DailySales_Stats_Std.rux
+====================
+
+File: 68_DailySales_GL_Std.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Rolling_Fct_Adj'}, {'2011', '2012', '2013'}]= 0;
+
+File: 70_Split_Bud_WSB.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Rolling_Fct_Adj'}, {'2010', '2011', '2012', '2013'}]= STET;
+
+File: 85a_ETL_Stats.rux
+====================
+
+File: 85_ETL_Stats.rux
+====================
+
+File: 86a_ETL_GL.rux
+====================
+
+File: 86_ETL_GL.rux
+====================
+
+File: 94_Holiday.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Rolling_Fct_Adj'}, {'2010', '2011', '2012', '2013', '2014'}]= STET;
+
+File: 97_Daily_Sales_Actual_Flags.rux
+====================
+Calculation Rule for Rolling_Fct_Adj: [{'Forecast', 'Rolling_Fct_Adj'}, {'2010', '2011', '2012', '2013', '2014'}]= 0;
+
+File: 98_ForceFeed.rux
+====================
+

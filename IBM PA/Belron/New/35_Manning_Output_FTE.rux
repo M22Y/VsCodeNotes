@@ -1,0 +1,128 @@
+SKIPCHECK;
+FEEDSTRINGS;
+#Stet
+[{'Actual', 'Budget', 'Rolling_Fct_Adj'}, {'2010', '2011', '2012', '2013'}] = N: STET;
+
+#To put at 0 Forecast month with Flag 1
+[{'Forecast', 'Rolling_Fct_Adj'}, {'Premium & Other SALARY', 'Overtime Structurel SALARY', 'Sick_Time_Pay$', 'Spec_Projects_Salaries$'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, CONTINUE);
+
+#Mart 2016-apr-20
+#Push Work_to_Total_ratio% Bud to Act
+['Work_to_Total_ratio%', 'Actual']= ['Budget'];
+
+['Total_Std_Hrs_Indirect_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0,
+((['Total_Std_Hrs_Needed' ] \ ['Work_to_Total_ratio%']) * (1- ['Work_to_Total_ratio%'])));
+
+['Total_Std_Hrs_Prime_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Prime'));
+['Total_Std_Hrs_NonPrime_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_NonPri
+me'));
+['Total_Std_Hrs_Flat_Glass_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Flat
+_Glass'));
+['Total_Std_Hrs_Alco_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Alco'));
+['Total_Std_Hrs_Other_Needed', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('34_Manning_Time_Needed', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Other'));
+
+['Total_Std_Hrs_Available', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Std_Hrs');
+
+['Total_Std_Hrs_Vanfax_Needed', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', ['Total_Std_Hrs_Available' ], 0);
+
+['Std_Hrs_Efficiency_Variation_Impact_Available', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]  = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions,
+ !t_Years,
+ !t_Months, 'Std_Hrs_Efficiency_Variation_Impact'));
+
+['Reg_Work_Salary$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N:  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Std_Reg_Salary$');
+['Reg_Salary$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Salary$');
+['Fringe$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]  = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$');
+['Fringe_Work$', {'Actual', 'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]  = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Std_Reg_Fringe$');
+
+['Work_to_Total_ratio%'] = DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Work_to_Total_ratio%' );
+#['Work_to_Total_ratio%'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Versions, !t_Years, !t_Months, !m_Manning_Output_FTE);
+
+
+['Var_Needed-Available', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Total_Std_Hrs_Needed' ] - ['Total_Std_Hrs_Including_Efficiency_Impact_Available' ] ;
+
+['Var_Needed-Available_converted_if_gt_0', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] =N: IF (['Var_Needed-Available' ] > 0, ['Var_Needed-Available' ], 0);
+
+
+['FTE_STD_Work_Needed' ] = ['Total_Std_Hrs_Needed' ] \ ['Hrs_per_FTE' ];
+#['FTE_STD_Needed' ] = C: IF(!t_Months @= 'Total_Months', ['Total_Std_Hrs_Needed' ] \ DB('96_Accounting_Calendar_FTE', !t_Years, !t_Months, 'Reg_Hours'), CONTINUE);
+['FTE_STD_Work_Available' ] = ['Total_Std_Hrs_Available' ]\ ['Hrs_per_FTE' ];
+#['FTE_STD_Available' ] = C: IF(!t_Months @= 'Total_Months', ['Total_Std_Hrs_Available' ]\ DB('96_Accounting_Calendar_FTE', !t_Years, !t_Months, 'Reg_Hours'), CONTINUE);
+['FTE_STD_Work_Overtime'] = ['Var_Needed-Available_converted_if_gt_0' ] \ ['Hrs_per_FTE' ];
+
+['FTE_STD_Total_Needed_roundup'] = IF(ROUND(['FTE_STD_Total_Needed' ]) >= ['FTE_STD_Total_Needed' ], ROUND(['FTE_STD_Total_Needed' ]), ROUND(['FTE_STD_Total_Needed' ]) + 1);
+
+#Mart 2014-06-16
+#Conso
+['Total_OVT_Convert%'] = C: ['OVT_Hrs'] \ ['Var_Needed-Available_converted_if_gt_0'] ;
+['Total_OVT_Convert%'] = N: DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_OVT_Convert%');
+
+#Conso
+['Total_OVT_Rate'] = C: ['OVT$'] \ ['OVT_Hrs'];
+
+['Total_OVT_Rate', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ]  = DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_OVT_Rate');
+['OVT_Work_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Var_Needed-Available_converted_if_gt_0' ] * ['Total_OVT_Convert%' ];
+['Reg_Work_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Total_Std_Hrs_Available' ] ;
+['Reg_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Hrs');
+['OVT_Hrs', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N:['OVT_Work_Hrs' ];
+['OVT_Work$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0, ['OVT_Work_Hrs' ] * ['Total_OVT_Rate' ] );
+['OVT_Fringe_Work$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] =N: ['OVT_Work$' ] * DB('31_Manning_Assump_Global', !Versions, !t_Years, 'OVT_Fringe_%');
+['OVT$']  =  ['OVT_Work$' ] ;
+['OVT_Fringe$' ] = ['OVT_Fringe_Work$' ] ;
+
+['FTE_STD_Total_Needed' ] = ['FTE_STD_Work_Needed' ] \ ['Work_to_Total_ratio%' ] ;
+['FTE_STD_Total_Available'] = ['FTE_STD_Work_Available'] \ ['Work_to_Total_ratio%' ] ;
+['Var_Needed-Available%' ] = ['Var_Needed-Available' ] \['Total_Std_Hrs_Available' ] ;
+['Var_Needed-Available%_ABS' ] = ABS(['Var_Needed-Available%' ] );
+
+['Head_Count' ] =  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Head_Count' );
+
+['Head_Count', 'Total_Months'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+#Mart 08152014
+['Hrs_per_FTE', 'Total_Months' ] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']);
+
+['Hrs_per_FTE'] = If(['Total_Std_Hrs_Work&Indirect_Needed']=0,0,(DB('96_Accounting_Calendar_FTE', !t_Years, !t_Months, 'Reg_Hours')));
+
+['Efficiency_Variation_for_Period%'] = DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Efficiency_Variation_for_Period%');
+['Premium & Other SALARY', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code') @= 'WH', 0, STET);
+['Premium & Other FRINGE', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code') @= 'WH', 0, ['Premium & Other SALARY']  * DB('31_Manning_Assump_Global', !Versions, !t_Years, 'OVT_Fringe_%') );
+[ 'Overtime Structurel FRINGE', {'Forecast', 'Budget', 'Rolling_Fct_Adj'} ] = N: ['Overtime Structurel SALARY']    * DB('31_Manning_Assump_Global', !Versions, !t_Years, 'OVT_Fringe_%');
+
+
+##########################################################--------------####################
+FEEDERS;
+
+['Work_to_Total_ratio%', 'Budget']=> ['Actual'];
+
+['Total_Std_Hrs_Needed' ] => ['Var_Needed-Available' ], ['FTE_STD_Work_Needed' ], ['Hrs_per_FTE' ] ;
+
+['Total_Std_Hrs_Available' ] => ['Var_Needed-Available' ], ['FTE_STD_Work_Available' ], ['Reg_Hrs' ], ['Reg_Work_Hrs' ], ['Hrs_per_FTE' ], ['Efficiency_Variation_for_Period%' ], ['Total_Std_Hrs_Vanfax_Needed' ];
+
+['Var_Needed-Available' ] => ['Var_Needed-Available_converted_if_gt_0' ], ['Var_Needed-Available%' ], ['Var_Needed-Available%_ABS' ] ;
+
+['Var_Needed-Available_converted_if_gt_0' ] => ['FTE_STD_Work_Overtime' ],  ['OVT_Work_Hrs' ], ['Total_OVT_Convert%'] ;
+
+['Work_to_Total_ratio%' ] => ['FTE_STD_Total_Needed' ], ['Total_Std_Hrs_Indirect_Needed'], ['FTE_STD_Total_Needed_roundup' ]  , ['FTE_STD_Total_Available'];
+
+['OVT_Work_Hrs' ]  => ['Total_OVT_Convert%' ], ['OVT_Work$' ] ,  ['OVT$' ], ['OVT_Hrs' ] , ['OVT_Fringe$' ] , ['OVT_Fringe_Work$' ];
+
+['OVT_Work$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] => DB('20_OtherGL', !Org_Structure, '020600', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+['OVT_Fringe_Work$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+['OVT_Hrs' ] => ['Total_OVT_Rate' ];
+
+['Premium & Other SALARY', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+['Premium & Other FRINGE', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+['Premium & Other SALARY'] => ['Premium & Other FRINGE'];
+['Overtime Structurel SALARY'] => [ 'Overtime Structurel FRINGE'] ;
+
+['Overtime Structurel SALARY', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '020500', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ 'Overtime Structurel FRINGE', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+['Sick_Time_Pay$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '020700', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+['Spec_Projects_Salaries$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}] => DB('20_OtherGL', !Org_Structure, '021000', !Versions, !t_Years, !t_Months, 'Inc_Dec$');

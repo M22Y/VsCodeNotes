@@ -1,0 +1,28 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+##
+##
+## CSJ  2014-12-09  Changement des rules pour enlever les feeders qui sortent du 94.
+##
+
+#Stet
+[{'Budget'}, {'2010', '2011', '2012', '2013'}]= STET;
+[{'Forecast', 'Rolling_Fct_Adj'}, {'2010', '2011', '2012', '2013', '2014'}]= STET;
+
+#To put one by default
+['Holiday_Baseline',  {'Budget', 'Budget_Final'}] =N: 1;
+
+#To put zero if Holiday in Holiday_Adj
+['Holiday', {'Budget', 'Budget_Final'}] =N:
+	['Holiday_Baseline'] - ['Holiday_Adj'];
+
+
+
+
+
+
+###################################################
+FEEDERS;
+
+['Holiday_Baseline',  {'Budget', 'Budget_Final'}] => ['Holiday'];

@@ -1,0 +1,78 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+#We need to get AIP_Baline & units in order to get Sales for (
+#[{'Kits_Retail','Repairs'}] =N: 0;
+
+[{'Price_Impact%', 'Price_Impact$', 'Deductible_Wave%', 'Deductible_Wave$', 'Product_Mix%', 'Product_Mix$', 'Cash_Pricing%', 'Cash_Pricing$', 'ASP_Other%', 'ASP_Other$', 'Material_Cost_Baseline', 'AAC_Inc_Dec$', 'AAC_Inc_Dec%', 'AAC_Inc_Dec%_Impact$', 'Bu
+yOut_Units', 'Inventory_Revaluation_Units', 'Exchange_Rate_Units', 'PPV_Units', 'Breakage_Units', 'Economic%', 'Economic_Units', 'Advertising%', 'Advertising_Units', 'Weather%', 'Weather_Units', 'Reinspection_Other%', 'Reinspection_Other_Units', 'B2B_Load
+', 'Inc_Dec_Units', 'Conversion_Units', 'Conversion2_Units', 'Trsf_units', 'DW_Units', 'Close_Store', 'Other_Adj_Units', 'Sales_Inc_Dec$', 'Sales_Inc_Dec%', 'Sales_Inc_Dec%_Impact$', 'Glass_Related_Sales$'}] = 0;
+
+
+
+['Units_Baseline', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N:
+	IF (ATTRS('Org_Structure_Leaf', !Org_Structure_WH, 'SB_Code') @<>'WH',
+		DB('10_SalesCOS', !Org_Structure_WH, !Products_Detailed, 'Retail', !Versions, !t_Years, !t_Months, 'Total_Units'),
+		0);
+
+#AIP moyen incluant Repairs et Kits
+['AIP_Baseline', 'Interne', 'Glass_Accessories', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N:
+	(['AIP_Baseline', 'Kits_Retail'] * ['Units_Baseline', 'Replacement']
+	+['AIP_Baseline', 'Repairs'] * ['Units_Baseline', 'Repairs'])
+		\['Units_Baseline', 'Total_Prime'];
+
+['AIP_Baseline', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N:
+	IF (ATTRS('Org_Structure_Leaf', !Org_Structure_WH, 'SB_Code') @<>'WH',
+		DB('10_SalesCOS', !Org_Structure_WH, !Products_Detailed, 'Retail', !Versions, !t_Years, !t_Months, 'AAC_Pure_Calc'),
+		0);
+
+['Sales_Baseline', 'Kits_Retail', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: ['AIP_Baseline'] * ['Units_Baseline', 'Replacement'];
+['Sales_Baseline', 'Glass_Accessories', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: ['AIP_Baseline'] * ['Units_Baseline', 'Total_Prime'];
+['Sales_Baseline', {'Windshield', 'Repairs'}, {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] = N: ['AIP_Baseline'] * ['Units_Baseline'];
+
+['ASP', 'Glass_Accessories'] = C: ['Net_Sales']\['Total_Units', 'Total_Prime'];
+['ASP', 'Kits_Retail'] =C: ['Net_Sales']\['Total_Units', 'Replacement'];
+['ASP'] =C: ['Net_Sales']\['Total_Units'];
+['AAC'] =C: ['ASP'];
+['COS$'] =C: ['Sales_Baseline'];
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FEEDERS;
+['Total_Units'] => ['ASP'], ['COS$'];
+['ASP'] => ['AAC'];
+['AIP_Baseline']=>['Sales_Baseline'];
+#Mart07-11-2013 to feed Glass Access when it has no units Repair
+['Total_Units', 'Windshield'] => ['ASP'], ['Glass_Accessories'];
+
+
+##
+## CSJ Feeders 2013-11-15
+##
+#['ASP'] => DB(IF(['ASP'] = 0 , '', '10_SalesCOS'), !Org_Structure_WH, !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'AIP_Baseline');
+## 2014-02-03  CSJ Ajout du parent au lieu du Org_Structure_WH tout seul.
+['ASP', 'Windshield',  'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('10_SalesCOS', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'AIP_Baseline');
+
+
+###########################################################
+## CSJ Feeders 20131108
+## Feeder manquant.
+# Ca marche
+##
+## CSJ Feeders 2013-11-15
+##
+#['Total_Units', 'Budget'] => DB(IF(['Total_Units'] = 0 , '', '10_SalesCOS'), !Org_Structure_WH, !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'Units_Baseline');
+['Total_Units', 'Windshield', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('10_SalesCOS', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'Units_Baseline');
+
+#
+#
+# Test pour eviter le feeder.
+#['Total_Units', 'Budget'] => DB(IF(['Total_Units'] = 0 % ATTRS('Org_Structure_Leaf',  !Org_Structure_WH, 'SB_Code') @<> 'WH', '', '10_SalesCOS'), !Org_Structure_WH, !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'Units_Baseline');
+####### END TEST
+
+#['AAC', 'Budget'] => DB(IF(['AAC', 'Budget'] = 0, '', '10_SalesCOS'), !Org_Structure_WH, !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'Material_Cost_Baseline');
+['AAC', 'Windshield', 'Interne', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] => DB('10_SalesCOS', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months,'Material_Cost_Baseline');
+
+
+['Net_Sales', 'Interne', 'Glass_Accessories', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}] =>
+DB('11_SalesCOS_NonPrime', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months, 'Sales_Baseline'),
+DB('11_SalesCOS_NonPrime', ELPAR('Org_Structure_WH', !Org_Structure_WH, 1), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months, 'COS$_Pure');

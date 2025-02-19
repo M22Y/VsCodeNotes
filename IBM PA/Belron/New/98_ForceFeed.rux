@@ -1,0 +1,52 @@
+FEEDSTRINGS;
+SKIPCHECK;
+
+FEEDERS;
+
+['Num_feed']=> DB('97_Daily_Sales_Actual_Flags', 'Rolling_Fct_Adj', 'All_Years', 'Total_Months', 'Total weeks', 'All_Days');
+
+#['feed_element', 'Num_feed']=> DB('67_DailySales_Stats_Std', 'CY', 'Total_Segments', 'Total_Prime', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Total weeks', 'All_Days', 'Holiday');
+
+#['feed_element', 'Num_feed']=> DB('67_DailySales_Stats_Std', 'CY', 'Total_Segments', 'Total_Prime', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Total weeks', 'All_Days', 'Holiday');
+
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '045100', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '051626', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '051693', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '051611', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '045102', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '051633', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '051850', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '051690', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'CY', '051694', 'Forecast', STR(DB('95_TimeRef', 'Forecast', 'Year'),4,0), 'Total_Months', 'Baseline');
+
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '045100', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '051626', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '051693', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '051611', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '045102', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '051633', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '051850', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '051690', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+#['feed_element', 'Num_feed']=> DB('20_OtherGL', 'NY', '051694', 'Budget', STR(DB('95_TimeRef', 'Budget', 'Year'),4,0), 'Total_Months', 'Baseline');
+
+#forced feed capitalisation in cube 51
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '126000', 'Actual', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '128000', 'Actual', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '135000', 'Actual', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '145000', 'Actual', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '155000', 'Actual', 'All_Continuous', 'Inc_Dec$');
+
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '126000', 'Forecast', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '128000', 'Forecast', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '135000', 'Forecast', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '145000', 'Forecast', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '155000', 'Forecast', 'All_Continuous', 'Inc_Dec$');
+
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '126000', 'Budget', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '128000', 'Budget', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '135000', 'Budget', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '145000', 'Budget', 'All_Continuous', 'Inc_Dec$');
+#['feed_element', 'Num_feed']=> DB('51_BS_Manual', '155000', 'Budget', 'All_Continuous', 'Inc_Dec$');
+['feed_element'] => DB('94_Holiday', 'CAN', 'All_Versions', 'All_Years', 'Total_Months', 'Total weeks', 'All_Days', 'Holiday_Baseline');
+
+

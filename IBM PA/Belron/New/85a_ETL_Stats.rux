@@ -1,0 +1,117 @@
+#FORMAT==100
+FEEDSTRINGS;
+SKIPCHECK;
+
+#Variation Version calculation
+['Var%_Act-Bud'] = (['Actual'] - ['Budget']) \ ['Budget'];
+['Var%_Act-Bud_Final'] = (['Actual'] - ['Budget_Final']) \ ['Budget_Final'];
+['Var%_Act-Rolling_Fct'] = (['Actual'] - ['Rolling_Forecast']) \ ['Rolling_Forecast'];
+['Var%_Rolling_Fct-Bud_Final'] = (['Rolling_Forecast'] - ['Budget_Final']) \ ['Budget_Final'];
+
+#Exclut Windsh units de Vanfax
+['Repair Ratio', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Sales_Discounts', 'Deductibles', 'Replacement', 'Total_Prime'}] = 0;
+['Repair Ratio'] = IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0,
+	 IF(['Sales_Units', 'Repairs']=0, 0, (['Sales_Units', 'Repairs']) \ (['Sales_Units', 'Repairs'] + ['Sales_Units', 'Windshield'])));
+
+
+#FCT and Roll_Fct_Adj flag 1 = Actual
+
+#[{'Forecast', 'Rolling_Fct_Adj'}] =N:
+#	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+#	 ['Actual'], CONTINUE);
+
+
+['ASP_Gross', 'Kits_Retail']= N: IF(['Sales_Units', 'Replacement']=0, ['Sales$_Gross'],['Sales$_Gross']\['Sales_Units', 'Replacement']);
+['ASP_Gross']= N: IF(['Sales_Units']=0, ['Sales$_Gross'], ['Sales$_Gross']\ ['Sales_Units']);
+['ASP_Gross']= C: IF(['Sales_Units']=0, ['Sales$_Gross'],['Sales$_Gross']\['Sales_Units']);
+
+
+#ASP niveau conso Sales Discounts
+
+['ASP', {'Sales_Discounts','Deductibles'},'Insurance']= C:	IF(['Sales_Units', 'Replacement']=0,['Sales$'], ['Sales$']\['Sales_Units', 'Replacement']);
+['ASP']=  C: IF(['Sales_Units']=0, ['Sales$'], ['Sales$']\ ['Sales_Units']);
+
+#AAC niveau conso total prime
+['AAC', 'No_Segment']= C: ['COS$']\  IF(['Sales_Units', 'Retail']=0, 1, ['Sales_Units', 'Retail']);
+['AAC', 'No_Segment_Ext']= C:['COS$']\ IF(['Sales_Units', 'Externe']=0, 1, ['Sales_Units', 'Externe']) ;
+['AAC', 'Interne']= C:['COS$']\ IF(['Sales_Units', 'Interne']=0, 1, ['Sales_Units', 'Interne']) ;
+['AAC']= C: ['COS$']\ IF(['Sales_Units']=0, 1, ['Sales_Units']);
+
+['AAC_STD']=  ['COS$_STD']\  IF(['Sales_Units']=0, 1, ['Sales_Units']);
+
+#Mart 2014-09-26
+['Total_AAC', 'No_Segment']= C: ['Total_COS$']\  IF(['Sales_Units', 'Retail']=0, 1, ['Sales_Units', 'Retail']);
+['Total_AAC', 'No_Segment_Ext']= C:['Total_COS$']\ IF(['Sales_Units', 'Externe']=0, 1, ['Sales_Units', 'Externe']) ;
+['Total_AAC', 'Interne']= C:['Total_COS$']\ IF(['Sales_Units', 'Interne']=0, 1, ['Sales_Units', 'Interne']) ;
+['Total_AAC']= C: ['Total_COS$']\ IF(['Sales_Units']=0, 1, ['Sales_Units']);
+
+['Total_AAC_STD', 'Actual', {'2010', '2011', '2012', '2013'}] = ['Total_AAC'];
+['Total_AAC_STD']= C: ['Total_COS$_STD']\ IF(['Sales_Units']=0, 1, ['Sales_Units']);
+
+
+###########################GM#################################
+#Gross Margin calculation Non Prime
+['GM$']= N: ['Sales$'] - (['Total_COS$']) ;
+['GM%']= ['GM$']\ ['Sales$'];
+
+['GM$_STD']= N: ['Sales$'] - (['Total_COS$_STD']) ;
+['GM%_STD']= ['GM$_STD']\ ['Sales$'];
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FEEDERS;
+
+['Sales_Units', 'Repairs']=>  ['Repair Ratio'];
+
+['Sales$', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'}] => ['Sales$_Gross'];
+['Sales$_Gross', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'}] => ['ASP_Gross'];
+
+
+
+#['Actual']=> DB(IF(DB('97_Actual_Flags', !t_Years, !t_Months, 'Forecast')=1, '85a_ETL_Stats', ''),
+#	!Org_Structure, !Customer_Segments, !Products_Detailed,  'Forecast', !t_Years, !t_Months, !m_ETL_Stats);
+
+#['Actual']=> DB(IF(DB('97_Actual_Flags', !t_Years, !t_Months, 'Rolling_Fct_Adj')=1, '85a_ETL_Stats', ''),
+#	!Org_Structure, !Customer_Segments, !Products_Detailed,  'Rolling_Fct_Adj', !t_Years, !t_Months, !m_ETL_Stats);
+
+#['Actual, , {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Sales_Discounts', 'Deductibles', 'Kits_Retail', 'Repairs'}] => [ 'Forecast'],
+#											 ['Rolling_Fct_Adj'];
+
+
+['Budget']=>['Var%_Act-Bud'];
+['Budget_Final']=>['Var%_Act-Bud_Final'];
+['Rolling_Forecast']=>['Var%_Act-Rolling_Fct'];
+['Budget_Final']=>['Var%_Rolling_Fct-Bud_Final'];
+
+['Sales$']=> ['ASP'], ['GM$'], ['GM%'], ['GM$_STD'], ['GM%_STD'];
+
+['Total_AAC', 'Actual', {'2010', '2011', '2012', '2013'}] => ['Total_AAC_STD'];
+['COS$'] => ['AAC'];
+['COS$_STD'] => ['AAC_STD'];
+['Total_COS$'] => ['GM$'];
+['Total_COS$_STD'] => ['GM$_STD'];
+
+['Sales_Units', 'Repairs'] => ['Repair Ratio'];
+
+
+
+['Sales_Units', {'Forecast', 'Rolling_Fct_Adj', 'Budget', 'Budget_Final'}, {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Sales_Discounts', 'Deductibles', 'Kits_Retail', 'Repairs'} ]=>
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Units_Baseline');
+
+['Sales$', {'Forecast', 'Rolling_Fct_Adj', 'Budget', 'Budget_Final'}, {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Sales_Discounts', 'Deductibles', 'Kits_Retail', 'Repairs'} ]=>
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales$_Baseline');
+
+['COS$', {'Forecast', 'Rolling_Fct_Adj', 'Budget', 'Budget_Final'}, {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'} ]=>
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'COS$_Baseline');
+
+['BuyOut$', {'Forecast', 'Rolling_Fct_Adj', 'Budget', 'Budget_Final'}, {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'} ]=>
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'BuyOut$_Baseline');
+
+['Inventory_Revaluation$', {'Forecast', 'Rolling_Fct_Adj', 'Budget', 'Budget_Final'}, {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'} ]=>
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Inventory_Revaluation$_Baseline');
+
+['PPV$', {'Forecast', 'Rolling_Fct_Adj', 'Budget', 'Budget_Final'}, {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'} ]=>
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'PPV$_Baseline');
+
+['Breakage$', {'Forecast', 'Rolling_Fct_Adj', 'Budget', 'Budget_Final'}, {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'} ]=>
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Breakage$_Baseline');
