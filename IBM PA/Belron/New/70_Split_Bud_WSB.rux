@@ -33,7 +33,7 @@
 
 [{'%_Units', '%_Sales$', '%_COS$', '%_BuyOut$', '%_Inventory_Revaluation$', '%_PPV$', '%_Breakage$'}] = N: 0;
 
-[{'Sales_Discounts', 'Deductibles'}, {'Forecast', 'Budget', 'Budget_Final'}, {'%_Units_Calc', 'Sales_Units_Calc', '%_Units_Overwrite_Adj', '%_COS$_Calc', 'COS$_Calc', '%_COS$_Overwrite_Adj', '%_BuyOut$_Calc', 'BuyOut$_Calc', '%_BuyOut$_Overwrite_Adj',
+[{'Sales_Discounts', 'Deductibles'}, {'Forecast', 'Rolling_Fct_Adj','Budget', 'Budget_Final'}, {'%_Units_Calc', 'Sales_Units_Calc', '%_Units_Overwrite_Adj', '%_COS$_Calc', 'COS$_Calc', '%_COS$_Overwrite_Adj', '%_BuyOut$_Calc', 'BuyOut$_Calc', '%_BuyOut$_Overwrite_Adj',
 '%_Inventory_Revaluation$_Calc', 'Inventory_Revaluation$_Calc', '%_Inventory_Revaluation$_Overwrite_Adj','%_PPV$_Calc', 'PPV$_Calc', '%_PPV$_Overwrite_Adj',  '%_Breakage$_Calc', 'Breakage$_Calc', '%_Breakage$_Overwrite_Adj'}] = N: 0;
 
 #Flag = 1 Actual = Forecast

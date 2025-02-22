@@ -5,7 +5,7 @@ FEEDSTRINGS;
 ########################################################################
 ## DESCRIPTION
 #
-#  Regles cube 10_SalesCOS
+#  Cube 10_SalesCOS
 #
 #
 #
@@ -24,6 +24,9 @@ FEEDSTRINGS;
 # 2022-05-31 Claude-Sebastien JEAN   Delete extra versions
 # 2022-06-01 Claude-Sebastien JEAN   Add  {'Windshield', 'Repairs'} for ASP_Other$ Insurance.
 # 2022-06-11 Claude-Sebastien JEAN   Added Material_Cost_Baseline for 111.
+# 2025-02-21 Mashate Youssef		 The following rules have been adjusted to account for the 2025 rolling forecast adjustments.
+# 									 These changes ensure that the baseline and other financial metrics are correctly calculated for the year 2025.
+# 									 Specific adjustments include changes in Units_Baseline, AAC_Pure, ASP, and COS$_Pure for the year 2025.
 #
 #
 #
@@ -233,6 +236,24 @@ FEEDSTRINGS;
 	 ['Actual', 'Total_Units'],
 	  DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Actual', '2014', !t_Months, 'Total_Units'));
 
+#2025 Baseline Rolling_Fct_Adj Baseline = Budget_Final
+ ['Units_Baseline', 'Rolling_Fct_Adj', '2025','Interne', 'Windshield']= N:
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'Replacement', 'Total_Units'],
+		IF(ATTRS('Org_Structure_Leaf',  !Org_Structure, 'SB_Code') @= 'WH',
+			DB('13_Internal_Transfer',  !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'Total_Units'), CONTINUE));
+
+ ['Units_Baseline', 'Rolling_Fct_Adj','2025', 'Windshield']= N:
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'Replacement', 'Total_Units'],
+	 DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'Total_Units'));
+
+ ['Units_Baseline', 'Rolling_Fct_Adj', '2025','Repairs']= N:
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'Total_Units'],
+	 DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'Total_Units'));
+# -------------------------------
+
 #29-09-2014 Baseline Rolling_Fct_Adj Baseline = Rolling_Fct_Adj N-1
  ['Units_Baseline', 'Rolling_Fct_Adj', 'Interne', 'Windshield']= N:
 	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
@@ -250,6 +271,9 @@ FEEDSTRINGS;
 	 ['Actual', 'Total_Units'],
 	 DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, STR(NUMBR(!t_Years)-1,4,0), !t_Months, 'Total_Units'));
 
+
+
+['Units_Baseline', 'Rolling_Fct_Adj', '2025']= N: ['Total_Units', 'Budget_Final', '2025'];
 
 ['Units_Baseline', {'Forecast', 'Rolling_Fct_Adj'}]= N:0;
 
@@ -276,6 +300,8 @@ FEEDSTRINGS;
  ['Cust_Ins_Adj_Units', {'Forecast', 'Budget'}, 'Insurance', {'Windshield', 'Repairs'}]= N:
 		DB('09_SalesCOS_by_Customer',!Org_Structure,'ADM000002','Insurance',!Products_Detailed,!Versions,!t_Years,!t_Months, !m_SalesCOS);
 
+ ['Cust_Ins_Adj_Units', 'Rolling_Fct_Adj', 'Insurance', {'Windshield', 'Repairs'}]= N:
+		DB('09_SalesCOS_by_Customer',!Org_Structure,'ADM000002','Insurance',!Products_Detailed,'Budget_Final',!t_Years,!t_Months, !m_SalesCOS);
 
 #######################################################################AIP BASELINE######################################################################
 #AIP Baseline Replacement & Repairs :: Actual
@@ -334,6 +360,25 @@ FEEDSTRINGS;
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'ASP')
     );
 
+# adjusted for 2025 Rolling_Fct_Adj
+['AIP_Baseline',  'Rolling_Fct_Adj', '2025','Calibration_Camera']  = N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+        DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,'Budget_Final',!t_Years,!t_Months, 'ASP')
+    );
+# adjusted for 2025 Rolling_Fct_Adj
+ ['AIP_Baseline', 'Rolling_Fct_Adj', '2025', {'Windshield', 'Repairs', 'Sales_Discounts'}]= 
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'ASP'],
+	 	DB('10_SalesCOS', !Org_Structure, !Products_Detailed , !Customer_Segments, 'Budget_Final', '2025', !t_Months, 'ASP'));
+
+
+# adjusted for 2025 Rolling_Fct_Adj
+ ['COS$_Pure', 'Rolling_Fct_Adj', '2025', {'Windshield', 'Repairs', 'Sales_Discounts'}]= N:
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'ASP'],
+	 	DB('10_SalesCOS', !Org_Structure, !Products_Detailed , !Customer_Segments, 'Budget_Final', '2025', !t_Months, 'COS$_Pure'));
+
 
 ['AIP_Baseline',  'Budget', 'Repairs', {'Trade', 'Fleet', 'APPLE_FR', 'LEBEAU_FR', 'DURO_FR', 'STD_FR', 'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste'}]  = N:
     IF( !t_Years@< '2022',
@@ -379,6 +424,29 @@ FEEDSTRINGS;
         DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, !Products_Detailed,!Versions,!t_Years,!t_Months, 'ASP')
     );
 
+# adjusted for 2025 Rolling_Fct_Adj
+['AIP_Baseline',  'Rolling_Fct_Adj', '2025','Repairs', {'Trade', 'Fleet', 'APPLE_FR', 'LEBEAU_FR', 'DURO_FR', 'STD_FR', 'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste'}]  = N:
+    IF( !t_Years@< '2021',
+        CONTINUE,
+        DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, !Products_Detailed,'Budget_Final',!t_Years,!t_Months, 'ASP')
+    );
+
+['AIP_Baseline',  'Rolling_Fct_Adj', '2025','Windshield', {'Trade', 'Fleet', 'APPLE_FR', 'LEBEAU_FR', 'DURO_FR', 'STD_FR', 'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste'}]  = N:
+    IF( !t_Years@< '2021',
+        CONTINUE,
+        (DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, 'Replacement','Budget_Final',!t_Years,!t_Months, 'Net_Sales') -
+            DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, 'Sales_Discounts','Budget_Final',!t_Years,!t_Months, 'Net_Sales')) \
+        (DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, 'Replacement','Budget_Final',!t_Years,!t_Months, 'Total_Units') -
+            DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, 'Sales_Discounts','Budget_Final',!t_Years,!t_Months, 'Total_Units'))
+    );
+
+
+['AIP_Baseline',  'Rolling_Fct_Adj', '2025','Sales_Discounts', {'APPLE_FR', 'LEBEAU_FR', 'DURO_FR', 'STD_FR', 'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste'}]  = N:
+    IF( !t_Years@< '2021',
+        CONTINUE,
+        DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, !Products_Detailed,'Budget_Final',!t_Years,!t_Months, 'ASP')
+    );
+
 
 
 
@@ -397,6 +465,13 @@ FEEDSTRINGS;
 	 ['Actual', 'ASP'],
 		DB('09_SalesCOS_by_Customer',!Org_Structure,'Total_Customer_Leafs','Insurance',!Products_Detailed,!Versions,!t_Years,!t_Months, 'AIP_Baseline_Calc'));
 
+# adjusted for 2025 Rolling_Fct_Adj
+ ['AIP_Baseline', 'Rolling_Fct_Adj', '2025','Insurance', {'Windshield', 'Repairs'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'ASP'],
+		DB('09_SalesCOS_by_Customer',!Org_Structure,'Total_Customer_Leafs','Insurance',!Products_Detailed,'Budget_Final',!t_Years,!t_Months, 'ASP'));
+
+
 #AIP Baseline Sales Discount Replacement Forecast Budget
 ['AIP_Baseline', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Sales_Discounts'] =
 	IF(ATTRS('Org_Structure_Leaf',  !Org_Structure, 'SB_Code') @<> 'WH', 0, CONTINUE);
@@ -408,11 +483,23 @@ FEEDSTRINGS;
 			IF(ATTRS('Org_Structure_Leaf',  !Org_Structure, 'SB_Code') @= 'WH',
 	 			DB('13_Internal_Transfer', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months, 'ASP'), CONTINUE));
 
+# Changed for 2025 Rolling_Fct_Adj baseline is Budget_Final
+ ['AIP_Baseline', 'Rolling_Fct_Adj', '2025','Interne', 'Windshield']= N:
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'ASP'],
+			IF(ATTRS('Org_Structure_Leaf',  !Org_Structure, 'SB_Code') @= 'WH',
+	 			DB('13_Internal_Transfer', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, 'Budget_Final', !t_Months, 'ASP'), CONTINUE));
+
  ['AIP_Baseline', 'Forecast', {'Windshield', 'Repairs', 'Sales_Discounts'}]= N:
 	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 	 ['Actual', 'ASP'],
 	 	DB('10_SalesCOS', !Org_Structure, !Products_Detailed , !Customer_Segments, 'Actual', STR(NUMBR(!t_Years)-1,4,0), !t_Months, 'ASP'));
 
+# Changed for 2025 Rolling_Fct_Adj baseline is Budget_Final
+ ['AIP_Baseline', 'Rolling_Fct_Adj', '2025', {'Windshield', 'Repairs', 'Sales_Discounts'}]= N:
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	 ['Actual', 'ASP'],
+	 	DB('10_SalesCOS', !Org_Structure, !Products_Detailed , !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'ASP'));
 
 #Start in 2015
  ['AIP_Baseline', 'Rolling_Fct_Adj', '2015', 'Interne', 'Windshield']= N:
@@ -431,6 +518,8 @@ FEEDSTRINGS;
 	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 	 ['Actual', 'ASP'],
 	 	DB('10_SalesCOS', !Org_Structure, !Products_Detailed , !Customer_Segments, 'Actual', '2014', !t_Months, 'ASP'));
+
+
 
  ['AIP_Baseline', 'Rolling_Fct_Adj', {'Windshield', 'Repairs', 'Sales_Discounts'}]= N:
 	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
@@ -471,6 +560,9 @@ FEEDSTRINGS;
 ['Sales_Baseline', {'Forecast', 'Budget'}, 'Sales_Discounts', {'APPLE_FR', 'LEBEAU_FR', 'DURO_FR', 'STD_FR', 'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste'}]= N:
             DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, !Products_Detailed,!Versions,!t_Years,!t_Months, 'Net_Sales');
 
+['Sales_Baseline', 'Rolling_Fct_Adj', 'Sales_Discounts', {'APPLE_FR', 'LEBEAU_FR', 'DURO_FR', 'STD_FR', 'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste'}]= N:
+            DB( '08_SalesCOS_B2B_WH_by_Customer',!Org_Structure, 'Total_Customer_Fleet_Wholesale', !Customer_Segments, !Products_Detailed,'Budget_Final',!t_Years,!t_Months, 'Net_Sales');
+
 
 ##
 ## Cube 111
@@ -486,7 +578,7 @@ FEEDSTRINGS;
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'Net_Sales')
     );
 
-
+['Sales_Baseline', 'Rolling_Fct_Adj', 't_Years':'2025', 'Sales_Discounts']= N:  ['ASP']* ['Total_Units', 'Replacement'];
 ['Sales_Baseline', {'Forecast', 'Rolling_Fct_Adj'}, 'Sales_Discounts']= N:
 		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 	          ['Actual', 'Sales_Baseline'],
@@ -513,7 +605,12 @@ FEEDSTRINGS;
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'AAC')
     );
-
+# adjusted for 2025 Rolling_Fct_Ad
+['Material_Cost_Baseline',  'Rolling_Fct_Adj', 'Calibration_Camera', 't_Years':'2025']  = N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+        DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,'Budget_Final','2025',!t_Months, 'AAC')
+    );
 
 #################################################################################MATERIAL COST BASELINE###########################################################################
 #Material Cost Replacement Baseline Actual
@@ -662,6 +759,11 @@ FEEDSTRINGS;
 		['Actual', 'AAC_Pure'],
 		DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget', !t_Years, !t_Months, 'AAC_Pure'));
 
+# Adjusted for 2025 Rolling_fct_Adj
+['Material_Cost_Baseline', 'Rolling_Fct_Adj', '2025', {'Windshield', 'Repairs', 'Kits_Retail'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'AAC_Pure'],
+		DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'AAC_Pure'));
 
 #Start in 2015
 ['Material_Cost_Baseline', 'Rolling_Fct_Adj', '2015', 'Interne', {'Windshield', 'Kits_Retail'}]= N:
@@ -747,7 +849,11 @@ FEEDSTRINGS;
 		['Actual', 'AAC_STD_Pure'],
 		DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Actual',  STR(NUMBR(!t_Years)-1,4,0), !t_Months, 'AAC_STD_Pure'));
 
-
+# adjusted for 2025 Rolling_Fct_Adj
+['Material_Cost_Baseline_STD', 'Rolling_Fct_Adj', '2025', {'Windshield', 'Repairs', 'Kits_Retail'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'AAC_STD_Pure'],
+		DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final',  !t_Years, !t_Months, 'AAC_STD_Pure'));
 
 
 #Start in 2015
@@ -1237,6 +1343,12 @@ FEEDERS;
  ['Total_Units', 'Replacement']=> DB('11_SalesCOS_NonPrime', !Org_Structure, 'Disposal_Fees', !Customer_Segments, !Versions, !t_Years, !t_Months, 'Prime_Units_Glass_Related_Consumer');
  ['Total_Units', 'Replacement']=> DB('11_SalesCOS_NonPrime', !Org_Structure, 'Cabin_Filter', !Customer_Segments, !Versions, !t_Years, !t_Months, 'Prime_Units_Glass_Related_Consumer');
 
+[{'Windshield', 'Repairs'}, 'Total_Units', 'Budget_Final', '2025']=> DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', '2025', !t_Months, 'Units_Baseline');
+[{'Windshield', 'Repairs'}, 'ASP', 'Budget_Final', '2025']=> DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', '2025', !t_Months, 'AIP_Baseline');
+[{'Windshield', 'Repairs'}, 'COS$', 'Budget_Final', '2025']=> DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', '2025', !t_Months, 'COS$_Pure');
+
+
+['Total_Units', 'Budget_Final', '2025'] => ['Units_Baseline', 'Rolling_Fct_Adj', '2025'];
 
 ['Total_Units', 'Forecast'] => DB('10_SalesCOS', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline');
 
@@ -1400,6 +1512,8 @@ FEEDERS;
 ##
  ['Net_Sales', 'Calibration_Camera', 'Total_Segments', 'Budget']=> DB(IF(!t_Years @<'2023', '', '86_ETL_GL'), !Org_Structure, '3255', !Versions, !t_Years, !t_Months, 'Dollars$');
  ['Net_Sales', 'Calibration_Camera', 'Total_Segments', 'Forecast']=> DB(IF(!t_Years @<'2022', '', '86_ETL_GL'), !Org_Structure, '3255', !Versions, !t_Years, !t_Months, 'Dollars$');
+ ['Net_Sales', 'Calibration_Camera', 'Total_Segments', 'Rolling_Fct_Adj']=> DB(IF(!t_Years @<'2022', '', '86_ETL_GL'), !Org_Structure, '3255', !Versions, !t_Years, !t_Months, 'Dollars$');
+
 
 
  ['COS$', 'Windshield', {'No_Segment_EXT', 'Retail'}, {'Budget','Forecast', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, '002120', !Versions, !t_Years, !t_Months, 'Dollars$');

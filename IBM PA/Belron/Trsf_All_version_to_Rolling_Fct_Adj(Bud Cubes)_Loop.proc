@@ -1,0 +1,337 @@
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+########################################################################
+########################################################################
+## DESCRIPTION
+#   Ce processus transfert une version dans une autre pour les cubes de BUDGET.
+#   Si la version cible n'existe pas, on la creer.  ON va aussi effacer toutes
+#   les valeures deja dans le cube.
+#
+#   Utilise les processus SYS_View_Create
+#
+## PARAMETRES
+#       pDebug          0 aucun debug 4 niveau de debug passe aux autres processus.
+#       pVersionOrig    Version Originale (doit exister)
+#       pVersionCible   Version dans laquelle on va copier (est creer si elle n'existe pas.)
+#       pYear           nnnn Annee a 4 chifres.
+#
+## HISTORIQUE
+#
+#
+########################################################################
+########################################################################
+
+cProcess = GetProcessName() ;
+cTimeStamp = TimSt( Now, '\Y\m\d\h\i\s' );
+cDebugFile = GetProcessErrorFileDirectory | cProcess | '.' | cTimeStamp | '.';
+cLF = Char ( 10 );
+
+If( pDebug >= 1 );
+
+  # Set debug file name
+  sDebugFile = cDebugFile | '_01Prolog.debug';
+
+  # Log start time
+  AsciiOutput( sDebugFile, 'Process Started: ' | TimSt( Now, '\Y-\m-\d \h:\i:\s' ) );
+
+EndIf;
+
+
+## IF Source version does not exist EXIT in error
+IF(DIMIX('Versions', pVersionOrig) = 0);
+    sMessage = '***ERREUR: Version ' | pVersionOrig | ' n existe pas!' ;
+    IF(pDebug >= 1);
+        AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+    ENDIF;
+
+    ExecuteProcess('Bedrock.Server.WriteToMessageLog', 'pDebug', pDebug, 'pType', 'ERROR', 'pMessage', sMessage);
+    ProcessError;
+ENDIF;
+
+
+
+## IF pYear  does not exist EXIT in error
+IF(DIMIX('t_Years', NumberToString(pYear)) = 0);
+    sMessage = '***ERREUR: t_Year ' | NumberToString(pYear) | ' n existe pas!' ;
+    IF(pDebug >= 1);
+        AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+    ENDIF;
+
+    ExecuteProcess('Bedrock.Server.WriteToMessageLog', 'pDebug', pDebug, 'pType', 'ERROR', 'pMessage', sMessage);
+    ProcessError;
+ENDIF;
+
+
+
+## IF Target version does not exist we create it.
+IF(DIMIX('Versions', pVersionCible) = 0);
+    sMessage = 'WARNING: Version ' | pVersionCible | ' n existe pas!' ;
+    IF(pDebug >= 1);
+        AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+    ENDIF;
+
+    DimensionElementInsertDirect('Versions', '', pVersionCible, 'N' );
+
+
+ENDIF;
+
+
+
+vNameSrc = '.temp_Src_Copy_' | pVersionOrig | '_to_' | pVersionCible | '_' | cTimeStamp;
+vNameSrcZERO = '.temp_Src_Copy_ZEROOUT_' | pVersionOrig | '_to_' | pVersionCible | '_' | cTimeStamp;
+vNameTarget = '.temp_Target_Copy_' | pVersionOrig | '_to_' | pVersionCible | '_' | cTimeStamp;
+vStartTime = Now;
+LogOutput('INFO', TimSt( Now, '\Y-\m-\d \h:\i:\s' ) | ' ' | cProcess | ': STARTING PROCESS (' | pVersionOrig | ' -> ' | pVersionCible | ' for ' | NumberToString(pYear) | ')');
+
+
+sYear2 = NumberToString(   pYear - 2000);
+sMonthsContinuous = 'Jan-' | sYear2 | '+' | 'Feb-' | sYear2 | '+' | 'Mar-' | sYear2 | '+' | 'Apr-' | sYear2 | '+' | 'May-' | sYear2 | '+' | 'Jun-' | sYear2 | '+' | 'Jul-' | sYear2 | '+' | 'Aug-' | sYear2 | '+' | 'Sep-' | sYear2 | '+' | 'Oct-' | sYear2 | '+' | 'Nov-' | sYear2 | '+' | 'Dec-' | sYear2;
+
+##-------------------------------------------------------------------------------------------
+##  Loop through ALL cubes.  IF cubes have Versions AND t_Years, go.
+##-------------------------------------------------------------------------------------------
+
+    #Start at
+    bStart = 1;
+
+
+    #Loop through all elements of a dimension.
+    dimcub = '}Cubes';
+    elcub = DIMNM(dimcub, 1);
+    WHILE (elcub @<> '');
+
+        IF(elcub @= '51_BS_Manual');
+            bStart = 1;
+        ENDIF;
+        
+        #For each dim elements
+        IF((SUBST( elcub, 1, 1 ) @<> '}') & (elcub @<> '50_Cashflow') & (bStart = 1));
+
+            ##=============================
+            ##  Check if Version and t_Years are present.
+            ##=============================
+            bVersionsIsPresent = 0;
+            bYearsIsPresent = 0;
+            bMonthsContIsPresent = 0;
+
+                        
+            j = 1;
+            sCurrentDim = TABDIM( elcub, j );
+            While( sCurrentDim @<> '');
+
+                IF(sCurrentDim @= 'Versions');
+                    bVersionsIsPresent = 1;
+                ENDIF;
+                IF(sCurrentDim @= 't_Years');
+                    bYearsIsPresent = 1;
+                ENDIF;
+                IF(sCurrentDim @= 't_Months_Continuous');
+                    bMonthsContIsPresent = 1;
+                ENDIF;
+     
+                  
+                j = j + 1;
+                sCurrentDim = TABDIM( elcub, j );
+
+            END;
+
+
+            IF(bVersionsIsPresent + bYearsIsPresent = 2);
+
+                
+
+                ###################################################
+                vCube = elcub;
+                ####################################################
+                LogOutput('INFO', TimSt( Now, '\Y-\m-\d \h:\i:\s' ) | ' ' | cProcess | ': STARTING Cube   ' | vCube | '(' | pVersionOrig | ' -> ' | pVersionCible | ' for ' | NumberToString(pYear) | ')');
+
+
+                IF(pDebug >= 1);
+                    sMessage = 'Cube: ' | vCube;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'Creation de vue: ' | vCube | ' --> ' | vNameSrc;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Create', 'pCube', vCube, 'pView', vNameSrc,
+                                    'pFilter', 't_Years: ' | NumberToString(pYear) | '& Versions: ' | pVersionOrig,
+                                    'pSuppressRules', 0,
+                                    'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'Vue: ' | vCube | ' --> ' | vNameSrc | ' creer';
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Create', 'pCube', vCube, 'pView', vNameSrcZERO,
+                                    'pFilter', 't_Years: ' | NumberToString(pYear) | '& Versions: ' | pVersionCible,
+                                    'pSuppressRules', 1,
+                                    'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                ViewZeroOut(vCube, vNameSrcZERO);
+
+                IF(pDebug >= 1);
+                    sMessage = 'ZeroOut de  version pour : ' | vCube | ' de ' |  pVersionCible;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Delete', 'pCubes', vCube, 'pViews', vNameSrcZERO,
+                                    'pDebug', pDebug);
+
+
+                IF(pDebug >= 1);
+                    sMessage = 'Transfert de version pour : ' | vCube | ' de ' | pVersionOrig | ' a ' | pVersionCible;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+
+                ret = ExecuteProcess('Bedrock.Cube.Data.Copy', 'pCube', vCube, 'pViewSource', vNameSrc,
+                                    'pViewTarget', vNameTarget, 'pDimension', 'Versions', 'pSourceElement', pVersionOrig,
+                                    'pTargetElement', pVersionCible, 'pSkipRules', 0, 'pZeroTarget', 0, 'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'Transfert de version pour : ' | vCube | ' Terminee';
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'DELETE la vue  : '| vCube | ' --> ' | vNameSrc;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Delete', 'pCubes', vCube, 'pViews', vNameSrc,
+                                    'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'DELETE la vue  : '| vCube | ' --> ' | vNameSrc | ' termine!';
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+
+
+
+            ENDIF;
+
+            IF(bVersionsIsPresent + bMonthsContIsPresent = 2);
+
+                
+
+                ###################################################
+                vCube = elcub;
+                ####################################################
+                LogOutput('INFO', TimSt( Now, '\Y-\m-\d \h:\i:\s' ) | ' ' | cProcess | ': STARTING Cube   ' | vCube | '(' | pVersionOrig | ' -> ' | pVersionCible | ' for ' | NumberToString(pYear) | ')');
+
+
+                IF(pDebug >= 1);
+                    sMessage = 'Cube: ' | vCube;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'Creation de vue: ' | vCube | ' --> ' | vNameSrc;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Create', 'pCube', vCube, 'pView', vNameSrc,
+                                    'pFilter', 'Versions: ' | pVersionOrig | '& t_Months_Continuous: ' | sMonthsContinuous ,
+                                    'pSuppressRules', 0,
+                                    'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'Vue: ' | vCube | ' --> ' | vNameSrc | ' creer';
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Create', 'pCube', vCube, 'pView', vNameSrcZERO,
+                                    'pFilter', 'Versions: ' | pVersionCible | '& t_Months_Continuous: ' | sMonthsContinuous ,
+                                    'pSuppressRules', 1,
+                                    'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                ViewZeroOut(vCube, vNameSrcZERO);
+
+                IF(pDebug >= 1);
+                    sMessage = 'ZeroOut de  version pour : ' | vCube | ' de ' |  pVersionCible;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Delete', 'pCubes', vCube, 'pViews', vNameSrcZERO,
+                                    'pDebug', pDebug);
+
+
+                IF(pDebug >= 1);
+                    sMessage = 'Transfert de version pour : ' | vCube | ' de ' | pVersionOrig | ' a ' | pVersionCible;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                ret = ExecuteProcess('Bedrock.Cube.Data.Copy', 'pCube', vCube, 'pViewSource', vNameSrc,
+                                    'pViewTarget', vNameTarget, 'pDimension', 'Versions', 'pSourceElement', pVersionOrig,
+                                    'pTargetElement', pVersionCible, 'pSkipRules', 0, 'pZeroTarget', 0, 'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'Transfert de version pour : ' | vCube | ' Terminee';
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'DELETE la vue  : '| vCube | ' --> ' | vNameSrc;
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+
+                ret = ExecuteProcess('Bedrock.Cube.View.Delete', 'pCubes', vCube, 'pViews', vNameSrc,
+                                    'pDebug', pDebug);
+
+                IF (ret <> ProcessExitNormal());  AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), '***ERROR: Process at cube: ' | vCube); ProcessError;  ENDIF;
+
+                IF(pDebug >= 1);
+                    sMessage = 'DELETE la vue  : '| vCube | ' --> ' | vNameSrc | ' termine!';
+                    AsciiOutput(sDebugFile, TimSt( Now, '\Y-\m-\d \h:\i:\s' ), sMessage);
+                ENDIF;
+            ENDIF;
+
+
+
+
+        ENDIF;
+        
+        #Get next element.
+        elcub = DNEXT(dimcub, elcub);
+    END;
+
+
+If( pDebug >= 1 );
+  AsciiOutput( sDebugFile, 'Process Ended: ' | TimSt( Now, '\Y-\m-\d \h:\i:\s' ) );
+EndIf;
+
+vEndTime = Now;
+vEllapsed = (vEndTime - vStartTime) * 86400;
+vHEllapsed = vEllapsed / (60 * 60);
+vH = NumberToString(INT(vHEllapsed));
+vM = NumberToString(INT((vHEllapsed - INT(vHEllapsed)) * 60));
+IF(LONG(vM) = 1);
+    vM = '0' | vM;
+ENDIF;
+
+LogOutput('INFO', TimSt( Now, '\Y-\m-\d \h:\i:\s' ) | ' ' | cProcess | ': ENDING PROCESS (' | pVersionOrig | ' -> ' | pVersionCible | ' for ' | NumberToString(pYear) | '). Time Ellapsed: ' | NumberToString(vEllapsed) | '(secs)  = ' | vH | 'h' | vM | ' .');

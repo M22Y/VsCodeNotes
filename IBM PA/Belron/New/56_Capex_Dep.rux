@@ -1,6 +1,7 @@
 SKIPCHECK;
 FEEDSTRINGS;
 
+#['Rolling_Fct_Adj']= IF(SUBST(!t_Months_Continuous,5,2)@='25' ,CONTINUE,STET);
 ['Rolling_Fct_Adj']= STET;
 
 [{'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Forecast'] = N:

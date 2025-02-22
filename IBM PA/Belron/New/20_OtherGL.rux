@@ -1,4 +1,3 @@
-
 SKIPCHECK;
 FEEDSTRINGS;
 
@@ -141,6 +140,19 @@ DB('56_Capex_Dep', !Org_Structure, '5040D', !Versions, !t_Months |'-' | SUBST(!t
 		0);
 
 #############To but Forecast base line at 0 for all TI-excel import (Excluding Fleet, Rent)#############
+# adjusted for 2025 Rolling_Fct_Adj
+#3 Direct Labour
+[{'020040', '020050', '020100', '020110', '020200', '020300', '020400', '020401',  '020500', '020600', '020700', '020800', '020900', '021000', '021100', '021200', '021300', '021400', '021500', '021600', '022260',  '022300', '022400',
+'025099',  '025100', '025200', '025300', '025400', '025500', '025600', '025700', '025800', '025900', '025910','025950','026000', '026100',
+#4 Indirect Labour
+'045333', '045334', '045336', '045342', '045357'},
+	 'Baseline', '2025', 'Rolling_Fct_Adj']= N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		['Budget_Final', 'Adjusted_Total']);
+
+
+
 #3 Direct Labour
 [{'020040', '020050', '020100', '020110', '020200', '020300', '020400', '020401',  '020500', '020600', '020700', '020800', '020900', '021000', '021100', '021200', '021300', '021400', '021500', '021600', '022260',  '022300', '022400',
 '025099',  '025100', '025200', '025300', '025400', '025500', '025600', '025700', '025800', '025900', '025910','025950','026000', '026100',
@@ -213,10 +225,18 @@ IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 		['Actual', 'Adjusted_Total'],
 		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', !t_Years, !t_Months, 'Adjusted_Total'));
 
+# adjusted for 2025 Rolling_Fct_Adj
+['Baseline', 'Rolling_Fct_Adj', '2025']=N:
+IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget_Final', !t_Years, !t_Months, 'Adjusted_Total'));
+
 ['Baseline', 'Rolling_Fct_Adj']=N:
 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 		['Actual', 'Adjusted_Total'],
 		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, !Versions, ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Adjusted_Total'));
+
+
 
 
 #New Budget Base Line start in 2014
@@ -607,7 +627,8 @@ FEEDERS;
 	DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Baseline')
 	;
 
-
+['Adjusted_Total', 'Budget_Final', '2025'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', '2025', !t_Months, 'Baseline');
+['Adjusted_Total', 'Budget_Final', '2025'] => DB('86_ETL_GL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', '2025', !t_Months, 'Dollars$');
 ['Adjusted_Total', 'Budget', '2015'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', !t_Years, !t_Months, 'Baseline');
 ['Adjusted_Total', 'Actual'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', !t_Years, !t_Months, 'Baseline');
 ['Adjusted_Total', 'Rolling_Fct_Adj'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Baseline');

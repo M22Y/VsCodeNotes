@@ -28,6 +28,12 @@ FEEDSTRINGS;
 	['Actual', 'Total_Units'],
 	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Actual', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Total_Units'));
 
+# adjusted for 2025 Rolling_Fct_Adj
+['Units_Baseline', '2025', 'Rolling_Fct_Adj', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] = N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	['Actual', 'Total_Units'],
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'Total_Units'));
+
 #Rules Base line Budget DYNAMIQUE: 12 mois du forecast
 #['Units_Baseline','Budget', {'Windshield', 'Repairs'}, {'Insurance', 'Cash'}, '2013']= N:0;
 
@@ -118,6 +124,9 @@ FEEDERS;
 ['Total_Units', 'Actual', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] =>
 	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Forecast', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline'),
 	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Forecast', !t_Years, !t_Months, 'Units_Baseline');
+
+['Total_Units', '2025','Budget_Final', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] =>
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', '2025', !t_Months, 'Units_Baseline');
 
 ['Total_Units', 'Actual', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] =>
 	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline'),

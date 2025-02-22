@@ -1,11 +1,12 @@
 SKIPCHECK;
 FEEDSTRINGS;
 
+
 ########################################################################
 ########################################################################
 ## DESCRIPTION
 #
-#  RUX for cube 11_SalesCOS_NonPrime
+#  Cube 11_SalesCOS_NonPrime
 #
 #
 #
@@ -15,7 +16,9 @@ FEEDSTRINGS;
 # 2021-07-02 Claude-Sebastien JEAN   Ajout Baseline 2022
 # 2021-07-26 Claude-Sebastien JEAN   Changement ordre des produits Glass_Reated (wipers etc9.)
 # 2021-07-31 Claude-Sebastien JEAN   Delete des regles de GM% forcee.
-# 2023-09-03 Youssef M. (RCGT)   Net sales not null for division - row 390
+# 2023-09-03 Youssef M. (RCGT)       Net sales not null for division - row 390
+# 2024-02-21 Youssef M. (RCGT)       Added Rolling_Fct_Adj calculations for 2025
+#
 #
 #
 ########################################################################
@@ -129,6 +132,8 @@ IF (ELPAR('Products_Detailed', !Products_Detailed, 1) @<> 'Glass_Related_Product
 		IF(ATTRS('Org_Structure_Leaf', !Org_Structure, 'SB_Code') @= 'WH', CONTINUE, 0));
 
 
+
+
 ['Sales_Baseline', 'Forecast'] =N:
 	IF(!t_Years @>= '2021',
 		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
@@ -144,6 +149,17 @@ IF (ELPAR('Products_Detailed', !Products_Detailed, 1) @<> 'Glass_Related_Product
 		# IF(ATTRS('Org_Structure_Leaf',  !Org_Structure, 'SB_Code') @= 'WH',
 			DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Forecast', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Net_sales')
 			# , CONTINUE)
+		, CONTINUE);
+
+# adjusted for 2025 Rolling_Fct_Adj
+['Sales_Baseline', 'Rolling_Fct_Adj', '2025'] =N:
+	IF(!t_Years @>= '2021',
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+			['Actual', 'Net_Sales'],
+			# IF(ATTRS('Org_Structure_Leaf',  !Org_Structure, 'SB_Code') @= 'WH',
+			DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', '2025', !t_Months, 'Net_sales')
+				# , CONTINUE)
+			)
 		, CONTINUE);
 
 
@@ -171,6 +187,13 @@ IF (ELPAR('Products_Detailed', !Products_Detailed, 1) @<> 'Glass_Related_Product
 	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 		['Actual', 'Net_Sales'],
 		DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget', !t_Years, !t_Months, 'Net_sales'));
+
+# adjusted for 2025 Rolling_Fct_Adj
+['Sales_Baseline', 'Rolling_Fct_Adj', '2025']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Net_Sales'],
+		DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'Net_sales'));
+
 
 ['Sales_Baseline', 'Rolling_Fct_Adj']= N:
 	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
@@ -291,6 +314,13 @@ IF (ELPAR('Products_Detailed', !Products_Detailed, 1) @<> 'Glass_Related_Product
 		DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Forecast', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'GM%')
 		, CONTINUE
 	);
+# adjusted for 2025 Rolling_Fct_Adj
+['GM%_Baseline', 'Rolling_Fct_Adj', '2025']= N:
+	IF(!t_Years @>= '2021',
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+			['Actual', 'GM%'],
+			DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'GM%'))
+		, CONTINUE);
 
 ##===========================================================================
 
@@ -308,6 +338,12 @@ IF (ELPAR('Products_Detailed', !Products_Detailed, 1) @<> 'Glass_Related_Product
 	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 		['Actual', 'GM%'],
 		DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget', !t_Years, !t_Months, 'GM%'));
+
+# adjusted for 2025 Rolling_Fct_Adj
+['GM%_Baseline', 'Rolling_Fct_Adj', '2025']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'GM%'],
+		DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget_Final', !t_Years, !t_Months, 'GM%'));
 
 ['GM%_Baseline', 'Rolling_Fct_Adj']= N:
 	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
@@ -445,6 +481,7 @@ FEEDERS;
 ['Net_Sales','Forecast_6_6']=> DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Budget', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Sales_Baseline');
 ['Net_Sales','Budget']=> DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Forecast', !t_Years, !t_Months, 'Sales_Baseline');
 
+['Net_Sales','Budget_Final', '2025']=> DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', '2025', !t_Months, 'Sales_Baseline');
 ['Net_Sales','Budget', '2015']=> DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', !t_Years, !t_Months, 'Sales_Baseline');
 ['Net_Sales','Actual']=> DB( '11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', !t_Years, !t_Months, 'Sales_Baseline');
 ['Net_Sales','Rolling_Fct_Adj']=> DB('11_SalesCOS_NonPrime', !Org_Structure, !Products_Detailed, !Customer_Segments, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Sales_Baseline');

@@ -1,0 +1,434 @@
+
+SKIPCHECK;
+FEEDSTRINGS;
+
+########################################################################
+########################################################################
+## DESCRIPTION
+#
+#  Description
+#
+#
+#
+#
+## HISTORIQUE
+#
+# 2021-02-25 Claude-Sebastien JEAN   Modifs Taux.
+# 2021-07-24 Claude-Sebastien JEAN   Ajout FORECAST
+# 2022-12-03 Claude-Sebastien JEAN   Modif taux sales discount pour 2023
+# 2023-01-31 Claude-Sebastien JEAN	 Added 0 for before 2019
+# 2023-02-12 Claude-Sebastien JEAN   Corrected feeders to 68 before 2018.
+#
+########################################################################
+########################################################################
+
+
+# Delete all years before 2019.
+[{'2013', '2014', '2015', '2016', '2017', '2018' }] = N: 0;
+
+##
+##
+## CSJ  2014-12-09  Changer feeders pour 1er jours / 1ere semaine
+##
+
+#Stet
+['Actual', {'2010', '2011', '2012'}]= 0;
+[{'Budget', 'Forecast', 'Budget_Final'}, {'2010', '2011', '2012', '2013'}]= 0;
+[{'Forecast', 'Rolling_Fct_Adj', 'Rolling_Forecast'}, {'2010', '2011', '2012', '2013', '2014'}]= 0;
+
+
+#[{'Units_Inc_Dec_Adj', 'Sales$_Inc_Dec_Adj'}, {'Budget', 'Forecast', 'Budget_Final'}] = N: 0;
+
+#[{'Units_Inc_Dec_Adj', 'Sales$_Inc_Dec_Adj'}, {'Forecast', 'Rolling_Fct_Adj', 'Rolling_Forecast'}] = N:
+#	IF (DB('97_Daily_Sales_Actual_Flags', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days) = 1, ['Actual'],0);
+
+
+
+#Put at zero
+#Only Prime
+## CSJ: Commentaire pcq il ne devrait pas y avoir de chiffres ici.
+#[] =N: IF(ATTRS('Products_Detailed', !Products_Detailed, 'isNonPrime') @= 'Y', STET, CONTINUE);
+#
+##CSJ Put zero here.
+['Kits_Retail'] =N:
+	IF(ATTRS('Org_Structure_Leaf', !Org_Structure, 'SB_Code') @= 'WH', 0, CONTINUE);
+
+#
+['wk05'] =N: IF(ATTRS('t_Months', !t_Months, 'Nb_Week') @= '4', 0, CONTINUE);
+#
+['Discounts_Accrual', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Kits_Retail', 'Repairs'}] =N: 0 ;
+['Sales_Discounts', 'Actual', { 'Insurance', 'Cash', 'Fleet', 'Trade'},  'Sales$_Baseline'] =N: 0;
+
+
+#Variation Version calculation
+['Var%_Act-Bud'] = (['Actual'] - ['Budget']) \ ['Budget'];
+['Var%_Act-Bud_Final'] = (['Actual'] - ['Budget_Final']) \ ['Budget_Final'];
+['Var%_Act-Rolling_Fct'] = (['Actual'] - ['Rolling_Forecast']) \ ['Rolling_Forecast'];
+['Var%_Rolling_Fct-Bud_Final'] = (['Rolling_Forecast'] - ['Budget_Final']) \ ['Budget_Final'];
+
+['Var_Act-LY'] = ['Actual'] - DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, 'Actual', STR(NUMBR(!t_Years)-1,4,0), !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+['Var%_Act-LY'] = (['Actual'] - DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, 'Actual', STR(NUMBR(!t_Years)-1,4,0), !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std)) \ DB('67_DailySales_Stats_Std', !Org_Structu
+re, !Customer_Segments, !Products_Detailed, 'Actual', STR(NUMBR(!t_Years)-1,4,0), !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std) ;
+
+#################################
+#LY Full Year not link to Flag
+['Sales_Units_All_Year']= N: ['Units_Baseline'] + ['Units_Inc_Dec_Adj'];
+['Sales$_Gross_All_Year', {'Sales_Discounts', 'Deductibles'}] = N: 0;
+['Sales$_Gross_All_Year']= N: ['Sales$_Baseline'] + ['Sales$_Inc_Dec_Adj'];
+###Gross Sales
+
+
+
+
+######################################
+#Flag to show Budget and LY data only if it has an actual data
+
+[{'Sales_Units', 'Sales$'}, {'Actual', 'Budget', 'Forecast', 'Budget_Final'}] = N: IF (DB('97_Daily_Sales_Actual_Flags', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days) = 0,0, CONTINUE);
+
+
+#Exclut Windsh units de Vanfax
+['Repair Ratio', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Sales_Discounts', 'Deductibles', 'Replacement', 'Total_Prime'}] = 0;
+['Repair Ratio'] = IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH', 0,
+	 IF(['Sales_Units', 'Repairs']=0, 0, (['Sales_Units', 'Repairs']) \ (['Sales_Units', 'Repairs'] + ['Sales_Units', 'Windshield'])));
+
+##############
+##### Total accrual excluding the last day (D7) to allow to do a calculation at the last day of the last week
+['Sales_Discounts', 'Actual', {'Insurance', 'APPLE_FR', 'LEBEAU_FR', 'DURO_FR',	'STD_FR',	'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste', 'No_Segment_EXT'}, 'wk05', 'D7', 'Discounts_Accrual'] =N:
+	if(ATTRS('t_Months', !t_Months, 'Nb_Week') @= '5', 0 ,CONTINUE);
+
+['Sales_Discounts', 'Actual', {'Insurance',  'APPLE_FR', 'LEBEAU_FR', 'DURO_FR',	'STD_FR',	'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste', 'No_Segment_EXT'}, 'wk04', 'D7', 'Discounts_Accrual'] =N:
+	if(ATTRS('t_Months', !t_Months, 'Nb_Week') @= '4', 0 ,CONTINUE);
+
+['Sales_Discounts', 'Actual', {'Insurance',  'APPLE_FR', 'LEBEAU_FR', 'DURO_FR',	'STD_FR',	'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste', 'No_Segment_EXT'}, 'Discounts_Accrual'] =N: ['Sales$'];
+
+################################################
+#Actual
+#Bring the Discount & Deductibles from 68_DailySales_GL_Std Last Day, Last Week - Accrual
+['Sales_Discounts', 'Actual', {'Insurance',  'APPLE_FR', 'LEBEAU_FR', 'DURO_FR',	'STD_FR',	'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste', 'No_Segment_EXT'}, 'Sales$', 'wk05', 'D7'] =N:
+	If(ATTRS('t_Months', !t_Months, 'Nb_Week') @= '5',
+		DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales$')
+		-DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Discounts_Accrual'), CONTINUE);
+
+['Sales_Discounts', 'Actual', {'Insurance',  'APPLE_FR', 'LEBEAU_FR', 'DURO_FR',	'STD_FR',	'NOVUS_FR', 'ISP', 'Commercial_EXT', 'Other_EXT', 'Grossiste', 'No_Segment_EXT'}, 'Sales$', 'wk04', 'D7'] =N:
+	If(ATTRS('t_Months', !t_Months, 'Nb_Week') @= '4',
+		DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales$')
+		-DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Discounts_Accrual'), CONTINUE);
+
+##Modif Taux
+#Provision Accrual 2% Retail and 10% Wholesales on Prime
+['Sales_Discounts', 'Actual', 'No_Segment_EXT', 'Sales$'] =N:
+	IF(ATTRS('Org_Structure_Leaf', !Org_Structure, 'SB_Code') @= 'WH',
+		IF( !t_Years @>= '2023', ['Sales$_Gross', 'Total_Prime', 'Externe'] *-0.06,
+			IF(!t_Years @>= '2021', ['Sales$_Gross', 'Total_Prime', 'Externe'] *-0.0625
+									, ['Sales$_Gross', 'Total_Prime', 'Externe'] *-.10))
+			, 0);
+
+['Sales_Discounts', 'Actual', 'Insurance', 'Sales$'] =N:
+    IF(!t_Years @>= '2023', ['Sales$_Gross', 'Total_Prime', 'Retail'] *-0.01
+    	, IF(!t_Years @>= '2021', ['Sales$_Gross', 'Total_Prime', 'Retail'] *-0.0015
+							, ['Sales$_Gross', 'Total_Prime', 'Retail'] *-.02));
+
+##########################################################
+#Actual from cube 65 Units_Baseline
+['Units_Baseline', 'Actual'] =N:
+		DB('65_DailySales_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Sales_Units');
+#
+['Sales$_Baseline', 'Actual'] =N:
+		DB('65_DailySales_Stats', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Sales$');
+
+#[{'Units_Baseline', 'Sales$_Baseline', 'Units_Inc_Dec_Adj', 'Sales$_Inc_Dec_Adj'}, {'Forecast', 'Rolling_Fct_Adj'}] =N:
+#	IF(DB('97_Daily_Sales_Actual_Flags', 'Forecast', !t_Years, !t_Months, !t_Weeks, !t_Days)=1,
+#		DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, 'Actual', !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std), CONTINUE);
+
+#[{'Units_Baseline', 'Sales$_Baseline', 'Units_Inc_Dec_Adj', 'Sales$_Inc_Dec_Adj'}, 'Rolling_Forecast'] =N:
+#	IF(DB('97_Daily_Sales_Actual_Flags', 'Forecast', !t_Years, !t_Months, !t_Weeks, !t_Days)=1,
+#		DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, 'Actual', !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std),
+#				DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, 'Budget_Final', !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std));
+
+###Actual manual Adj (In case of AS400 file's is wrong and will be fix the day after)
+['Sales_units'] =N: ['Units_Baseline'] + ['Units_Inc_Dec_Adj'];
+['Sales$'] =N: ['Sales$_Baseline'] + ['Sales$_Inc_Dec_Adj'];
+
+###########################################################
+###Holiday from Cube 94
+['Holiday',  {'Budget', 'Forecast', 'Budget_Final'}] =N:
+	DB('94_Holiday', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'),  !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+
+##########################
+#******************************************************************NEW***************************************************
+['Units_Std', {'Budget', 'Forecast', 'Budget_Final'}] =N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH',
+ 	DB('60_DailySales_Stats_Std_Vanfax', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'), !Versions,  !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std),
+		DB('60_DailySales_Stats_Std', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'), !Versions,  !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std));
+
+['Sales$_Std', {'Budget', 'Forecast', 'Budget_Final'}] =N: IF(ATTRS('Org_Structure', !Org_Structure, 'SB_Code')@= 'WH',
+ 	DB('60_DailySales_Stats_Std_Vanfax', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'), !Versions,  !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std),
+		DB('60_DailySales_Stats_Std', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'), !Versions,  !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std));
+
+#['Units_Std', {'Forecast',{'Budget', 'Forecast', 'Budget_Final'}}] =N:
+# DB('60_DailySales_Stats_Std', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'), !Versions,  !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std),
+#DB('60_DailySales_Stats_Std', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'), !Versions,  !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std));
+
+##
+#['Sales$_Std', {'Forecast',{'Budget', 'Forecast', 'Budget_Final'}}] =N:
+#	DB('60_DailySales_Stats_Std', ATTRS('Org_Structure_Leaf', !Org_Structure, 'Prov_Code'), !Versions,  !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+
+##########################
+###Sales_Units and Sales$ base for proportionnal spread
+['Units_Std_Adj',  {'Budget', 'Forecast', 'Budget_Final'}] =N:
+	If( ['Holiday'] = 1, ['Units_Std'], 0);
+##
+['Sales$_Std_Adj',  {'Budget', 'Forecast', 'Budget_Final'}] =N:
+	If( ['Holiday'] = 1, ['Sales$_Std'], 0);
+
+##########################
+###%_Units and %_Sales$ allocation base on Baseline_Adj
+['%_Units', {'Budget', 'Forecast', 'Budget_Final'}, 'wk01'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Units_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Units_Std_Adj');
+
+['%_Units', {'Budget', 'Forecast', 'Budget_Final'}, 'wk02'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Units_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Units_Std_Adj');
+
+['%_Units', {'Budget', 'Forecast', 'Budget_Final'}, 'wk03'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Units_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Units_Std_Adj');
+
+['%_Units', {'Budget', 'Forecast', 'Budget_Final'}, 'wk04'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Units_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Units_Std_Adj');
+
+['%_Units', {'Budget', 'Forecast', 'Budget_Final'}, 'wk05'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Units_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Units_Std_Adj');
+
+
+########
+['%_Sales$', {'Budget', 'Forecast', 'Budget_Final'}, 'wk01'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Sales$_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Sales$_Std_Adj');
+
+['%_Sales$', {'Budget', 'Forecast', 'Budget_Final'}, 'wk02'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Sales$_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Sales$_Std_Adj');
+
+['%_Sales$', {'Budget', 'Forecast', 'Budget_Final'}, 'wk03'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Sales$_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Sales$_Std_Adj');
+
+['%_Sales$', {'Budget', 'Forecast', 'Budget_Final'}, 'wk04'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Sales$_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Sales$_Std_Adj');
+
+['%_Sales$', {'Budget', 'Forecast', 'Budget_Final'}, 'wk05'] = N:
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Sales$_Std_Adj')
+	\ DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_weeks, 'All_Days', 'Sales$_Std_Adj');
+
+
+#################################
+#Units and Sales$ to spread come from Cube 70
+['Units_to_Spread', {'wk01', 'wk02', 'wk03', 'wk04', 'wk05'}, {'D2', 'D3', 'D4', 'D5', 'D6', 'D7'},  {'Budget', 'Forecast', 'Budget_Final'}] =N: 0;
+['Units_to_Spread', {'wk02', 'wk03', 'wk04', 'wk05'}, 'D1',  {'Budget', 'Forecast', 'Budget_Final'}] =N: 0;
+
+['Units_to_Spread', 'wk01','D1', {'Budget', 'Forecast', 'Budget_Final'}] = N:
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales_Units');
+
+##
+['Sales$_to_Spread', {'wk01', 'wk02', 'wk03', 'wk04', 'wk05'}, {'D2', 'D3', 'D4', 'D5', 'D6', 'D7'},  {'Budget', 'Forecast', 'Budget_Final'}] =N: 0;
+['Sales$_to_Spread', {'wk02', 'wk03', 'wk04', 'wk05'}, 'D1',  {'Budget', 'Forecast', 'Budget_Final'}] =N: 0;
+
+['Sales$_to_Spread', 'wk01','D1', {'Budget', 'Forecast', 'Budget_Final'}] = N:
+	DB('70_Split_Bud_WSB', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Sales$');
+
+###################################
+#Days prorate calculation base on STD Week with Holiday To respect proportional days by Week
+['Units_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk01'] = N:
+	['%_Units'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Units_Std'));
+
+
+['Units_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk02'] = N:
+	['%_Units'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Units_Std'));
+
+['Units_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk03'] = N:
+	['%_Units'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Units_Std'));
+
+['Units_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk04'] = N:
+	['%_Units'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Units_Std'));
+
+['Units_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk05'] = N:
+	['%_Units'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Units_Std'));
+
+######
+['Sales$_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk01'] = N:
+	['%_Sales$'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Sales$_Std'));
+
+['Sales$_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk02'] = N:
+	['%_Sales$'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Sales$_Std'));
+
+['Sales$_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk03'] = N:
+	['%_Sales$'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Sales$_Std'));
+
+['Sales$_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk04'] = N:
+	['%_Sales$'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Sales$_Std'));
+
+['Sales$_Baseline', {'Budget', 'Forecast', 'Budget_Final'}, 'wk05'] = N:
+	['%_Sales$'] * DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_to_Spread')
+			 * (DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, 'All_Days', 'Sales$_Std'));
+
+
+###Gross Sales
+['Sales$_Gross', {'Sales_Discounts', 'Deductibles'}] = N: 0;
+['Sales$_Gross'] = N: ['Sales$'];
+
+####ASP
+#['ASP', {'Sales_Discounts','Deductibles'},'Insurance']= N:IF(ATTRS('Org_Structure_Leaf', !Org_Structure, 'SB_Code') @= 'WH', 0,
+#	IF(['Sales_Units', 'Replacement']=0, ['Sales$'], ['Sales$']\['Sales_Units', 'Replacement']));
+#
+#['ASP', {'Sales_Discounts','Deductibles'},{'Interne','APPLE_FR','LEBEAU_FR','DURO_FR','STD_FR','NOVUS_FR','ISP','Commercial_EXT','Other_EXT','Grossiste','No_Segment_EXT'}]= N:
+#	IF(ATTRS('Org_Structure_Leaf', !Org_Structure, 'SB_Code') @= 'WH',
+#		IF(['Sales_Units', 'Replacement']=0,['Sales$'],['Sales$']\['Sales_Units', 'Replacement']),
+#		0);
+
+['ASP', {'Sales_Discounts','Deductibles', 'Kits_Retail'}] = N: IF(['Sales_Units', 'Replacement']=0, ['Sales$'], ['Sales$']\['Sales_Units', 'Replacement']);
+#['ASP', 'Kits_Retail']= N: IF(['Sales_Units']=0, ['Sales$'],['Sales$']\['Sales_Units', 'Replacement']);
+['ASP']=  IF(['Sales_Units']=0, ['Sales$'], ['Sales$']\ ['Sales_Units']);
+#['ASP']= C: IF(['Sales_Units']=0, ['Sales$'], ['Sales$']\ ['Sales_Units']);
+###
+['ASP_Gross', {'Sales_Discounts','Deductibles'},'Insurance']= N:IF(ATTRS('Org_Structure_Leaf', !Org_Structure, 'SB_Code') @= 'WH', 0,
+	IF(['Sales_Units', 'Replacement']=0, ['Sales$_Gross'], ['Sales$_Gross']\['Sales_Units', 'Replacement']));
+
+['ASP_Gross', {'Sales_Discounts','Deductibles'},{'Interne','APPLE_FR','LEBEAU_FR','DURO_FR','STD_FR','NOVUS_FR','ISP','Commercial_EXT','Other_EXT','Grossiste','No_Segment_EXT'}]= N:
+	IF(ATTRS('Org_Structure_Leaf', !Org_Structure, 'SB_Code') @= 'WH',
+		IF(['Sales_Units', 'Replacement']=0,['Sales$_Gross'],['Sales$_Gross']\['Sales_Units', 'Replacement']),
+		0);
+
+['ASP_Gross', {'Sales_Discounts','Deductibles'}] = N: IF(['Sales_Units', 'Replacement']=0, ['Sales$_Gross'], ['Sales$_Gross']\['Sales_Units', 'Replacement']);
+['ASP_Gross', 'Kits_Retail']= N: IF(['Sales_Units', 'Replacement']=0, ['Sales$_Gross'],['Sales$_Gross']\['Sales_Units', 'Replacement']);
+['ASP_Gross']= N: IF(['Sales_Units']=0, ['Sales$_Gross'], ['Sales$_Gross']\ ['Sales_Units']);
+['ASP_Gross']= C: IF(['Sales_Units']=0, ['Sales$_Gross'], ['Sales$_Gross']\ ['Sales_Units']);
+
+
+####AVG CONSO
+['Holiday'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+#['Units_Std'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+#['Units_Std_Adj'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+#['%_Units'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+####
+#['Sales$_Std'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+#['Sales$_Std_Adj'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+#['%_Sales$'] = C: ConsolidatedAvg(2, '', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, !m_ETL_Stats_Daily_Std);
+
+
+
+
+###################################################
+FEEDERS;
+
+['Sales_Units', 'Repairs']=>  ['Repair Ratio'];
+
+['Units_Baseline'] => ['Sales_Units_All_Year'];
+['Units_Inc_Dec_Adj']=> ['Sales_Units_All_Year'];
+['Sales$_Baseline']=> ['Sales$_Gross_All_Year'];
+['Sales$_Inc_Dec_Adj']=> ['Sales$_Gross_All_Year'];
+
+
+['Sales$', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Sales_Discounts', 'Kits_Retail', 'Repairs'}] => ['ASP'];
+['Sales$', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'}] => ['Sales$_Gross'];
+['Sales$_Gross', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Kits_Retail', 'Repairs'}] => ['ASP_Gross'];
+
+['Sales_Discounts', 'Sales$', 'Actual']=>  ['Discounts_Accrual'];
+
+['Actual']=> ['Var_Act-LY'];
+['Actual']=> ['Var%_Act-LY'];
+
+#[{'Units_Baseline', 'Sales$_Baseline', 'Units_Inc_Dec_Adj', 'Sales$_Inc_Dec_Adj'}, 'Actual'] => ['Rolling_Forecast'],  ['Rolling_Fct_Adj'];
+#[{'Units_Baseline', 'Sales$_Baseline', 'Units_Inc_Dec_Adj', 'Sales$_Inc_Dec_Adj'}, 'Budget_Final'] => ['Rolling_Forecast'];
+
+['Sales$_Gross', 'Total_Prime', 'Externe', 'Actual']=> ['Sales_Discounts',  'No_Segment_EXT', 'Sales$'];
+['Sales$_Gross', 'Total_Prime', 'Retail', 'Actual']=> ['Sales_Discounts',  'Insurance', 'Sales$'];
+
+
+['Sales$_to_Spread', 'D1-Sat', 'wk01', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Sales_Discounts', 'Kits_Retail', 'Repairs'}, {'Budget', 'Forecast', 'Budget_Final'}] =>
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_Std'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_Std_Adj'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', '%_Sales$'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_Baseline'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$_Inc_Dec_Adj'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Holiday');
+
+['Units_to_Spread', 'D1-Sat', 'wk01', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Sales_Discounts', 'Kits_Retail', 'Repairs'},  {'Budget', 'Forecast', 'Budget_Final'}] =>
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_Std'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_Std_Adj'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', '%_Units'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_Baseline'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Units_Inc_Dec_Adj'),
+	DB('67_DailySales_Stats_Std', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Holiday');
+
+## CSJ Replacement ends.
+##########
+##########
+
+['Units_Baseline', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Sales_Discounts', 'Repairs'}] => ['Sales_Units'];
+['Sales$_Baseline', {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Sales_Discounts', 'Kits_Retail', 'Repairs'}] => ['Sales$'];
+
+['Units_Inc_Dec_Adj', 'Actual',  {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Sales_Discounts', 'Repairs'}] => ['Sales_Units'];
+['Sales$_Inc_Dec_Adj', 'Actual',   {'Windshield', 'Side', 'Back', 'RV_Glass', 'Bus_Glass', 'Deductibles', 'Sales_Discounts', 'Kits_Retail', 'Repairs'}] => ['Sales$'];
+
+########
+ ['Sales$_Baseline', 'Windshield', {'Externe', 'Retail'}, {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000120', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Side', {'Externe', 'Retail'}, {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000130', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Back', {'Externe', 'Retail'}, {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000140', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'RV_Glass', {'Externe', 'Retail'}, {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000142', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Bus_Glass', {'Externe', 'Retail'}, {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000144', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Kits_Retail', 'Retail', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000145', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Sales_Discounts', {'Externe', 'Retail'}, {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000150', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Deductibles', 'Retail', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000160', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days,  'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Repairs', 'Retail', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '000110', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Dollars$_Baseline');
+
+
+####Interco
+ ['Sales$_Baseline', 'Windshield', 'Interne', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '002310', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Side', 'Interne', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '002315', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Back', 'Interne', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '002320', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'RV_Glass', 'Interne', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '002351', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Bus_Glass', 'Interne', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '002352', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Dollars$_Baseline');
+
+ ['Sales$_Baseline', 'Sales_Discounts', 'Interne', {'Budget', 'Forecast', 'Budget_Final'}]=> DB(IF(ATTRN('t_Years', !t_Years, 'nZero_Feeders') =0, '68_DailySales_GL_Std', ''), !Org_Structure, '002330', !Versions, !t_Years, !t_Months, !t_Weeks, !t_Days, 'Dollars$_Baseline');
+
+
+
+#####Mart new************************************************NEW********************************************************************
+[{'Sales_units', 'Sales_units_All_Year'},  'Actual', '2015', 'Jan', 'WK01']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, 'Dec', 'WK05', !t_Days, !m_ETL_Stats_Daily_Std);
+[{'Sales_units', 'Sales_units_All_Year'},  'Actual', '2015', {'Feb', 'May', 'Aug', 'Nov'}, 'WK01']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years,  ATTRS('t_Months', !t_Months, 'Prev_Month'), 'WK05', !t_Days, !m_ETL_Stats_Daily_Std);
+[{'Sales_units', 'Sales_units_All_Year'},  'Actual', '2015', {'Mar', 'Apr', 'Jun', 'Jul', 'Sep', 'Oct', 'Dec'}, 'WK01']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, ATTRS('t_Months', !t_Months, 'Prev_Month'), 'WK04', !t_Days, !m_ETL_Stats_Daily_Std);
+[{'Sales_units', 'Sales_units_All_Year'},  'Actual', '2015']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, ATTRS('t_Weeks', !t_Weeks, 'Prev_Weeks'),  !t_Days, !m_ETL_Stats_Daily_Std);
+
+[{'Sales$', 'Sales$_Gross_All_Year'},  'Actual', '2015', 'Jan', 'WK01']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, 'Dec', 'WK05', !t_Days, !m_ETL_Stats_Daily_Std);
+[{'Sales$', 'Sales$_Gross_All_Year'},  'Actual', '2015', {'Feb', 'May', 'Aug', 'Nov'}, 'WK01']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years,  ATTRS('t_Months', !t_Months, 'Prev_Month'), 'WK05', !t_Days, !m_ETL_Stats_Daily_Std);
+[{'Sales$', 'Sales$_Gross_All_Year'},  'Actual', '2015', {'Mar', 'Apr', 'Jun', 'Jul', 'Sep', 'Oct', 'Dec'}, 'WK01']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, ATTRS('t_Months', !t_Months, 'Prev_Month'), 'WK04', !t_Days, !m_ETL_Stats_Daily_Std);
+[{'Sales$', 'Sales$_Gross_All_Year'},  'Actual', '2015']=> DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months, ATTRS('t_Weeks', !t_Weeks, 'Prev_Weeks'),  !t_Days, !m_ETL_Stats_Daily_Std);
+
+
+[{'Sales_units', 'Sales_units_All_Year'}, {'Actual', 'Budget', 'Forecast', 'Budget_Final'}, '2016'] => DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months,  !t_Weeks,  !t_Days, !m_ETL_Stats_Daily_Std);
+[{'Sales$', 'Sales$_Gross_All_Year'}, {'Actual', 'Budget', 'Forecast', 'Budget_Final'}, '2016'] => DB('67_DailySales_Stats_Std_A', !Org_Structure, !Customer_Segments, !Products_Detailed, !Versions, !t_Years, !t_Months,  !t_Weeks,  !t_Days, !m_ETL_Stats_Daily_Std);

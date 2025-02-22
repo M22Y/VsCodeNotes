@@ -6,7 +6,7 @@ FEEDSTRINGS;
 ########################################################################
 ## DESCRIPTION
 #
-#  Rules for 86_ETL_GL
+#  Cube 86_ETL_GL
 #
 #
 #
@@ -16,6 +16,7 @@ FEEDSTRINGS;
 # 2022-05-13 Claude-Sebastien JEAN 	 Added transfer Budget, Forecast cube 10 for CALIB
 # 2022-06-01 Claude-Sebastien JEAN   Delete extra versions
 # 2022-06-11 Claude-Sebastien JEAN   Added COS$ for 111 (Calibration Camera)
+# 2024-02-21 Mashate Youssef         Added Rolling_Fct_Adj calculations for 2025
 #
 #
 ########################################################################
@@ -214,7 +215,12 @@ t_Months |'-' | SUBST(!t_Years,3,2) , 'Closing_Balance');
 		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
 	);
 
-
+# adjusted for 2025 Rolling_Fct_Adj
+['3255', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025']= N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
+	);
 
 ######################### Bring COS$ from cube 10 from Cube 111) ############################
 #CALIB
@@ -229,7 +235,11 @@ t_Months |'-' | SUBST(!t_Years,3,2) , 'Closing_Balance');
         CONTINUE,
 		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
 	);
-
+['3643', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025']= N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
+	);
 #########################Bring NON-Prime Sales from cube 11############################
 #GL External Sales, Non-Prime
 [{'3840',  '3283',  '3273',  '3272',  '3271',  '3288',  '3889',  '3874',  '3289',  '4302',  '3202',  '3150Z',  '3825',  '3882',  '3813',  '3823',  '3326',  '3246',  '3203',  '6802',  '4337',  '3835',  '3832',  '6874',  '3836',  '3838',  '3831', '3255'},
@@ -588,6 +598,7 @@ FEEDERS;
 
 ['Actual', 'Dollars$']=> DB(IF(DB('97_Actual_Flags', !t_Years, !t_Months, 'Rolling_Fct_Adj')=1, '86_ETL_GL', ''),
 	!Org_Structure, !GL_Accounts, 'Rolling_Fct_Adj', !t_Years, !t_Months, !m_ETL_GL);
+	
 ###########################################################
 ## CSJ Feeders TESTS: 2013-10-17
 ## Ajout.

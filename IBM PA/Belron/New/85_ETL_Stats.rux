@@ -55,7 +55,7 @@ FEEDSTRINGS;
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'Total_Units')
     );
-['Sales_Units',  'Forecast', 'Calibration_Camera']  = N:
+['Sales_Units',  {'Forecast', 'Rolling_Fct_Adj'}, 'Calibration_Camera']  = N:
     IF( !t_Years@< '2022',
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'Total_Units')
@@ -77,7 +77,7 @@ FEEDSTRINGS;
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'Net_Sales')
     );
-['Sales$',  'Forecast', 'Calibration_Camera']  = N:
+['Sales$',  {'Forecast', 'Rolling_Fct_Adj'}, 'Calibration_Camera']  = N:
     IF( !t_Years@< '2022',
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'Net_Sales')
@@ -98,7 +98,7 @@ FEEDSTRINGS;
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'ASP')
     );
-['ASP',  'Forecast', 'Calibration_Camera']  = N:
+['ASP',  {'Forecast', 'Rolling_Fct_Adj'}, 'Calibration_Camera']  = N:
     IF( !t_Years@< '2022',
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'ASP')
@@ -137,7 +137,7 @@ FEEDSTRINGS;
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'COS$')
     );
-['COS$',  'Forecast', 'Calibration_Camera']  = N:
+['COS$',  {'Forecast', 'Rolling_Fct_Adj'}, 'Calibration_Camera']  = N:
     IF( !t_Years@< '2022',
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'COS$')
@@ -151,7 +151,7 @@ FEEDSTRINGS;
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'AAC')
     );
-['AAC',  'Forecast', 'Calibration_Camera']  = N:
+['AAC',  {'Forecast', 'Rolling_Fct_Adj'}, 'Calibration_Camera']  = N:
     IF( !t_Years@< '2022',
         CONTINUE,
         DB( '111_SalesCOS_ADAS',!Org_Structure, 'ADAS_BUDGET', !Customer_Segments,!Versions,!t_Years,!t_Months, 'AAC')
