@@ -2,7 +2,7 @@ SKIPCHECK;
 FEEDSTRINGS;
 
 #['Rolling_Fct_Adj']= IF(SUBST(!t_Months_Continuous,5,2)@='25' ,CONTINUE,STET);
-['Rolling_Fct_Adj']= STET;
+#['Rolling_Fct_Adj']= STET;
 
 [{'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Forecast'] = N:
 		IF(DB('97_Actual_Flags', ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years'), ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Months'), 'Forecast')=1, 0, CONTINUE);
@@ -84,6 +84,10 @@ IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_T
 IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
 	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'Depreciation'),
 	0);
+['Frcst_Capex', 'Rolling_Fct_Adj'] =N: IF(SUBST(!t_Months_Continuous,5,2)@='25' 
+		,DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Budget_Final', !t_Months_Continuous, 'Frcst_Capex')
+		,CONTINUE);
+
 ['Frcst_Capex', 'Rolling_Fct_Adj'] =N:
 DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast_Final', !t_Months_Continuous, 'Depreciation');
 

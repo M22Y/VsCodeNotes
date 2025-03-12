@@ -2,3 +2,13 @@ select * from raccolta_prospetto_controllo where COD_PROSPETTO = 'DE060'
 
 select * from ED_RESOURCE_GERARCHIA_FLAT WHERE COD_ELEGER7='STV_TLG'
 select * from ED_RESOURCE_GERARCHIA_FLAT where COD_GERARCHIA='999'
+
+
+SCENARIO=${$Scenario.code}
+AND SUBSTRING(${$Scenario.code} FROM 5 FOR 3) = 'BDG'
+AND TEXT_ORIGIN IN ('AW004_INPUT_DE050', 'AW004_INPUT_DE040')
+
+
+SCENARIO=${$Scenario.code}
+AND SUBSTRING(${$Scenario.code} FROM 5 FOR 3) = 'FCT'
+AND TEXT_ORIGIN IN ('AW004_INPUT_DE150', 'AW004_INPUT_DE140'

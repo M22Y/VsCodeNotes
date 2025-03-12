@@ -1,0 +1,134 @@
+
+SKIPCHECK;
+FEEDSTRINGS;
+
+#Lock forecasting in other Prime Products
+[{'Side','Back','RV_Glass','Bus_Glass','Sales_Discounts','Deductibles','Kits_Retail'}] = N: 0;
+
+#Lock mesures
+[{ 'Titanium%', 'Titanium_Units', 'Other_Adj_Mkgt%', 'Other_Adj_Mkgt_Units' , 'Other_Adj_Fin%', 'Other_Adj_Fin_Units'}] = N: 0;
+
+#Freeze lines not used
+['Market'] = N: STET;
+[] =N: IF (ELPAR('m_SalesCOS', !m_SalesCOS, 1) @<> 'Marketing_Units', 0, CONTINUE);
+
+#Forecast at 0 when Flag=1
+[{'Economic%', 'Advertising%', 'Weather%', 'Reinspection_Other%', 'Adjustment_Days%'}, {'Forecast', 'Rolling_Fct_Adj'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, CONTINUE);
+
+#Actuals from 85 based on Province Reg on Org_Structure Provincial roll-ups
+['Units_Baseline', 'Actual', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}]=N:
+	IF(NUMBR(!t_Years) <= DB('95_TimeRef', 'Forecast', 'Year'),
+		DB('14_SameBase_Transfer', ATTRS('Provinces', !Provinces, 'Org_Struct_CY'), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months, 'Units_Baseline'),
+		DB('14_SameBase_Transfer', ATTRS('Provinces', !Provinces, 'Org_Struct_NY'), !Products_Detailed, !Customer_Segments, !Versions, !t_Years, !t_Months, 'Units_Baseline'));
+
+#Forecast only for Windshield and Repair, only for Insurance and Cash
+['Units_Baseline', {'Forecast', 'Rolling_Fct_Adj'}, {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] = N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	['Actual', 'Total_Units'],
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Actual', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Total_Units'));
+
+#Rules Base line Budget DYNAMIQUE: 12 mois du forecast
+#['Units_Baseline','Budget', {'Windshield', 'Repairs'}, {'Insurance', 'Cash'}, '2013']= N:0;
+
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##BUDGET 2021 SEULEMENT
+['Units_Baseline','Budget', '2021', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}]= N:
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Actual', '2019', !t_Months, 'Total_Units');
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+['Units_Baseline','Budget', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}]= N:DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Forecast', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Total_Units');
+
+
+#Aucun % actuel ne peut être entré dans la version actuel
+['Actual', {'Economic%', 'Advertising%', 'Weather%', 'Reinspection_Other%', 'Adjustment_Days%'}]= N: 0;
+
+
+#Calcul des units
+['Economic_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Economic%']*['Units_Baseline']);
+['Economic_Units']=N:['Economic%']*['Units_Baseline'];
+
+['Advertising_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N:IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Advertising%']*['Units_Baseline']);
+['Advertising_Units']= N:['Advertising%']*['Units_Baseline'];
+
+['Weather_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Weather%']*['Units_Baseline']);
+['Weather_Units']=N: ['Weather%']*['Units_Baseline'];
+
+['Reinspection_Other_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Reinspection_Other%']*['Units_Baseline']);
+['Reinspection_Other_Units']=N: ['Reinspection_Other%']*['Units_Baseline'];
+
+['Adjustment_Days_Units', {'Forecast', 'Rolling_Fct_Adj'}]=N: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, ['Adjustment_Days%']*['Units_Baseline']);
+['Adjustment_Days_Units']=N: ['Adjustment_Days%']*['Units_Baseline'];
+
+
+
+#Weighted average for total months Conso
+['Economic%']= C: ['Economic_Units']\ ['Units_Baseline'];
+['Advertising%']= C: ['Advertising_Units']\ ['Units_Baseline'];
+['Weather%']= C: ['Weather_Units']\ ['Units_Baseline'];
+['Reinspection_Other%']= C: ['Reinspection_Other_Units']\ ['Units_Baseline'];
+['Adjustment_Days%']= C: ['Adjustment_Days_Units']\ ['Units_Baseline'];
+
+
+#Weighted average for total months
+['Total_Months', 'Economic%']= C: ['Economic_Units']\ ['Units_Baseline'];
+['Total_Months', 'Advertising%']= C: ['Advertising_Units']\ ['Units_Baseline'];
+['Total_Months', 'Weather%']= C: ['Weather_Units']\ ['Units_Baseline'];
+['Total_Months', 'Reinspection_Other%']= C: ['Reinspection_Other_Units']\ ['Units_Baseline'];
+['Total_Months', 'Adjustment_Days%']= C: ['Adjustment_Days_Units']\ ['Units_Baseline'];
+
+
+['Total_Months', 'Market']= C: (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+
+
+
+##################+++++++++++++++++++++++++++++++++++++++++++#########################
+
+FEEDERS;
+['Units_Baseline']=> 		['Economic_Units'],
+				['Advertising_Units'],
+				['Weather_Units'],
+				['Reinspection_Other_Units'],
+				['Adjustment_Days_Units'];
+
+['Units_Baseline']=>		['Economic%'],
+				['Advertising%'],
+				['Weather%'],
+				['Reinspection_Other%'],
+				['Adjustment_Days%'];
+
+
+####################################
+# CSJ Modif GTP 2.4
+# 2013-11-22
+#
+#
+# OLD
+#
+# ['Total_Units', 'Actual', {'Windshield', 'Repairs'}, {'Insurance', 'Cash'}] =>
+	# DB(IF(['Total_Units', 'Actual'] = 0, '', '12_Sales&Marketing'), !Provinces, !Products_Detailed, !Customer_Segments, 'Forecast', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline'),
+	# DB(IF(['Total_Units', 'Actual'] = 0, '', '12_Sales&Marketing'), !Provinces, !Products_Detailed, !Customer_Segments, 'Forecast', !t_Years, !t_Months, 'Units_Baseline');
+# ['Total_Units', 'Forecast', {'Windshield', 'Repairs'}, {'Insurance', 'Cash'}] =>
+	# DB(IF(['Total_Units', 'Forecast'] = 0, '', '12_Sales&Marketing'), !Provinces, !Products_Detailed, !Customer_Segments, 'Budget', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline');
+#
+# NEW
+#
+['Total_Units', 'Actual', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] =>
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Forecast', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline'),
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Forecast', !t_Years, !t_Months, 'Units_Baseline');
+
+['Total_Units', 'Actual', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] =>
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline'),
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Rolling_Fct_Adj', !t_Years, !t_Months, 'Units_Baseline');
+
+
+['Total_Units', 'Forecast', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] =>
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Budget', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Units_Baseline');
+
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##BUDGET 2021 SEULEMENT
+['Total_Units','Actual', '2019', {'Windshield', 'Repairs'}, {'Insurance', 'Cash', 'Fleet', 'Trade'}] =>
+	DB('12_Sales&Marketing', !Provinces, !Products_Detailed, !Customer_Segments, 'Budget', '2021', !t_Months, 'Units_Baseline');
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------

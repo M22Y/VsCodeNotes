@@ -1,0 +1,137 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+
+['Rolling_Fct_Adj']= STET;
+
+[{'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Forecast'] = N:
+		IF(DB('97_Actual_Flags', ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years'), ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Months'), 'Forecast')=1, 0, CONTINUE);
+
+[{'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Rolling_Fct_Adj'] = N:
+		IF(DB('97_Actual_Flags', ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years'), ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Months'), 'Rolling_Fct_Adj')=1, 0, CONTINUE);
+
+
+#To push automaticly Adj in Adj_CumulAmort
+['Adjustement_CumulAmort', '0860B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0820B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029A', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0857B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029B', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0867B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029C', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0850B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029E', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014E', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0830B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029F', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014F', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0880B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029I', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014I', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0862B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029L', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014L', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0840B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029P', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014P', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0861B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029R', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014R', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0807B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029S', !Versions, !t_Months_Continuous, 'Adjustement');
+
+['Adjustement_CumulAmort', '0870B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+	DB('56_Capex_Dep', !Org_Structure, '5029V', !Versions, !t_Months_Continuous, 'Adjustement')
+	+DB('56_Capex_Dep', !Org_Structure, '9014V', !Versions, !t_Months_Continuous, 'Adjustement');
+
+
+['New_Capex', {'Forecast', 'Budget'}] =N:
+IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', !Versions, !t_Months_Continuous, 'Depreciation'),
+	CONTINUE);
+#['New_Capex', 'Rolling_Fct_Adj', {'Oct-15', 'Nov-15', 'Dec-15'}] =N:
+#	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'Depreciation');
+['New_Capex', 'Rolling_Fct_Adj'] =N:
+	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Budget_Final', !t_Months_Continuous, 'Depreciation');
+
+
+
+['New_Capex_CumulAmort', {'Forecast', 'Budget'}] =N:
+IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', !Versions, !t_Months_Continuous, 'CumAmort'),
+	CONTINUE);
+#['New_Capex_CumulAmort', 'Rolling_Fct_Adj', {'Oct-15', 'Nov-15', 'Dec-15'}] =N:
+#	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'CumAmort');
+['New_Capex_CumulAmort', 'Rolling_Fct_Adj'] =N:
+	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Budget_Final', !t_Months_Continuous, 'CumAmort');
+
+
+['Frcst_Capex', 'Forecast'] =N: 0;
+['Frcst_Capex', 'Rolling_Fct_Adj', {'Oct-15', 'Nov-15', 'Dec-15'}] =N: 0;
+['Frcst_Capex', 'Budget'] =N:
+IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'Depreciation'),
+	0);
+['Frcst_Capex', 'Rolling_Fct_Adj'] =N:
+DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast_Final', !t_Months_Continuous, 'Depreciation');
+
+['Frcst_Capex_CumulAmort', 'Forecast'] =N: 0;
+['Frcst_Capex_CumulAmort', 'Budget'] =N:
+IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'CumAmort'),
+	0);
+#['Frcst_Capex_CumulAmort', 'Rolling_Fct_Adj', {'Oct-15', 'Nov-15', 'Dec-15'}] =N:
+#	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'CumAmort');
+['Frcst_Capex_CumulAmort', 'Rolling_Fct_Adj'] =N:
+	DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast_Final', !t_Months_Continuous, 'CumAmort');
+
+
+['WorthIt_CumulAmort', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N: ['WorthtIt'];
+
+########################################################FEEDERS##########################
+FEEDERS;
+['WorthtIt',  {'Forecast', 'Budget','Rolling_Fct_Adj'}] => ['WorthIt_CumulAmort'];
+
+
+['Adjustement', {'5029', '9014'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0860B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', '5029A', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0820B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', '5029B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0857B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', '5029C', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0867B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', {'5029E', '9014E'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0850B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', {'5029F', '9014F'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0830B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', {'5029I', '9014I'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0880B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', {'5029L', '9014L'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0862B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', {'5029P', '9014P'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0840B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', {'5029R', '9014R'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0861B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', '5029S', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0807B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+['Adjustement', {'5029V', '9014V'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0870B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+
+#Mart 2014-06-13 trsf directly to cube 86
+#Mart 10-24-13 ajout depreciation dans le cube 20
+['Total_Depreciation', {'Forecast', 'Budget','Rolling_Fct_Adj'}] =>
+	DB('20_OtherGL', !Org_Structure, ELPAR('GL_Accounts', !GL_Accounts_Depreciation, 1), !Versions,
+		'20' | SUBST(!t_Months_Continuous, 5, 2),
+		SUBST(!t_Months_Continuous, 1, 3),
+		'Baseline');
+
+['Total_Depreciation', {'Forecast', 'Budget','Rolling_Fct_Adj'}] =>
+	DB('86_ETL_GL', !Org_Structure, !GL_Accounts_Depreciation, !Versions,
+		'20' | SUBST(!t_Months_Continuous, 5, 2),
+		SUBST(!t_Months_Continuous, 1, 3),
+		'Dollars$');
+
+['Total_CumAmort', 'CY', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('51_BS_Manual', '120000', !Versions,!t_Months_Continuous, 'Inc_Dec$');
+
+

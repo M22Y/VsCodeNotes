@@ -2,10 +2,10 @@
 $logFile = "cube_dependency.log"
 $dotFile = "cube_dependencies.dot"
 $jpegFile = "cube_dependencies.jpg"
-$graphvizBinPath = "C:\tools\Graphviz-12.2.1-win64\bin"
+$graphvizBinPath = "C:\tools\graphviz\bin"
 
 $allowedCubes = @(
-    "09_SalesCOS_by_Customer", "10_SalesCOS", "11_SalesCOS_NonPrime", "12_Sales&Marketing",
+    "08_SalesCOS_B2B_WH_by_Customer","08_SalesCOS_Assump_by_Customer_Insur","09_SalesCOS_by_Customer", "111_SalesCOS_ADAS", "10_SalesCOS", "11_SalesCOS_NonPrime", "12_Sales&Marketing",
     "13_Internal_Transfer", "20_OtherGL", "30_Manning_by_Employee", "32_Manning_Assump",
     "33_Manning_Time_Available", "34_Manning_Time_Needed", "35_Manning_Output_FTE",
     "56_Capex_Dep", "57_Capex_Dep_Items", "60_DailySales_Stats_Std", "60_DailySales_Stats_Std_Vanfax",

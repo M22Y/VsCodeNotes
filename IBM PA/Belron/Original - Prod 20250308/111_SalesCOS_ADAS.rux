@@ -1,0 +1,149 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+########################################################################
+########################################################################
+## DESCRIPTION
+#
+#  Rules for 111_SalesCOS_ADAS
+#
+#
+#
+#
+## HISTORIQUE
+#
+# 2022-04-09 Claude-Sebastien JEAN   Added ADAS_BUDGET element for budgets
+# 2022-04-15 Claude-Sebastien JEAN   Added Windshield_replacement%
+# 2022-04-29 Claude-Sebastien JEAN 	 Added transfer of BUD / FOR to Cube 10
+# 2022-06-05 Claude-Sebastien JEAN   Added transfer of BUD / FOR to Cube 85
+# 2022-06-08 Claude-Sebastien JEAN   Added GM%, GM$ and COS_STD$
+# 2022-06-11 Claude-Sebastien JEAN   Added Material_Cost_Baseline and COS_Pure
+# 2022-06-12 Claude-Sebastien JEAN   Added AAC feeders for 111 to 85
+# 2022-06-13 Claude-Sebastien JEAN   Added 0 to AAC_Inc_Dec.
+###
+#
+########################################################################
+########################################################################
+
+# Sales$
+# Sales_Units
+# COS$_STD
+#'Performance%'
+#'Penetration%'
+#'effective_Windshield_Units%'
+#'Windshield_Units_Consumers'
+#'Windshield_Units_Adjusted '
+
+#Zero for every thing <=2018
+[{'Budget', 'Forecast'}] = N: IF(ATTRS('t_Years', !t_Years, 'Cur_Yr') @< '2019', 0, CONTINUE);
+
+##budget ADAS
+## ACTUALS
+['Actual', 'ADAS_BUDGET'] = N: ['CALIBDYNAM'] + ['CALIBSTAT'] + ['CALIBUNIV'];
+
+
+#Replace Prime_Units_Glass_Related_Consumer by Base Line
+['ASP', 'Actual'] = ['Net_Sales']\ ['Total_Units'];
+#['ASP', 'Budget'] = C: ['Net_Sales']\ ['Total_Units'];
+['AIP_Baseline', 'Actual'] = ['Net_Sales']\ ['Total_Units'];
+['Material_Cost_Baseline', 'Actual'] = ['COS$']\ ['Total_Units'];
+['GM$', 'Actual'] = N: ['Net_Sales'] - ['COS$'];
+['GM%', 'Actual'] = ['GM$'] \ ['Net_Sales'];
+
+['AIP_Baseline', 'Forecast', {'2020', '2021', '2022'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'ASP'],
+		['Budget', 'ASP']);
+
+
+['AIP_Baseline', 'Forecast', 'ADAS_BUDGET']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'ASP'],
+		['Budget', 'ASP']);
+
+['AAC_Inc_Dec$', {'Forecast', 'Budget'}, 'ADAS_BUDGET']= N: 0;
+
+['GM$', 'Forecast', {'2020', '2021', '2022'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'GM$'],
+		['Budget', 'GM$']);
+
+
+['GM$', 'Forecast', 'ADAS_BUDGET']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'GM$'],
+		['Budget', 'GM$']);
+
+
+['Windshield_Units_Consumers']=
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', !Customer_Segments, !Versions, !t_Years, !t_Months, 'Total_Units');
+
+
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##BUDGET 2021 SEULEMENT
+['AIP_Baseline', 'Budget', '2021']= N:['ASP', 'Budget', '2020'];
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+##Mart new Budget base line start in 2014 Forecast_5_7
+['AIP_Baseline', 'Budget']= N:
+	DB('111_SalesCOS_ADAS', !Org_Structure, !Products_Detailed_ADAS, !Customer_Segments, 'Forecast', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'ASP');
+
+['GM$', 'Budget'] = N: ['Net_Sales'] * ['GM%'];
+['COS$_STD', 'Budget'] = N: ['Net_Sales'] - ['GM$'];
+['COS$_Pure', 'Budget'] = N: 0;
+['Material_Cost_Baseline', 'Budget'] = N: ['COS$_STD'] \  ['Total_Units'];
+
+
+[{'CALIBDYNAM', 'CALIBSTAT', 'CALIBUNIV', 'CALIBWAR', 'CALIDEALER', 'CALIBCAM'}, {'Budget', 'Forecast'}] = N: 0;
+
+['Units_Baseline', {'Budget', 'Forecast'}]  = N: ['Windshield_Units_Consumers'] * ['effective_Windshield_Units%'];
+
+['Sales_Baseline', {'Budget', 'Forecast'}]  = N: ['Total_Units'] * ['ASP'];
+
+['effective_Windshield_Units%', 'Actual'] = ['Total_Units'] \ ['Windshield_Units_Consumers'];
+
+['effective_Windshield_Units%', {'Budget', 'Forecast'}] = N:['Penetration%'] * ['Performance%'] * ['Windshield_replacement%'];
+['effective_Windshield_Units%', {'Budget', 'Forecast'}] = C: ['Units_Baseline'] \  ['Windshield_Units_Consumers'];
+
+
+
+##---------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------
+FEEDERS;
+##---------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------
+
+
+
+['Total_Units', 'Actual'] => ['AIP_Baseline']
+							, ['Material_Cost_Baseline']
+							, ['effective_Windshield_Units%'];
+['Total_Units', {'Budget', 'Forecast'}] => ['effective_Windshield_Units%'];
+['Total_Units', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('10_SalesCOS', !Org_Structure, 'Calibration_Camera', !Customer_Segments, !Versions, !t_Years, !t_Months, 'Units_Baseline');
+['Total_Units', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, 'Calibration_Camera', !Versions, !t_Years, !t_Months, 'Sales_Units');
+
+['ASP', {'Budget', 'Actual'}] => ['AIP_Baseline', 'Forecast'];
+['ASP', 'Forecast'] => DB('111_SalesCOS_ADAS', !Org_Structure, !Products_Detailed_ADAS, !Customer_Segments, 'Budget', ATTRS('t_Years', !t_Years, 'Next_Yr'), !t_Months, 'AIP_Baseline');
+
+['ASP', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('10_SalesCOS', !Org_Structure, 'Calibration_Camera', !Customer_Segments, !Versions, !t_Years, !t_Months, 'AIP_Baseline');
+['ASP', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, 'Calibration_Camera', !Versions, !t_Years, !t_Months, 'ASP');
+
+['Net_Sales', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('10_SalesCOS', !Org_Structure, 'Calibration_Camera', !Customer_Segments, !Versions, !t_Years, !t_Months, 'Sales_Baseline');
+['Net_Sales', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, 'Calibration_Camera', !Versions, !t_Years, !t_Months, 'Sales$');
+
+['Net_Sales'] => ['GM$'], ['COS$_STD'], ['Material_Cost_Baseline'];
+
+['AAC', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('10_SalesCOS', !Org_Structure, 'Calibration_Camera', !Customer_Segments, !Versions, !t_Years, !t_Months, 'Material_Cost_Baseline');
+['AAC', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, 'Calibration_Camera', !Versions, !t_Years, !t_Months, 'AAC');
+['COS$', {'Budget', 'Forecast'}, 'ADAS_BUDGET'] => DB('85_ETL_Stats', !Org_Structure, !Customer_Segments, 'Calibration_Camera', !Versions, !t_Years, !t_Months, 'COS$');
+
+
+['Penetration%', {'Budget', 'Forecast'}] => ['effective_Windshield_Units%'];
+['effective_Windshield_Units%', {'Budget', 'Forecast'}] =>['Units_Baseline'];
+
+['Total_Units', {'Budget', 'Forecast'}] => ['Sales_Baseline'];
+['Actual', {'CALIBDYNAM','CALIBSTAT','CALIBUNIV'}] => [ 'ADAS_BUDGET'];
+#
+# ['Budget', 'Total_Units'] => DB('64_DailySales_Stats_Franchises', !Org_Structure , !Customer_Segments, 'ADAS',  !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales_Units');
+# ['Budget', 'Net_Sales'] => DB('64_DailySales_Stats_Franchises', !Org_Structure , !Customer_Segments, 'ADAS',  !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'Sales$');
+# ['Budget', 'ASP'] => DB('64_DailySales_Stats_Franchises', !Org_Structure , !Customer_Segments, 'ADAS',  !Versions, !t_Years, !t_Months, 'Total weeks', 'All_Days', 'ASP');
