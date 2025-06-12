@@ -1,0 +1,2 @@
+IFERROR(IF(ROUND(SUM({11}:{17}), 0)=SUM(ROUND({18}, 0)), 0, SUM({11}:{17})-SUM({18})), "")
+IFERROR(IF(ROUND(SUM({9}), 0)=SUM(ROUND({18}, 0)), 0, SUM({9})-SUM({18})), "")
