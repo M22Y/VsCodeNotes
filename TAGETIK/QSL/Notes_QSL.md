@@ -13,11 +13,11 @@ SCENARIO=${$Scenario.code}
 AND SUBSTRING(${$Scenario.code} FROM 5 FOR 3) = 'FCT'
 AND TEXT_ORIGIN IN ('AW004_INPUT_DE150', 'AW004_INPUT_DE140'
 
-
+AND PROVENIENZA <> 'INPUT_DEFORM'
 
 ---------------------------------------------
 
-
+IF({35}="", 1, COUNTIF(TESTCONC1,{35}))
 
 ---------------------------------------------
 
@@ -59,6 +59,7 @@ Empty 0  ---     (-1       ---- STV_TLG 0   )
                     -1                  0
 
 
+${DATASETPARTITION("006", "000006", PROCESS($Scenario.code,"12").code, $Scenario.code, "12")}
 
 IF(OR({22}<>0,{23}<>0,{24}<>0),1,IF({34}="", 1, 0))
 OLD  : IF(OR({22}<>0,{23}<>0,{24}<>0),1,0)

@@ -1,0 +1,344 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+###########################################################################
+##=
+## Most stuff comes from 30 with some indicators that come from 32.
+##
+#############################################################################
+##
+##  2014-05-29  CSJ  Creation
+##  2014-08-05  CSJ  Ajout de la condition if !Mannig_Job @= pour savoir si on met la valeure.
+##  2014-08-06  CSJ  Ajout de la condition de NA = 0.
+##  2023-01-31  CSJ  Ajout 2013-2018 = 0.
+##
+
+# Delete all years before 2019.
+#
+[{'2013', '2014', '2015', '2016', '2017', '2018' }] = N: 0;
+
+## 30
+
+## ============================================================================= OLD
+#[ {'Budget', 'Forecast', 'Budget_Final'} ] = N: IF ( ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @= '##NA##', 0, CONTINUE);
+## ============================================================================= OLD
+
+['Total_Hrs_Paid',{'Forecast',  'Rolling_Fct_Adj'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, ['Actual'], CONTINUE);
+
+##**************2018-06-14 MART New Call Center manning
+['Job-Retail', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] = S: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '' ,
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail'), '');
+
+['Job-Vanfax', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = S: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '' ,
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax'), '');
+
+['Job-Call_Center', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = S: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '' ,
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'), '');
+
+
+
+['Number_Week', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Number_Week'), 0);
+
+['Reg_Week_Hrs', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Reg_Week_Hrs'), 0);
+
+['Total_Hrs_Paid', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Total_Hrs_Paid'), 0);
+
+['Rate_Hrs', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Rate_Hrs'), 0);
+
+['Increase$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Increase$'), 0);
+
+['Increase%', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Increase%'), 0);
+
+['Bonus%', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Bonus%'), 0);
+
+['Comission%', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Comission%'), 0);
+
+['Other_Premium$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Other_Premium$'),0 );
+
+['Fringes%', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Fringes%'), 0);
+
+['Salary_Impact$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Salary_Impact$'), 0);
+
+['Increase$_Impact$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Increase$_Impact$'), 0);
+
+['Increase%_Impact$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Increase%_Impact$'), 0);
+
+['Bonus%_Impact$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Bonus%_Impact$'), 0);
+
+['Comission%_Impact$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Comission%_Impact$'), 0);
+
+['Other_Premium$_Impact$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$'), 0);
+
+['Fringes%_Impact$', {'Budget', 'Forecast', 'Rolling_Fct_Adj'}  ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Fringes%_Impact$'), 0);
+
+['Head_Count', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] = N: IF ( (AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Retail') %
+		 AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Vanfax') %
+ 			AttrS( 'Manning_Job', !Manning_Job, 'Short Desc') @= DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Job-Call_Center'))
+	& ATTRS('Manning_Job', !Manning_Job , 'Code_Fonction') @<> '',
+	DB('30_Manning_by_Employee', !Org_Structure, !Employee, !Versions, !t_Years, !t_Months, 'Head_Count'), 0);
+
+###************2018-06-14 MR correction formules
+['Total_Hrs_Paid', 'Actual' ] = N: DB('38_Manning_Actuals', !Org_Structure, !Employee, 'C' | !t_Years | '-' | !t_Months , !Manning_Job, 'Paid', !Versions, 'unite');
+['Total_Hrs', 'Actual' ] = N: DB('38_Manning_Actuals', !Org_Structure, !Employee, 'C' | !t_Years | '-' | !t_Months , !Manning_Job, 'Total_Codes_Codes', !Versions, 'unite');
+#['Job-Retail', 'Actual' ] = S:DB('38_Manning_Actuals', !Org_Structure, !Employee, 'C' | !t_Years | '-' | !t_Months , !Manning_Job, 'Total_Jobs', !Versions, 'Job-Retail');
+['Rate_Hrs', 'Actual'] = N: DB('38_Manning_Actuals', !Org_Structure, !Employee, 'C' | !t_Years | '-' | !t_Months , !Manning_Job, 'Total_codes', !Versions, 'taux');
+['Salary_Impact$', 'Actual'] = N: DB('38_Manning_Actuals', !Org_Structure, !Employee, 'C' | !t_Years | '-' | !t_Months , !Manning_Job, 'Total_Codes', !Versions, 'montant');
+
+['Head_Count', 'Actual' ] =  N:IF (['Total_Hrs'] <> 0 , 1, 0);
+['Head_Count', 'Total_Months'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+
+
+
+['Total_Hrs'] = N: IF ( ['Total_Hrs_Paid' ] >0, ['Total_Hrs_Paid' ] , ['Number_Week' ] * ['Reg_Week_Hrs' ]);
+
+['Total_Efficiency%', {'Budget', 'Forecast', 'Rolling_Fct_Adj'} ] = N: IF( ['Reg_Week_Hrs'] = 0, 0,
+						IF( SCAN('MANAGER', DB('33_Manning_Time_Available', !Org_Structure, !Employee, !Manning_Job, !Versions, !t_Years, !t_Months, 'Job-Retail') ) > 0,
+						DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_Manager_Indirect_Efficiency%'),
+						IF(SCAN('CUSTOMER SERV', DB('33_Manning_Time_Available', !Org_Structure, !Employee, !Manning_Job, !Versions, !t_Years, !t_Months, 'Job-Retail') ) >0,
+							DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Total_CSR_Indirect_Efficiency%'),1)));
+
+['Total_Std_Reg_Salary$' ] = N: ['Salary$'] * ['Total_Efficiency%'] ;
+['Total_Std_Reg_Fringe$' ] = N: ['Fringes%_Impact$' ] * ['Total_Efficiency%'] ;
+['Total_Std_Hrs'] = N: ['Total_Hrs'] * ['Total_Efficiency%'] ;
+
+['Work_to_Total_ratio%'] = IF( ['Reg_Week_Hrs'] = 0, 0,
+	DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Std_Hrs')\
+						DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Total_Jobs', !Versions, !t_Years, !t_Months, 'Total_Hrs'));
+
+['Efficiency_Variation_for_Period%'] = N: DB('39_Manning_Efficiency_Variation_by_Period', !Org_Structure, !Versions, !t_Years, !t_Months, 'Efficiency_Variation_for_Period%');
+
+['Std_Hrs_Efficiency_Variation_Impact' ] = N: ['Total_Std_Hrs'] * ['Efficiency_Variation_for_Period%' ];
+
+#C level Calcs
+#************2018-06-14 MR
+['Rate_Hrs','Actual']= C:  ['Salary$'] \ (['Total_Hrs_Paid']);
+
+['Rate_Hrs']= C:  ['Salary$'] \ (['Number_Week_Calc'] * ['Reg_Week_Hrs']);
+['Fringes%'] = C: ['Fringes%_Impact$']\ ['Salary$'] ;
+['Increase%'] = C: ['Increase%_Impact$']\(['Salary_Impact$'] + ['Increase$_Impact$']);
+['Bonus%']  = C: ['Bonus%_Impact$']\(['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']);
+['Comission%'] = C: ['Comission%_Impact$']\(['Salary_Impact$'] + ['Increase$_Impact$'] + ['Increase%_Impact$']);
+['Total_Efficiency%'] = C: ['Total_Std_Hrs']\['Total_Hrs']  ;
+['Efficiency_Variation_for_Period%' ] = C: ['Std_Hrs_Efficiency_Variation_Impact' ] \ ['Total_Std_Hrs'] ;
+
+
+['Reg_Week_Hrs_Calc', 'Total_Months','Total_Jobs'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+
+['Reg_Week_Hrs_Calc'] =  N: ['Reg_Week_Hrs'] \ ['Head_Count'];
+['Reg_Week_Hrs_Calc', 'Total' ] =  C: ['Reg_Week_Hrs'] \ ['Head_Count'];
+
+['Number_Week', 'Total_Months'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+['Number_Week_Calc', 'Total_Months'] = (['Jan'] + ['Feb'] + ['Mar'] + ['Apr'] + ['May'] + ['Jun'] + ['Jul'] + ['Aug']+ ['Sep'] + ['Oct'] + ['Nov'] + ['Dec']) \
+(['Jan']\['Jan'] + ['Feb']\['Feb'] + ['Mar']\['Mar'] + ['Apr']\['Apr'] + ['May']\['May'] + ['Jun']\['Jun'] + ['Jul']\['Jul'] + ['Aug']\['Aug']+ ['Sep']\['Sep'] + ['Oct']\['Oct'] + ['Nov']\['Nov'] + ['Dec']\['Dec']);
+
+
+['Number_Week_Calc'] =   ['Number_Week'] \ ['Head_Count'];
+
+
+###++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FEEDERS;
+
+
+#[{'Total_Hrs_Paid', 'Number_Week', 'Reg_Week_Hrs'} ] => ['Total_Hrs'] ;
+[{ 'Number_Week', 'Reg_Week_Hrs'} ] => ['Total_Hrs'] ;
+['Total_Hrs_Paid'] => ['Total_Hrs'] ;
+['Total_Hrs'] => ['Total_Std_Hrs'], ['Total_Efficiency%'] , ['Work_to_Total_ratio%' ] , ['Rate_Hrs' ] , ['Head_Count', 'Actual'];
+['Total_Efficiency%'] => ['Total_Hrs']  ;
+['Total_Hrs', 'Actual'] => ['Salary_Impact$' ] ;
+['Reg_Week_Hrs'] => ['Reg_Week_Hrs_Calc'];
+['Number_Week'] => ['Number_Week_Calc'];
+['Total_Hrs'] => ['Head_Count_Calc'];
+
+
+['Total_Hrs_Paid', 'Actual'] => ['Forecast'],
+			[ 'Rolling_Fct_Adj'];
+
+##
+##  Feeding 32 (assumptions) since  no hours = no usefull assumptions
+##
+
+['Total_Hrs'] => DB('32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'OVT_Rate');
+['Total_Hrs'] => DB( '32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'Manager_Indirect_Efficiency%');
+['Total_Hrs'] => DB( '32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'CSR_Indirect_Efficiency%');
+['Total_Hrs'] => DB( '32_Manning_Assump', !Org_Structure, !Versions, !t_Years, 'OVT_Convert%'),
+			DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Reg_Hrs');
+
+
+
+['Total_Std_Hrs' ] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Total_Std_Hrs_Available'), ['Total_Std_Reg_Salary$' ], ['Efficiency_Variation_for_Period%' ], ['Total_Std_Reg_Fringe$' ];
+
+['Total_Std_Reg_Salary$' ] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Reg_Work_Salary$');
+['Total_Std_Reg_Fringe$' ] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Fringe_Work$');
+['Salary$'] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Reg_Salary$');
+['Fringes%_Impact$' ] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Fringe$');
+
+['Work_to_Total_ratio%' ] => DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Work_to_Total_ratio%');
+['Efficiency_Variation_for_Period%' ]  => ['Std_Hrs_Efficiency_Variation_Impact' ] ;
+['Std_Hrs_Efficiency_Variation_Impact' ] => ['Efficiency_Variation_for_Period%' ] , DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Std_Hrs_Efficiency_Variation_Impact_Available') ;
+
+
+######
+#### FEEDING the 20
+######
+#### 2018-06-14 MR NEW CALL CENTER
+
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '022300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '022400', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Bonus%_Impact$', Manning_Job:'CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051315', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '020400', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '021300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Comission%_Impact$', Manning_Job:' CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051357', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '025100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, 'Fringes%_Impact$', Manning_Job:'CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051371', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'01' ] => DB('20_OtherGL', !Org_Structure, '020800', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'17' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'20' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'25' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'27' ] => DB('20_OtherGL', !Org_Structure, '020300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'33' ] => DB('20_OtherGL', !Org_Structure, '020300', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'47' ] => DB('20_OtherGL', !Org_Structure, '020200', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'61' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'64' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'66' ] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'67' ] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'23' ] => DB('20_OtherGL', !Org_Structure, '020100', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'76' ] => DB('20_OtherGL', !Org_Structure, '020050', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'81' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'88' ] => DB('20_OtherGL', !Org_Structure, '020110', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'99' ] => DB('20_OtherGL', !Org_Structure, '020800', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+[ {'Budget', 'Forecast', 'Rolling_Fct_Adj'}, {'Salary_Impact$','Increase$_Impact$','Increase%_Impact$','Other_Premium$_Impact$'}, Manning_Job:'CALL CENTER' ] => DB('20_OtherGL', !Org_Structure, '051357', !Versions, !t_Years, !t_Months, 'Inc_Dec$');
+
+
