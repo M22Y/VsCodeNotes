@@ -1,0 +1,758 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+
+########################################################################
+########################################################################
+## DESCRIPTION
+#
+#  RUX for cube 20_OtherGL
+#
+#
+#
+#
+## HISTORIQUE
+#
+# No historique was found before 2025-03-08
+# 2025-03-08 M. Youssef - RCGT       Added 2025 Rolling_fct_Adj as 2+10 with final_budget as baseline
+# 2025-07-11 M. Youssef - RCGT       Added New Manning Jobs (Forecast)
+#
+#
+########################################################################
+########################################################################
+
+#Stet Prior Year
+['Budget', '2016'] = N: STET;
+
+
+#Budget 2013 Initiation manage with the Inc/Dec Line
+['Baseline', 'Budget', '2013']=N: 0;
+#Capex items from 56
+#[{'045100','045102','051611','051626','051633','051693','051690','051694'}, 'Baseline', {'Actual','Forecast','Budget'} ] =N:STET;
+
+##Mart 05-08-2014 Put at 0 FCT and BUD Inc_Dec$ and Inc_Dec% for Depreciation who are link to cube 56
+[{'045100', '045102', '051611', '051626', '051633', '051690', '051693', '051694', '051850'}, {'Inc_Dec$', 'Inc_Dec%'}]= N: 0;
+
+
+#Mart 10-24-13 ajout Depreciation
+#region Capex depuis Cube 56
+['045100', {'Forecast', 'Rolling_Fct_Adj'}, 'Baseline']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	['Actual', 'Adjusted_Total'],
+DB('56_Capex_Dep', !Org_Structure, '5029', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029E', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029F', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029I', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029L', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029P', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029R', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029V', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation'));
+
+['051690', {'Forecast', 'Rolling_Fct_Adj'}, 'Baseline']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	['Actual', 'Adjusted_Total'],
+DB('56_Capex_Dep', !Org_Structure, '9014', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014E', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014F', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014I', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014L', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014P', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014R', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014V', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation'));
+
+['051850', {'Forecast', 'Rolling_Fct_Adj'}, 'Baseline']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	['Actual', 'Adjusted_Total'],
+DB('56_Capex_Dep', !Org_Structure, '5040L', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5040D', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation'));
+
+[{'045102','051611', '051626',  '051633', '051693', '051694', '051850'}, {'Forecast', 'Rolling_Fct_Adj'}, 'Baseline']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	['Actual', 'Adjusted_Total'],
+	DB('56_Capex_Dep', !Org_Structure, ATTRS('GL_Accounts_Line', !GL_Accounts_Line, 'Child'), !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation'));
+
+
+['045100', 'Budget', 'Baseline']= N:
+DB('56_Capex_Dep', !Org_Structure, '5029', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029E', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029F', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029I', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029L', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029P', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029R', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5029V', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation');
+
+['051690', 'Budget', 'Baseline']= N:
+DB('56_Capex_Dep', !Org_Structure, '9014', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014E', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014F', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014I', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014L', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014P', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014R', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '9014V', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation');
+
+['051850', 'Budget', 'Baseline']= N:
+DB('56_Capex_Dep', !Org_Structure, '5040L', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation')+
+DB('56_Capex_Dep', !Org_Structure, '5040D', !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation');
+
+[{'045102','051611', '051626',  '051633', '051693', '051694', '051850'}, 'Budget', 'Baseline']= N:
+	DB('56_Capex_Dep', !Org_Structure, ATTRS('GL_Accounts_Line', !GL_Accounts_Line, 'Child'), !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation');
+
+
+#endregion
+
+
+#To put at 0 Forecast month with Flag 1
+[{'Forecast', 'Rolling_Fct_Adj'}, {'Inc_Dec$','Inc_Dec%'}]= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1, 0, CONTINUE);
+#To put at 0 Actual
+[{'Inc_Dec%', 'Inc_Dec$'}, 'Actual']=N: 0;
+
+
+#New CUBE 33 for manning start in 2014
+#3 Direct Labour
+[{'020040', '020050', '020100', '020110', '020200', '020300', '020400', '020401', '020500', '020600', '020800', '020900', '021000', '021100', '021200', '021300', '021400', '021500', '021600', '022260', '022300', '022400', '025099',
+ '025100', '025200', '025300', '025400', '025500', '025600', '025700', '025800', '025900', '025910', '025950', '026000', '026100',
+#4 Indirect Labour
+'045333', '045334', '045335', '045336', '045337', '045338', '045341', '045342', '045346', '045347', '045349', '045350', '045351', '045353', '045354', '045355', '045356', '045357', '045359', '045360',
+#5 Overhead Labour Sales&Mkgts
+'051310', '051315', '051350', '051355', '051356', '051357', '051358', '051371', '051372', '051373', '051374', '051375', '051376', '051377', '051378', '051380', '051382', '051383', '051384', '051385', '051390', '051391', '051395',
+#6 Overhead Labour Head Office
+'051510', '051515', '051523', '051525', '051530', '051531', '051532', '051533', '051535', '051536', '051561', '051562', '051563', '051564', '051565', '051566', '051567', '051568', '051569', '051570', '051571', '051572', '051573'},
+	 'Inc_Dec$', 'Budget', {'2013', '2014'}]= N: STET;
+
+
+#############To but Budget base line at 0 for all TI-excel import (Fleet, Rent, Manning)##############
+#1 Vehicules
+[{'011111','041600', '041700', '041725', '041750', '041900', '041902', '042000','042110', ' 051669', '051670', '051850',
+#2 Rent
+'040200', '040300', '040305', '040700', '040800', '051666', '051667' ,'051668', '051683',
+#3 Direct Labour
+'020040', '020050', '020100', '020110', '020200', '020300', '020400', '020500', '020600', '020700', '020800', '020900', '021000', '021100', '021200', '021300', '021400', '021500', '021600', '022300', '022400', '025100', '025200', '025300', '025400', '0255
+00', '025600', '025700', '025800', '025900', '025910', '025950', '026000', '026100',
+#4 Indirect Labour
+'045333', '045334', '045335', '045336', '045337', '045338', '045341', '045342', '045346', '045347', '045349', '045350', '045351', '045353', '045354', '045355', '045356', '045357', '045359', '045360',
+#5 Overhead Labour Sales&Mkgts
+'051310', '051315', '051350', '051355', '051356', '051357', '051358', '051371', '051372', '051373', '051374', '051375', '051376', '051377', '051378', '051380', '051382', '051383', '051384', '051385', '051390', '051391', '051395',
+#6 Overhead Labour Head Office
+'051510', '051515', '051523', '051525', '051530', '051531', '051532', '051533', '051535', '051536', '051561', '051562', '051563', '051564', '051565', '051566', '051567', '051568', '051569', '051570', '051571', '051572', '051573'},
+	 'Baseline', 'Budget']= N: 0;
+
+
+#############To but Forecast base line at 0 for all TI-excel import (Fleet, Rent, Manning)##############
+#1 Vehicules
+[{'011111','041600', '041700', '041725', '041750', '041900', '041902', '042000', '042110', ' 051669', '051670', '051850',
+#2 Rent
+'040200', '040300', '040305', '040700', '040800', '051666', '051667' ,'051668', '051683',
+#3 Direct Labour
+'020040', '020050', '020100', '020110', '020200', '020300', '020400', '020500', '020600', '020700', '020800', '020900', '021000', '021100', '021200', '021300', '021400', '021500', '021600', '022300', '022400', '025100', '025200', '025300', '025400', '0255
+00', '025600', '025700', '025800', '025900', '025910','025950','026000', '026100',
+#4 Indirect Labour
+'045333', '045334', '045335', '045336', '045337', '045338', '045341', '045342', '045346', '045347', '045349', '045350', '045351', '045353', '045354', '045355', '045356', '045357', '045359', '045360',
+#5 Overhead Labour Sales&Mkgts
+'051310', '051315', '051350', '051355', '051356', '051357', '051358', '051371', '051372', '051373', '051374', '051375', '051376', '051377', '051378', '051380', '051382', '051383', '051384', '051385', '051390', '051391', '051395',
+#6 Overhead Labour Head Office
+'051510', '051515', '051523', '051525', '051530', '051531', '051532', '051533', '051535', '051536', '051561', '051562', '051563', '051564', '051565', '051566', '051567', '051568', '051569', '051570', '051571', '051572', '051573'},
+	'Baseline', 'Forecast']= N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		0);
+
+#############To but Forecast base line at 0 for all TI-excel import (Excluding Fleet, Rent)#############
+# adjusted for 2025 Rolling_Fct_Adj
+#3 Direct Labour
+#[{'020040', '020050', '020100', '020110', '020200', '020300', '020400', '020401',  '020500', '020600', '020700', '020800', '020900', '021000', '021100', '021200', '021300', '021400', '021500', '021600', '022260',  '022300', '022400',
+#'025099',  '025100', '025200', '025300', '025400', '025500', '025600', '025700', '025800', '025900', '025910','025950','026000', '026100',
+#4 Indirect Labour
+#'045333', '045334', '045336', '045342', '045357'},
+#	 'Baseline', '2025', 'Rolling_Fct_Adj']= N:
+#		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+#		['Actual', 'Adjusted_Total'],
+#		['Budget_Final', 'Adjusted_Total']);
+
+
+
+#3 Direct Labour
+[{'020040', '020050', '020100', '020110', '020200', '020300', '020400', '020401',  '020500', '020600', '020700', '020800', '020900', '021000', '021100', '021200', '021300', '021400', '021500', '021600', '022260',  '022300', '022400',
+'025099',  '025100', '025200', '025300', '025400', '025500', '025600', '025700', '025800', '025900', '025910','025950','026000', '026100',
+#4 Indirect Labour
+'045333', '045334', '045336', '045342', '045357'},
+	 'Baseline', 'Rolling_Fct_Adj']= N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		0);
+
+##Mart 14-07-2014 Put at 0 FCT and BUD Inc_Dec$ and Inc_Dec% for Direct Labour who are not link with new Cube 33 and 35 Manning
+[{'020040',   '020900', '021100', '021200', '021400',  '021500', '021600', '022260',  '025200',  '025300', '025400', '025500','025600','025700','025800', '025900', '025910','025950','026000',
+ '026100'}, 'Inc_Dec$']= N: 0;
+
+
+#Mart 12-07-2018
+[{'020401', '025099'}, 'Inc_Dec$']= N: 0;
+
+
+#****2018-06-14 MR new Call Center 6116 and 6701 come from Cube 33
+[{'6701',  '6116'}, {'051310',  '051350', '051355', '051356', '051358', '051372', '051373', '051374','051375','051376','051377', '051378', '051380','051382','051383', '051384', '051385'}, 'Inc_Dec$']= N: 0;
+
+#****2018-06-14 MR new Call Center 6116 and 6701 come from Cube 33
+[{'6701',  '6116'}, {'051315', '051357', '051371'}, 'Inc_Dec%']= N: 0;
+
+
+
+#region#####To put all inc dec on sales and cost to 0##########
+###Mart 27-02-2014 ajoute Bugdet
+[{'000120','000130','000140','000142','000144','000145','000150','000160','000110','000180','000181','000182','000183','000184','000185','000186','000187','000188','000189','000195',
+'000210','000220','000239','000245','000235','000241','000242','000199','000225','000244', '000269','000255','000273','000274','000279','000261','000262','000263','000266','000267','000268', '002120',
+'002130','002140','002142','002144','002145','002110','002180','002181','002182','002183','002184','002185','002186','002187','002210','002220','002239', '002244','002245','002235','002242', '002269',
+'002195','002225','002255','002273','002274','002279','002261','002262','002263','002267','002268','002310','002315','002320','002325','002327','002328','002329','002330','002335',
+'002351','002352','002342','002343','002344','002345','002346','002347','002348','002349','002365','002375','002350','002386','002387','002389','002367','002368','002420','002430',
+'002440','002490','002491','002480','002481','002482','002483','002484','002485','002486','002487','002510','002530','002579','002586','002587','002567','002568','003120','003130',
+'003140','003142','003144','003145','003146','003150','003154','003155','003157','003158','003159','003190','003191','003180','003181','003182','003183','003184','003185','003186',
+'003187','003210','003220','003239','003245','003235','003252','003195','003225', '003244', '003255', '003269', '003273','003274','003279','003261','003262','003263','003267','003268','004120','004130',
+'004140','004145','004190','004191','004180','004181','004182','004183','004184','004185','004186','004187','004210','004220','004239','004244', '004245','004235','004252','004225','004255', '004269',
+'004273','004274','004279','004261','004262','004263','004267','004268','004265','110100','110200','110300',
+'110400','115100','115200','126100','126200','126300','126400','126500','128100','128200','128300','128400','136100','138100','146050','146055','146100','146200','146300','146400',
+'146500','146600','148100','148200','148300','148400','148500','148600','156100','156200','156300','156400','156500','156600','156700','156800','158100','158200','158300','158400',
+'158500','158600','158700','166100','166200','168100','168200','202100','205100','205200','205400','205500','205600','205700','205800','205900','215100','215200','215300','215400',
+'215500','215600','220100','220200','220300','220400','220500','220600','220700','220800','220900','221000','221100','221200','225100','225200','225300','235100','235200','235300',
+'235400','235500','235600','235700','235800','235900','236000','240100','240200','240300','240400','240500','240600','240700','240800','255100','255200','255300','255400','260200',
+'260500','260600','260700','260800','260900','261000','261100','261200','261300','261400','261500','261600','261700','261800','261900','262000','262100','262200','262300','262400',
+'262500','262600','262700','262800','271400','265100','265200','265300','265400','265500','270100','270210','270220','270230','270240','270300','270400','270510','270520','270530',
+'270600','270700','270800','270900','271000','271100','271200','271300','280100','280200','280300','280400','280500','280600','280700','280800','280900','281000','281100','285100',
+'285200','285300','285400','285500','285600','285700','285800','285900','286000','286100','286200','286300','286400','286500','302100','302200','302300','302400','304100','304200',
+'305100','305200','305300','305400','305500','305600','305700','305800','305900','306000','306100','306200','306300','306400','306500','306600','306700','306800','306900','307000',
+'307100','307200','310100','310200','310300','310400','310500','310600','310700','310800','310900','311000','311100','311200','311300','311400','311500','311600','311700','311800',
+'311900','312100','312101','312200','315100','325100','330100','335100','335200','335300','335400','335500','340100','345100','345200','345300','345400','345500','345600','345700','345800',
+'345900','346000','346100','346200','346300','346400','346500','346600','346700','346800','350100','350200','350300','360100','380100','380200','380300','380400','390100','390200',
+'390300','390400','405100','410100','410200','410300','410500','410600','410700','425100','425200','425300','425400','425500'},
+		{'Inc_Dec$','Inc_Dec%','Baseline'}] =N:IF(!Versions @= 'Budget' & !t_Years @= '2013', STET, 0);
+#endregion
+
+
+########################Base Line##########################################
+#Actual Base Line
+['Baseline', 'Actual']=N: DB('84_Actuals_GL', !Org_Structure, !GL_Accounts_Line, !Versions, !t_Years, !t_Months, 'Dollars$');
+#Forecast Base Line
+['Baseline', 'Forecast']=N:
+IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', !t_Years, !t_Months, 'Adjusted_Total'));
+
+#Start in 2015
+['Baseline', 'Rolling_Fct_Adj', '2015']=N:
+IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', !t_Years, !t_Months, 'Adjusted_Total'));
+
+# adjusted for 2025 Rolling_Fct_Adj
+['Baseline', 'Rolling_Fct_Adj', '2025']=N:
+IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget_Final', !t_Years, !t_Months, 'Adjusted_Total'));
+
+['Baseline', 'Rolling_Fct_Adj']=N:
+IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		['Actual', 'Adjusted_Total'],
+		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, !Versions, ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Adjusted_Total'));
+
+
+
+
+#New Budget Base Line start in 2014
+#Mart 14-07-2014 Modification Base Line Bud is now fix after the Forecast_6_6 (NB TI to push Forecast to Forecast_5_7)
+##CSJ 2019-06-16 Modification BaseLine Bud for 2020 and on - using Budget instead of Forecast_6_6.
+['Baseline', 'Budget']=N:
+	IF(!t_Years @< '2020',
+		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Forecast_6_6', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Adjusted_Total'),
+		DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', ATTRS('t_Years', !t_Years, 'Prev_Yr'), !t_Months, 'Adjusted_Total')
+	);
+#########################INC_DEC on % For Forecasting and Budgeting purposes############################
+#Inc_Dec on dollars
+
+[{'Inc_Dec%_Impact$'}, {'Forecast', 'Rolling_Fct_Adj'}]=N:
+	 IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+			0, ['Inc_Dec%']* ['Baseline']);
+['Inc_Dec%_Impact$']=N: ['Inc_Dec%']* ['Baseline'];
+['Inc_Dec%']= C:0;
+
+
+
+######################### SALARIES from MANNING CUBES ########################################################
+
+###########################################################################################################################################
+################################################       1. Budget      #####################################################################
+###########################################################################################################################################
+
+#Salary Budget
+['Inc_Dec$', 'Budget', '020050'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$');
+
+['Inc_Dec$', 'Budget', '020100'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Premium & Other SALARY');
+
+['Inc_Dec$', 'Budget', '020110'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$') ;
+
+['Inc_Dec$', 'Budget', '020200'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$');
+
+['Inc_Dec$', 'Budget', '020300'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$');
+
+['Inc_Dec$', 'Budget', '020500'] = N:
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Overtime Structurel SALARY');
+
+['Inc_Dec$', 'Budget', '020600'] = N:
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'OVT_Work$');
+
+['Inc_Dec$', 'Budget', '020700'] = N:
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Sick_Time_Pay$');
+
+['Inc_Dec$', 'Budget', '021000'] = N:
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Spec_Projects_Salaries$');
+
+['Inc_Dec$', 'Budget', '020800'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$');
+
+
+##Comissions Budget
+['Inc_Dec$', 'Budget', '020400'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Comission%_Impact$');
+
+['Inc_Dec$', 'Budget', '021300'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$');
+
+['Inc_Dec$', 'Budget', '022300'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$');
+
+['Inc_Dec$', 'Budget', '022400'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$');
+
+
+##Fringes Budget
+['Inc_Dec$', 'Budget', '025100'] = N:
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'OVT_Fringe_Work$')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Overtime Structurel FRINGE')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Premium & Other FRINGE');
+
+
+###########################################################################################################################################
+################################################       2. Forecast      ###################################################################
+###########################################################################################################################################
+
+
+#Salary Forecast
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020050'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020100'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '4', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '4', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '4', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '4', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'NA', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'NA', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'NA', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'NA', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Premium & Other SALARY'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020110'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020200'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+			 	+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020300'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '39', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '39', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '39', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '39', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020500'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Overtime Structurel SALARY'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020600'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'OVT_Work$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020700'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Sick_Time_Pay$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '021000'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Spec_Projects_Salaries$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020800'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$'), CONTINUE);
+
+
+##Comissions Forecast
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '020400'] = N:
+	IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '39', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Comission%_Impact$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '021300'] = N:
+	 IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '4', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'NA', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'NA', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '4', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '39', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '022300'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$'), CONTINUE);
+
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '022400'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$'), CONTINUE);
+
+
+
+##Fringes Forecast
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '025100'] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+				DB('33_Manning_Time_Available', !Org_Structure, 'Total', '01', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '17', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '33', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '61', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '64', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '66', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '67', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '76', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '81', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '88', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '99', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '20', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '25', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '27', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '18', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '4', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'NA', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '38', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '39', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '47', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '43', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'OVT_Fringe_Work$')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Overtime Structurel FRINGE')
+				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Premium & Other FRINGE'), CONTINUE);
+
+##Call Center manning
+#*********MR 01/06/2018 New Call Center
+#Budget Salary Call Center
+['Inc_Dec$', 'Budget', '051357', {'6701', '6704',  '6116'}] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+			           + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+			           + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+			           + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+			           + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$');
+
+#Budget Bonus  Call Center
+['Inc_Dec$', 'Budget', '051315', {'6701', '6704',  '6116'}] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Bonus%_Impact$');
+
+
+#Budget Fringes  Call Center
+['Inc_Dec$', 'Budget', '051371', {'6701', '6704',  '6116'}] = N: DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$');
+
+
+
+#Forecast Salary Call Center
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '051357', {'6701', '6704',  '6116'}] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+					DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+			          		 + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+			         		 + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+			           		 + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Comission%_Impact$')
+			         		 + DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$'), CONTINUE);
+
+#Forecast Bonus  Call Center
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '051315', {'6701', '6704',  '6116'}] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+					DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months,  'Bonus%_Impact$'), CONTINUE);
+
+
+#Forecast Fringes Call Center
+['Inc_Dec$', {'Forecast', 'Rolling_Fct_Adj'}, '051371', {'6701', '6704',  '6116'}] = N: IF( DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)<>1,
+					DB('33_Manning_Time_Available', !Org_Structure, 'Total', 'Call Center', !Versions, !t_Years, !t_Months, 'Fringes%_Impact$'), CONTINUE);
+
+
+
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FEEDERS;
+['Baseline']=> DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, !Versions, !t_Years, !t_Months, 'Inc_Dec%_Impact$');
+
+['Adjusted_Total', 'Actual']=>
+	DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Forecast', !t_Years, !t_Months, 'Baseline'),
+	DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Forecast', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Baseline');
+
+##
+## 2019-06-16 CSJ Added the feed for Budget Baseline for next year.
+['Adjusted_Total', 'Budget'] =>
+	DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Forecast', !t_Years, !t_Months, 'Baseline'),
+	DB(IF(!t_Years @>= '2019',  '20_OtherGL', ''), !Org_Structure, !GL_Accounts_Line, 'Budget', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Baseline');
+['Adjusted_Total', 'Forecast_6_6']=>
+	DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Baseline')
+	;
+
+
+['Adjusted_Total', 'Budget_Final', '2025'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', '2025', !t_Months, 'Baseline');
+#['Adjusted_Total', 'Budget_Final', '2025'] => DB('86_ETL_GL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', '2025', !t_Months, 'Dollars$');
+['Adjusted_Total', 'Budget', '2015'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', !t_Years, !t_Months, 'Baseline');
+['Adjusted_Total', 'Actual'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Rolling_Fct_Adj', !t_Years, !t_Months, 'Baseline');
+['Adjusted_Total', 'Rolling_Fct_Adj'] => DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, !Versions, STR(NUMBR(!t_Years)+1,4,0), !t_Months, 'Baseline');
+
+#['Adjusted_Total', 'Forecast_7_5', '2013', 'Aug']=> DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', '2014', !t_Months, 'Baseline');
+#['Adjusted_Total', 'Forecast', '2013']=> DB('20_OtherGL', !Org_Structure, !GL_Accounts_Line, 'Budget', '2014', !t_Months, 'Baseline');
+['Adjusted_Total', {'Forecast','Budget', 'Rolling_Fct_Adj'}]=> DB('86_ETL_GL', !Org_Structure, !GL_Accounts_Line, !Versions, !t_Years, !t_Months, 'Dollars$');
+
+#Pour feeder le cube 51
+['Adjusted_Total', 'CY', 'Forecast_Final', '020000']=> DB('51_BS_Manual',  '305100', 'Forecast', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_Direct_Labor_(Exclud_Bonus)');
+['Adjusted_Total', 'CY', 'Budget_Final', '020000']=> DB('51_BS_Manual',  '305100', 'Budget', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_Direct_Labor_(Exclud_Bonus)');
+['Adjusted_Total', 'CY', 'Forecast_Final', '025000']=> DB('51_BS_Manual',  '305100', 'Forecast', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_Direct_Labor_(Exclud_Bonus)');
+['Adjusted_Total', 'CY', 'Budget_Final', '025000']=> DB('51_BS_Manual',  '305100', 'Budget', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_Direct_Labor_(Exclud_Bonus)');
+
+['Adjusted_Total', 'CY', 'Forecast_Final', {'045333', '045334', '045335', '045336', '045337', '045338', '045346', '045347', '045349', '045350', '045351', '045353', '045354', '045355', '045356', ' 045357', ' 045359', '045360'}]=>
+	DB('51_BS_Manual',  '305100', 'Forecast', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_RBI_(Exclud_Bonus)');
+['Adjusted_Total', 'CY', 'Budget_Final', {'045333', '045334', '045335', '045336', '045337', '045338', '045346', '045347', '045349', '045350', '045351', '045353', '045354', '045355', '045356',  ' 045357', ' 045359', '045360'}]=>
+	DB('51_BS_Manual',  '305100', 'Budget', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_RBI_(Exclud_Bonus)');
+
+['Adjusted_Total', 'CY', 'Forecast_Final', {'051310', '051350', '051355', '051356', '051357', '051358', '051371', '051372', '051373', '051374', '051375', '051376', '051377', '051378', '051380', '051382', '051383', '051384', '051385'}]=>  DB('51_BS_Manual'
+,  '305100', 'Forecast', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_Overhead_(Exclud_Bonus)');
+['Adjusted_Total', 'CY', 'Budget_Final', {'051310', '051350', '051355', '051356', '051357', '051358', '051371', '051372', '051373', '051374', '051375', '051376', '051377', '051378', '051380', '051382', '051383', '051384', '051385'}]=>    DB('51_BS_Manual'
+,  '305100', 'Budget', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_Overhead_(Exclud_Bonus)');
+
+['Adjusted_Total', 'CY', 'Forecast_Final', {'051510', '051523', '051525', '051530', '051531', '051532', '051533', '051535', '051536', '051561', '051562', '051563', '051564', '051565', '051566', '051567', '051568', '051569', '051570', '051571', '051572', '
+051573'}]=> DB('51_BS_Manual',  '305100', 'Forecast', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_NSC_(Exclud_Bonus)');
+['Adjusted_Total', 'CY', 'Budget_Final', {'051510', '051523', '051525', '051530', '051531', '051532', '051533', '051535', '051536', '051561', '051562', '051563', '051564', '051565', '051566', '051567', '051568', '051569', '051570', '051571', '051572', '05
+1573'}]=> DB('51_BS_Manual',  '305100', 'Budget', !t_Months |'-' | SUBST(!t_Years,3,2), 'Salaries_NSC_(Exclud_Bonus)');
+
+
+#['000050', 'Adjusted_Total',{'Forecast','Budget'}]=> DB('40_P&L', !Org_Structure, 'Windshield', 'Insurance', !Versions, !t_Years, !t_Months, 'Diff_GL_vs_Stats');
+#['002300', 'Adjusted_Total',{'Forecast','Budget'}]=> DB('40_P&L', !Org_Structure, 'Windshield', 'Interne', !Versions, !t_Years, !t_Months, 'Diff_GL_vs_Stats');

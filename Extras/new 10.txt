@@ -1,0 +1,32 @@
+
+Objectifs et commentaires
+Je suis satisfait de mon rôle actuel en tant que consultant CCH Tagetik, spécialisé en FP&A. 
+Mes responsabilités sont en adéquation avec mes intérêts, notamment l’implantation de solutions de planification financière, 
+l’automatisation et modélisation des processus budgétaires.
+J’apprécie la complexité des mandats, la collaboration avec les clients et l'équipe en interne, ainsi que la contribution à des projets stratégiques. 
+À moyen terme, je souhaite approfondir mon expertise dans l’écosystème Tagetik en 
+participant à des projets d’envergure et en apprenant davantage auprès des experts et des architectes de l’équipe.
+
+
+-----
+
+
+Youssef a pleinement contribué à la réussite de notre équipe CCH Tagetik cette année dans son rôle de consultant senior.
+
+Malgré quelques difficultés en début d’année, notamment sur les tests unitaires du projet Power Corp, il a su rapidement monter en 
+compétence et démontrer une nette amélioration dans la qualité de ses livrables. Son engagement et sa rigueur ont été des atouts 
+majeurs dans l’implémentation de la solution CCH Tagetik chez nos clients.
+
+Un tournant important dans son évolution a été sa gestion quasi autonome de développements complexes sur le projet QSL FP&A, 
+en particulier sur l’implémentation du Cost Planning. Il a su comprendre les besoins métiers, les traduire en design technique 
+pertinent, puis les développer avec efficacité. Cette capacité à faire le lien entre les enjeux fonctionnels et techniques 
+illustre son potentiel à évoluer vers un rôle d’architecte dans nos futurs projets.
+
+
+
+Un axe d’amélioration identifié serait de renforcer la phase de recueil des besoins métiers, en prenant davantage de recul pour 
+challenger les demandes du client et en valider la pertinence avant de démarrer l’implémentation technique.
+
+
+
+En résumé, Youssef a connu une très belle année, marquée par une évolution significative et une contribution précieuse à nos projets. Bravo à lui !

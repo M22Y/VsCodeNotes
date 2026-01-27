@@ -1,0 +1,57 @@
+/* Prepopulation based on Balance type Dimension */
+/* PCC Scenario Type */
+SELECT DISTINCT
+    ${$Scenario.code} AS SCENARIO,
+    ${$Period.code} AS PERIOD,
+    'CONS_PCC_CAD' AS SCEN_TYPE,
+    B.COD AS NOTE_ID,
+    /* CONTO.COD_CONTO AS ACC_COD, */
+	BAL_TYPE.COD AS BAL_TYPE_COD,
+    BAL_TYPE.DESC0 AS BAL_TYPE_DESC_EN,
+    BAL_TYPE.DESC1 AS BAL_TYPE_DESC_FR
+FROM ED_CO_00002 BAL_TYPE
+JOIN ED_CO_00006 AS B ON (BAL_TYPE.COD LIKE '%' || B.COD || '%')
+
+UNION ALL
+
+/* PFC */
+SELECT DISTINCT
+    ${$Scenario.code} AS SCENARIO,
+    ${$Period.code} AS PERIOD,
+    'CONS_PFC_CAD' AS SCEN_TYPE,
+    B.COD AS NOTE_ID,
+    /* CONTO.COD_CONTO AS ACC_COD, */
+	BAL_TYPE.COD AS BAL_TYPE_COD,
+    BAL_TYPE.DESC0 AS BAL_TYPE_DESC_EN,
+    BAL_TYPE.DESC1 AS BAL_TYPE_DESC_FR
+FROM ED_CO_00002 BAL_TYPE
+JOIN ED_CO_00006 AS B ON (BAL_TYPE.COD LIKE '%' || B.COD || '%')
+
+
+-------- Previous period data source --------------
+ SELECT 
+        SCENARIO,
+        PERIOD,
+        SCEN_TYPE,
+        BAL_TYPE,
+        NOTE_ID,
+        BAL_TYPE_LABEL_EN,
+        BAL_TYPE_LABEL_FR
+    FROM ${DATASETPARTITION("003", "TE0004", "ID", $Scenario.code, $Period.offset(-3).code)}
+
+---------- previous period & scenario data source ------------
+    SELECT 
+        SCENARIO,
+        PERIOD,
+        SCEN_TYPE,
+        BAL_TYPE,
+        NOTE_ID,
+        BAL_TYPE_LABEL_EN,
+        BAL_TYPE_LABEL_FR
+    FROM ${DATASETPARTITION("003", "TE0004", "ID", $Scenario.prev.code, $Period.offset(-3).code)}
+	
+----------- DTP delete filter -----------
+CONCAT(BAL_TYPE,SCEN_TYPE) IN (
+SELECT  CONCAT(BAL_TYPE, SCEN_TYPE) AS BAL_TYPE_SCEN_TYPE
+FROM ${DATASETPARTITION("003", "TE0004", process($Scenario.code,$Period.code).code,$Scenario.code,$Period.code)}
+WHERE PROVENIENZA<>'DTP_ELAB')

@@ -16,6 +16,7 @@ FEEDSTRINGS;
 # No historique was found before 2025-03-08
 # 2025-03-08 M. Youssef - RCGT       Added 2025 Rolling_fct_Adj as 2+10 with final_budget as baseline
 # 2025-07-11 M. Youssef - RCGT       Added New Manning Jobs (Forecast)
+# 2025-07-22 M. Youssef - RCGT       Added New Manning Jobs (Budget)
 #
 #
 ########################################################################
@@ -312,6 +313,10 @@ IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
 				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
 				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
 				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '23', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
+                +  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Salary_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Increase$_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Increase%_Impact$')
+				+  DB('33_Manning_Time_Available', !Org_Structure, 'Total', '28', !Versions, !t_Years, !t_Months, 'Other_Premium$_Impact$')
 				+  DB('35_Manning_Output_FTE', !Org_Structure, !Versions, !t_Years, !t_Months, 'Premium & Other SALARY');
 
 ['Inc_Dec$', 'Budget', '020110'] = N:

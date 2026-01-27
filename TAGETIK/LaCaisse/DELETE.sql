@@ -1,0 +1,44 @@
+DELETE
+FROM    &REP& A
+WHERE   (TEXT_ORIGIN = '000210' AND NOT EXISTS  (
+                    SELECT  1
+                    FROM    &REP& K /*AW_P01_000007_000001 */
+                    WHERE   K.TEXT_ORIGIN='000200'
+                        AND K.ENTITY=A.ENTITY
+                        AND K.ACCOUNT=A.ACCOUNT
+                        AND K.COST_CENTER=A.COST_CENTER
+                        AND K.T_ENTITY=A.T_ENTITY
+                        AND K.T_ACCOUNT=A.T_ACCOUNT
+                        AND K.T_COST_CENTER=A.T_COST_CENTER
+                        AND K.MAN_SPLIT='010'
+                ))
+OR      (TEXT_ORIGIN = '000240' AND NOT EXISTS  (
+                    SELECT  1
+                    FROM    &REP& K /*AW_P01_000007_000001 */
+                    WHERE   K.TEXT_ORIGIN='000200'
+                        AND K.ENTITY=A.ENTITY
+                        AND K.ACCOUNT=A.ACCOUNT
+                        AND K.COST_CENTER=A.COST_CENTER
+                        AND K.T_ENTITY=A.T_ENTITY
+                        AND K.T_ACCOUNT=A.T_ACCOUNT
+                        AND K.T_COST_CENTER=A.T_COST_CENTER
+                        AND K.MAN_SPLIT='020'
+                ));
+
+UPDATE &REP&
+SET NOTES=A.M_NOTES,
+NUM_ECR=A.M_NUM_ECR
+FROM ( 
+	SELECT  ENTITY, ACCOUNT, COST_CENTER, T_ENTITY, T_ACCOUNT, T_COST_CENTER, MAX(NOTES) AS M_NOTES,MAX(NUM_ECR) AS M_NUM_ECR
+	FROM &REP& K
+	WHERE K.TEXT_ORIGIN='000200'
+	GROUP BY ENTITY, ACCOUNT, COST_CENTER, T_ENTITY, T_ACCOUNT, T_COST_CENTER
+	) A
+	WHERE 1=1
+	AND &REP&.TEXT_ORIGIN IN ('000210', '000240')
+	AND &REP&.ENTITY=A.ENTITY
+	AND &REP&.ACCOUNT=A.ACCOUNT
+	AND &REP&.COST_CENTER=A.COST_CENTER
+	AND &REP&.T_ENTITY=A.T_ENTITY
+	AND &REP&.T_ACCOUNT=A.T_ACCOUNT
+	AND &REP&.T_COST_CENTER=A.T_COST_CENTER; 

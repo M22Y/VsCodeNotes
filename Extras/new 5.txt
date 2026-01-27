@@ -1,0 +1,116 @@
+Public Sub TGK_AfterRun(reportCode As String, processCode As String)
+    FormatSuperscriptBrackets
+End Sub
+
+
+Sub FormatSuperscriptBrackets()
+    Dim rng As Range
+    Dim cell As Range
+    Dim startPos As Integer
+    Dim endPos As Integer
+    Dim contentLength As Integer
+    Dim i As Integer
+    
+    ' Set the range of cells you want to format
+    Set rng = Range("TABLE_ROWS")
+    
+    ' Copy and paste as values
+    rng.Copy
+    rng.PasteSpecial Paste:=xlPasteValues
+    Application.CutCopyMode = False
+
+
+    ' Loop through each cell in the selected range
+    For Each cell In rng
+        With cell
+            ' Look for opening bracket
+            startPos = InStr(1, .Value, "[")
+            
+            ' Continue while there are brackets to process
+            Do While startPos > 0
+                ' Find the closing bracket
+                endPos = InStr(startPos, .Value, "]")
+                
+                ' If both brackets are found, apply superscript formatting
+                If endPos > 0 Then
+                    contentLength = endPos - startPos + 1
+                    
+                    ' Apply superscript formatting to the bracketed text
+                    With .Characters(startPos, contentLength).Font
+                        .Superscript = True
+                    End With
+                End If
+                
+                ' Look for the next opening bracket
+                startPos = InStr(endPos + 1, .Value, "[")
+            Loop
+        End With
+    Next cell
+    
+    rng.NumberFormat = "General"
+End Sub
+
+
+
+
+
+
+
+
+---------------------------------
+Public Sub TGK_AfterRun(reportCode As String, processCode As String)
+    FormatSuperscriptBrackets ("TABLE01_ROWS")
+    FormatSuperscriptBrackets ("TABLE02_ROWS")
+    FormatSuperscriptBrackets ("TABLE03_ROWS")
+    FormatSuperscriptBrackets ("TABLE04_ROWS")
+End Sub
+
+
+Sub FormatSuperscriptBrackets(rngName As String)
+
+    Dim rng As Range
+    Dim cell As Range
+    Dim startPos As Integer
+    Dim endPos As Integer
+    Dim contentLength As Integer
+    Dim i As Integer
+    
+    ' Set the range of cells you want to format
+    
+    Set rng = Range(rngName)
+    
+    ' Copy and paste as values
+    rng.Copy
+    rng.PasteSpecial Paste:=xlPasteValues
+    Application.CutCopyMode = False
+
+
+    ' Loop through each cell in the selected range
+    For Each cell In rng
+        With cell
+            ' Look for opening bracket
+            startPos = InStr(1, .Value, "[")
+            
+            ' Continue while there are brackets to process
+            Do While startPos > 0
+                ' Find the closing bracket
+                endPos = InStr(startPos, .Value, "]")
+                
+                ' If both brackets are found, apply superscript formatting
+                If endPos > 0 Then
+                    contentLength = endPos - startPos + 1
+                    
+                    ' Apply superscript formatting to the bracketed text
+                    With .Characters(startPos, contentLength).Font
+                        .Superscript = True
+                    End With
+                End If
+                
+                ' Look for the next opening bracket
+                startPos = InStr(endPos + 1, .Value, "[")
+            Loop
+        End With
+    Next cell
+    
+    rng.NumberFormat = "General"
+End Sub

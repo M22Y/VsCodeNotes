@@ -1,0 +1,111 @@
+/* TO BE ADJUSTED TO REFER TO GENRAL ASSUMPTIONS IINPUT SCNEARIO*/
+
+/*
+(
+
+select SCE_SELECT
+
+from AW_P01_000017_000001
+
+where GNL_ASSUMP='HIST_SCE_SPT'
+
+AND SCENARIO=@P0020@
+
+)
+*/
+
+
+    SELECT 
+        SCENARIO,
+        PERIOD,
+        SCEN_TYPE,
+        BAL_TYPE,
+        NOTE_ID,
+        BAL_TYPE_LABEL_EN AS BAL_TYPE_LABEL_EN,
+        BAL_TYPE_LABEL_FR AS BAL_TYPE_LABEL_FR
+    FROM ${DATASETPARTITION("003", "TE0004", PROCESS($Scenario.code,$Period.code).code, $Scenario.code, $Period.offset(-3).code)}
+
+
+
+###################################  P0010
+/* GET HISTORICAL SCENARIO FROM GENERAL ASSUMPTIONS IINPUT SCNEARIO*/
+
+/*
+(
+
+SELECT  VALUE
+
+FROM ${DATASETPARTITION("004", "000007", PROCESS($Scenario.code,$Period.code).code, $Scenario.code, $Period.code)}
+FROM AW_004_000007_000001
+
+WHERE ACCOUNT = 'T00001' 
+
+AND SCENARIO = ${$Scenario.code}
+
+)
+*/
+
+
+###################################  Datasource
+/* 
+Description : Retrieve monthly % from histo scenario
+Log : 28-01-2025 : initial ver
+Parameters : @P0010@ : Reference scenario from General assumption dataset
+*/
+
+SELECT  
+	${$Scenario.code} AS SCENARIO, 
+	PERIOD, 
+	ACCOUNT, 
+	ENTITY, 
+	CATEGORY, 
+	DIVISION, 
+	CUSTOMER, 
+	PRODUCT, 
+	RSRCE, 
+	TEXT_ORIGIN
+
+FROM ${DATASETPARTITION("004", "000003", PROCESS($Scenario.code,$Period.code).code, $Scenario.code, $Period.code)}
+
+WHERE SCENARIO = @P0010@
+
+
+###############
+SELECT  
+	SCENARIO, 
+	PERIOD, 
+	ACCOUNT, 
+	ENTITY, 
+	CATEGORY, 
+	DIVISION, 
+	CUSTOMER, 
+	PRODUCT, 
+	RSRCE, 
+	TEXT_ORIGIN
+
+FROM ${DATASETPARTITION("004", "000003", PROCESS($Scenario.code,$Period.code).code, $Scenario.code, $Period.code)}
+
+WHERE SCENARIO = @P0010@
+
+
+###################################  Datasource
+/* 
+Description : Retrieve monthly % from histo scenario
+Log : 	28-01-2025 : initial ver
+		30-01-2025 : added calculation for %Monthly per Actual partition (by period)
+Parameters : @P0010@ : Reference scenario from General assumption dataset if not used then Scenario.ref1 is used
+*/
+
+SELECT  
+	${$Scenario.code} AS SCENARIO, 
+	PERIOD, 
+	ACCOUNT, 
+	ENTITY, 
+	CATEGORY, 
+	DIVISION, 
+	CUSTOMER, 
+	PRODUCT, 
+	RSRCE, 
+	TEXT_ORIGIN
+
+FROM ${DATASETPARTITION("004", "000003", PROCESS($Scenario.code,$Period.code).code, $Scenario.code, $Period.code)}

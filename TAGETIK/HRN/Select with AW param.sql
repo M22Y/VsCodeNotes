@@ -1,0 +1,21 @@
+SELECT 
+    SCENARIO,
+    '12' AS PERIOD,
+    ENTITY,
+    CATEGORY,
+    CURRENCY,
+    SITE,
+    UNITE_AFFAIRE,
+    DEPARTMENT,
+    PRODUCT,
+    MODELE_AFFAIRE,
+    SECTOR,
+    REP,
+    ACCOUNT,
+    AMOUNT,
+    TEXT_FIELD1,
+    TEXT_FIELD2,
+    TEXT_ORIGIN,
+    TYPE_VENTE
+FROM ${DATASETPARTITION("001","000001",$Scenario.ref1.code,$Scenario.ref1.code,"12")} 
+WHERE PERIOD = '12' AND TYPE_VENTE = @P9999P@ AND SCENARIO = ${$Scenario.ref1.code}

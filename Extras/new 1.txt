@@ -1,0 +1,7 @@
+- TEST forecast - why everything DE140 - Monthly good but the Last adjust not working in forecast
+- there are still rows with null final_value but have a percentage (maybe a join somewhere)
+  maybe add a condition on first op in % calc activity to where vlue dollar <> 0
+
+-------------------------------
+
+

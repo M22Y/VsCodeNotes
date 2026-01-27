@@ -1,0 +1,20 @@
+
+
+
+
+SELECT T.COD, T.DESC 
+FROM (VALUES 
+('CT', 'By Contract'), 
+('DV', 'By Division'),
+(' ', ' ')
+) AS T (COD, DESC0);
+
+
+
+
+(select DISTINCT COD_CONTO_ELEGER6, DESC_CONTO_ELEGER6 from CONTO_gerarchia_flat WHERE COD_CONTO_ELEGER6 IS NOT NULL
+UNION
+SELECT T.COD, T.DESC0 
+FROM (VALUES ('%', '%')) 
+AS T (COD, DESC0))
+ORDER BY COD_CONTO_ELEGER6 ASC;
