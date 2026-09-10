@@ -1,0 +1,138 @@
+					##################################################################################
+###  Design par FPM360 -2018-
+###
+###  Versions:
+##    2018-07    Abdellatif AZIKI -- Initial version
+##    2021-08    Ravi Gauttom    --  Updated for Azur EUR/USD
+###
+##################################################################################
+
+
+SKIPCHECK;
+
+
+
+#####################
+# Planning Model
+#####################
+# Skip Calculations if scenario is frozen & cube is considered into FCT/BUD model
+[]=N:IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_cube','SIM_Selling_Price','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+
+#####################
+
+[] =
+IF(
+	SUBST(!t_Scenario,1,4)@= 'MRF-'
+# 	%!t_Scenario@=DB('SYS_TimeRef', 'Budget', 'Scenario')
+               %SUBST(!t_Scenario,1,3)@='BU-'
+	%SUBST(!t_Scenario,1,4)@='LRP-'
+	, CONTINUE
+	, STET
+);
+
+
+#Data FROM Current ACT Scenario to Current Focecast ACT Months
+[{'Markup_Fix', 'Fix_Selling_Price', 'Markup_%'}] = N:
+	 IF( (NUMBR(!t_Months)<= NUMBR( DB('SYS_TimeRef','Forecast','Month') ) ) & !t_Scenario@= DB('SYS_TimeRef', 'Forecast', 'Scenario'),
+	  DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,DB('SYS_TimeRef','Actuals','Scenario'),!m_Selling_Price),
+	  CONTINUE);
+[{'Markup_Index'}] = S:
+	 IF( (NUMBR(!t_Months)<= NUMBR( DB('SYS_TimeRef','Forecast','Month') ) ) & !t_Scenario@= DB('SYS_TimeRef', 'Forecast', 'Scenario'),
+	  DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,DB('SYS_TimeRef','Actuals','Scenario'),!m_Selling_Price),
+	  CONTINUE);
+
+
+
+['Markup_Index_Calcul'] = N:IF( ATTRS('Sub_Product', !Sub_Product, 'Main_Product')@='',
+			DB('Metals_Index',!Sub_Product,'01',!t_Months, !t_Scenario,DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_scenario,'Markup_Index')),
+			DB('Metals_Index',ATTRS('Sub_Product',!Sub_Product, 'Main_Product'),'01',!t_Months, !t_Scenario,DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_scenario,'Markup_Index'))
+                                               );
+
+
+
+
+['Fix_Selling_Price_Calcul'] = N:
+
+ 	  		 ['Fix_Selling_Price']\DB('MAP_Metal_Content','All_Metal',!Sub_Product,'Metal_Content_%')
+ ;
+
+['Markup_Fix_Calcul'] = N:
+
+
+ 			['Markup_Fix']\  DB('MAP_Metal_Content','All_Metal',!Sub_Product,'Metal_Content_%');
+
+
+##Added by RG###
+[{'Markup_Factor_USD', 'Fix_Selling_Price'}] = N: IF(DB('}ElementAttributes_Entity',!Entity,'Company Type')  @= 'A', ['Fix_Selling_Price_EUR'] * DB('Exchange_Rate', 'EUR-USD', !t_Months, !t_Scenario, 'Period Average'), CONTINUE);
+['Fix_Selling_Price_EUR'] = N: IF(DB('}ElementAttributes_Entity',!Entity,'Company Type')  @<> 'A', 0, CONTINUE);
+##End of code addition##
+
+ ['Markup_Factor_USD'] = N:
+IF(
+	 ['Fix_Selling_Price_Calcul'] <> 0 &  DB('MAP_Currency',!Sub_Product,!Customers,'Currency') | '-USD'  @= 'USD-USD',
+	 ['Fix_Selling_Price_Calcul'],
+IF(
+	 ['Fix_Selling_Price_Calcul'] <> 0 ,
+	 ['Fix_Selling_Price_Calcul'] * DB('Exchange_Rate', DB('MAP_Currency',!Sub_Product,!Customers,'Currency') | '-USD', !t_Months, !t_Scenario, 'Period Average'),
+
+
+IF(
+	 ['Markup_Fix_Calcul'] <> 0 &  DB('MAP_Currency',!Sub_Product,!Customers,'Currency') | '-USD'  @= 'USD-USD',
+ 	 ['Markup_Fix_Calcul']  + ['Markup_Index_Calcul']+(['Markup_Index_Calcul'] * ['Markup_%']),
+	 ['Markup_Fix_Calcul'] * DB('Exchange_Rate', DB('MAP_Currency',!Sub_Product,!Customers,'Currency') | '-USD', !T_Months,!t_Scenario, 'Period Average')+ ['Markup_Index_Calcul']+(['Markup_Index_Calcul'] * ['Markup_%'])
+	)));
+
+#['Fix_Selling_Price'] = C: ConsolidatedAvg(2,'SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,!m_Selling_Price) ;
+['Markup_Fix'] = C: ConsolidatedAvg(2,'SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,!m_Selling_Price) ;
+['Markup_Fix_Calcul'] = C: ConsolidatedAvg(2,'SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,!m_Selling_Price) ;
+['Markup_%'] = C: ConsolidatedAvg(2,'SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,!m_Selling_Price) ;
+['Markup_Index_Calcul'] = C: ConsolidatedAvg(2,'SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,!m_Selling_Price) ;
+#['Fix_Selling_Price_Calcul'] = C: ConsolidatedAvg(2,'SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,!m_Selling_Price) ;
+#['Markup_Factor_USD'] = C: ConsolidatedAvg(2,'SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,!m_Selling_Price) ;
+
+
+
+#2020-11-11 AEV - Ajustement avec moyenne pondérée
+[{'Markup_Factor_USD', 'Fix_Selling_Price_Calcul', 'Fix_Selling_Price'}] = C:
+DB('SIM_Commercial_Input',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,'World',!t_Months,!t_Scenario,'Amount_USD')
+\ DB('SIM_Commercial_Input',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,'World',!t_Months,!t_Scenario,'Metal_Content_Kg');
+
+
+
+#####################
+
+FEEDERS;
+
+['Markup_Index']=>DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,'Markup_Index_Calcul');
+['Fix_Selling_Price']=>DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,'Fix_Selling_Price_Calcul');
+['Fix_Selling_Price_Calcul']=> ['Markup_Factor_USD'] ;
+['Markup_Fix']=>DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,!t_Months,!t_Scenario,'Markup_Fix_Calcul');
+['Markup_Fix_Calcul']=>['Markup_Factor_USD'];
+['Markup_Index_Calcul']=>['Markup_Factor_USD'];
+
+
+# Feeders vers SIM_Commercial
+#======================================
+#['Fix_Selling_Price_Calcul']=>DB('SIM_Commercial',!Contract_Commercial, 'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,ATTRS('Sub_Product',!Sub_Product, 'Main_Product'),!Customers,ATTRS('Customers',!Customers, 'Country') ,!t_Months,!t_Scenario,'Fix_Selling_Price');
+['Fix_Selling_Price_Calcul']=>DB('SIM_Commercial',!Contract_Commercial, 'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,ATTRS('Customers',!Customers, 'Country') ,!t_Months,!t_Scenario,'Fix_Selling_Price');
+
+#['Markup_Fix_Calcul']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,ATTRS('Sub_Product',!Sub_Product, 'Main_Product'),!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'MarkUp_Fixe');
+['Markup_Fix_Calcul']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'MarkUp_Fixe');
+
+#['Markup_%']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,ATTRS('Sub_Product',!Sub_Product, 'Main_Product'),!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'MarkUp_percent');
+['Markup_%']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'MarkUp_percent');
+
+#['Markup_Index_Calcul']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,ATTRS('Sub_Product',!Sub_Product, 'Main_Product'),!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'Markup_Index_Calcul');
+['Markup_Index_Calcul']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'Markup_Index_Calcul');
+
+###Added Mg 03.17.2026
+['Markup_Index']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'Markup_Index_Ref');
+###### End 
+  
+['Markup_Factor_USD']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,ATTRS('Sub_Product',!Sub_Product, 'Main_Product'),!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'Markup_Factor');
+['Markup_Factor_USD']=>DB('SIM_Commercial',!Contract_Commercial,'All_Industries',!Entity,!Prod_Entity,!Sales_Rep,!Sub_Product,!Customers,ATTRS('Customers',!Customers, 'Country'),!t_Months,!t_Scenario,'Markup_Factor');
+
+
+

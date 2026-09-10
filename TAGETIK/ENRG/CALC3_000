@@ -1,0 +1,43 @@
+-- CALC3_000
+-- Retained earning update - Step -2
+
+
+-- Step 1: Calculate ADJ_AMOUNT for FPeriod = '12' and Left(ACCOUNT,1) not in ('1', '2', '3')
+WITH FilteredData AS (
+    SELECT 
+        FSCENARIO, 
+        SENTITY, 
+        ENTITY,
+        SACCOUNT, 
+        ACCOUNT, 
+        FPERIOD, 
+         DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        AMOUNT
+    FROM AW_FIN_000001_000002
+    WHERE FPERIOD = '12' 
+      AND LEFT(ACCOUNT, 1) NOT IN ('1', '2', '3')  AND ACCOUNT IN (SELECT COD_CONTO FROM CONTO
+WHERE NATURA_CONTO='E' AND TIPO_CONTO='N')  
+),
+RE_Calculation AS (
+    SELECT 
+        FSCENARIO, 
+        SENTITY, 
+                SUM(AMOUNT) AS ADJ_AMOUNT -- Changed to direct SUM
+    FROM FilteredData
+    GROUP BY FSCENARIO, SENTITY -- Grouping to get total adjustment amount
+)
+
+-- Step 2: Update the original table with the ADJ amount for the next scenario
+UPDATE AW_FIN_000001_000002
+SET ADJ_AMOUNT = RC.ADJ_AMOUNT
+FROM RE_Calculation RC
+WHERE AW_FIN_000001_000002.FSCENARIO = CAST(CAST(LEFT(RC.FSCENARIO, 4) AS INT) + 1 AS VARCHAR(4)) + 'ACT'
+  AND AW_FIN_000001_000002.SENTITY = RC.SENTITY
+  AND AW_FIN_000001_000002.ACCOUNT = '3100' 
+   AND AW_FIN_000001_000002.FSCENARIO IN (SELECT DISTINCT(COD_SCENARIO) FROM SCENARIO_PERIODO
+WHERE FLAG_BLOCCATO='0')
+ ; 

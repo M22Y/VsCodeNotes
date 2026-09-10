@@ -1,0 +1,37 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté
+#
+#     2015-02-11 - Laurent Choisez : Modification (Dimensions Account & Currency deleted
+#                                    Measure Amount_LC & Amount_USD added
+#	2015-02-04 - Laurent Choisez : Initial setup - STET & Currency Conversion
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+#region STET on Entity
+['Amount_LC'] =N: IF (ATTRS('Bank_Account_Nb', !Bank_Account_Nb, 'Restricted Party_ID') @<> !Entity  , 0, CONTINUE);
+['Comment'] =S: IF (ATTRS('Bank_Account_Nb', !Bank_Account_Nb, 'Restricted Party_ID') @<> !Entity  , '', CONTINUE);
+['Amount_LC']  =C: If ( ELLEV( 'Bank_Account_Nb',  !Bank_Account_Nb ) = 2, 0, CONTINUE);
+#endregion
+
+#region Currency conversion
+['Amount_USD'] = N: ['Amount_LC' ]
+*
+IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @<> 'Y', 1,
+			IF( ATTRS('Bank_Account_Nb', !Bank_Account_Nb, 'Bank_Account_Currency') @<>'USD',
+				DB('Exchange_Rate', DB('}ElementAttributes_Bank_Account_Nb', !Bank_Account_Nb, 'Bank_Account_Currency')|'-USD', !t_months, !t_Scenario, 'Period Spot'),
+				1));
+#endregion
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['Amount_LC' ]=> ['Amount_USD' ];

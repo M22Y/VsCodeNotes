@@ -1,0 +1,57 @@
+-- CALC1_001
+-- YTD to MTD conversion - Step 2
+
+--Step 1: Grouping the data before Calculation --
+
+ SELECT 
+      SCENARIO,
+      PERIOD,
+      CATEGORY,
+SENTITY,
+SACCOUNT,
+SACCOUNT2,
+SENTITYCTP,
+SDEST1,
+SDEST2,
+      ENTITY,
+      CURRENCY,
+      ACCOUNT,
+      CTPENTITY,
+      DEST1,
+      DEST2,
+      DEST3,
+      DEST4,
+      DEST5,
+      SUM(AMOUNT) AS AMOUNT,
+      SUM(MTD_AMOUNT) AS MTD_AMOUNT
+FROM AW_FIN_000003_000001
+
+GROUP BY 
+      SCENARIO,
+      PERIOD,
+      CATEGORY,
+SENTITY,
+SACCOUNT,
+SACCOUNT2,
+SENTITYCTP,
+SDEST1,
+SDEST2,
+       ENTITY,
+      CURRENCY,
+      ACCOUNT,
+      CTPENTITY,
+      DEST1,
+      DEST2,
+      DEST3,
+      DEST4,
+      DEST5
+;
+
+
+
+
+
+
+
+
+

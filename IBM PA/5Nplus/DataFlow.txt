@@ -1,0 +1,99 @@
+﻿File: AR_Aging.rux
+====================
+
+File: Banking.rux
+====================
+
+File: EHS_KPI.rux
+====================
+
+File: Exchange_Rate.rux
+====================
+
+File: Exchange_Rate_Week.rux
+====================
+
+File: FAPMonthlyCompanyDetails.rux
+====================
+
+File: FAP_Staging.rux
+====================
+
+File: HYP_Allocation_Other_Expenses.rux
+====================
+
+File: HYP_Backlog_FX.rux
+====================
+
+File: Interco_Validation.rux
+====================
+
+File: Inventory.rux
+====================
+
+File: Inventory_Location.rux
+====================
+
+File: Inventory_Spending.rux
+====================
+
+File: MAP_Currency.rux
+====================
+
+File: Metals_Index.rux
+====================
+
+File: Metal_Cost_Per_Entity.rux
+====================
+
+File: Other_Expenses.rux
+====================
+
+File: Production_Cost.rux
+====================
+
+File: Purchases.rux
+====================
+
+File: RPT_All.rux
+====================
+
+File: RPT_Commercial.rux
+====================
+
+File: RPT_Recycling.rux
+====================
+
+File: RPT_Supplemental.rux
+====================
+
+File: SIM_Backlog.rux
+====================
+
+File: SIM_CAPEX.rux
+====================
+
+File: SIM_Commercial.rux
+====================
+
+File: SIM_Commercial_Input.rux
+====================
+
+File: SIM_Selling_Price.rux
+====================
+
+File: SYS_Controls.rux
+====================
+
+File: SYS_Controls_Cube.rux
+====================
+
+File: SYS_TimeRef.rux
+====================
+
+File: SYS_TimeRef_Calendar.rux
+====================
+
+File: WCR.rux
+====================
+

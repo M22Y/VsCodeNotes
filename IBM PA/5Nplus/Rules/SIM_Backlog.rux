@@ -1,0 +1,51 @@
+																														#####################################################################################
+#--------------------------------------------------------------------#
+#      2024-04-12 Ravi Gauttom : Initial version
+#--------------------------------------------------------------------#
+#####################################################################################
+
+SKIPCHECK;
+
+##Block measures
+[{'Sales Amount', 'Sales Units', 'Reporting'}, {'CNY', 'EUR'}]	= 0;
+
+#Zero out consolidations where Backlog Q <> Period Q
+#Flattening the backlog in one row
+[t_backlog:'t_backlog':'All_Backlogs', 'Reporting', {'USD'}] = C:DB('SIM_Backlog', !Product, !Customers, !Entity, !t_period, !Currency, !t_versions, SUBST( !t_period, 6, 10 ), !m_backlog );
+
+#[] = C:IF(!t_backlog @= Subst(!t_period, 6, 10), CONTINUE, 0);
+
+  
+#Region Currency conversion
+
+['Reporting', {'USD'}] = N: IF(DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,!Currency,!t_Versions,!t_backlog,'Input') <> 0
+					,DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,!Currency,!t_Versions,!t_backlog,'Input')
+					,Continue);
+##EUR to USD
+['Reporting', 'USD'] = N: IF(DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,!Currency,!t_Versions,!t_backlog,'Input') = 0
+			 &  DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,'EUR',!t_Versions,!t_backlog,'Input') <> 0
+					,DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,'EUR',!t_Versions,!t_backlog,'Input')
+						* DB('Exchange_Rate', 'EUR-USD', !t_Period, !t_Versions | '-' | DB('}ElementAttributes_t_period', !t_period, 'Year'), 'Period Average')
+					,Continue);
+
+##CNY to USD
+['Reporting', 'USD'] = N: IF(DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,!Currency,!t_Versions,!t_backlog,'Input') = 0
+			 &  DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,'CNY',!t_Versions,!t_backlog,'Input') <> 0
+					,DB('SIM_Backlog',!Product,!Customers,!Entity,!t_Period,'CNY',!t_Versions,!t_backlog,'Input')
+						* DB('Exchange_Rate', 'CNY-USD', !t_Period, !t_Versions | '-' | DB('}ElementAttributes_t_period', !t_period, 'Year'), 'Period Average')
+					,Continue);
+
+#endregion
+
+
+##Region To pull sales amount from the RPT_Commercial Cube
+['Sales Amount', 'USD'] = N:DB('RPT_Commercial','All_Contracts','All_Industries',!Entity,'All_Prod_Entity','All_Sales_rep',!Product,!Customers,'World', DB('}ElementAttributes_t_period', !t_period, 'Month'),!t_Versions | '-' | DB('}ElementAttributes_t_period', !t_period, 'Year'),'Amount_USD');
+
+##Region To pull sales units from the RPT_Commercial Cube
+['Sales Units', 'USD'] = N:DB('RPT_Commercial','All_Contracts','All_Industries',!Entity,'All_Prod_Entity','All_Sales_rep',!Product,!Customers,'World', DB('}ElementAttributes_t_period', !t_period, 'Month'),!t_Versions | '-' | DB('}ElementAttributes_t_period', !t_period, 'Year'),'Units');
+
+
+FEEDERS;
+['Input', {'EUR','CNY','USD'}] => ['Reporting', 'USD'];
+
+

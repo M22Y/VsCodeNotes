@@ -1,0 +1,93 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté  --2014--
+#
+#
+#	2015-05-29 - Alexandra Gautier - Initial Design
+#	2016-06-10 - D Hannan - Skip recipes to be fed Directly
+#--------------------------------------------------------------------
+
+
+SKIPCHECK;
+
+#region Skip recipes to be fed Directly
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','Purchases','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+
+
+['RP250','Price_USD']= Stet;['RP251','Price_USD']= Stet;['RP252','Price_USD']= Stet;['RP253','Price_USD']= Stet;['RP254','Price_USD']= Stet;['RP624','Price_USD']= Stet;['RP701','Price_USD']= Stet;['RP703','Price_USD']= Stet;['RP923','Price_USD']= Stet;['RS001','Price_USD']= Stet;['RS002','Price_USD']= Stet;['RS003','Price_USD']= Stet;['RS004','Price_USD']= Stet;['RS005','Price_USD']= Stet;['RS006','Price_USD']= Stet;['RS008','Price_USD']= Stet;['RS009','Price_USD']= Stet;['RS011','Price_USD']= Stet;['RS012','Price_USD']= Stet;
+['RS013','Price_USD']= Stet;['RS014','Price_USD']= Stet;['RS015','Price_USD']=Stet;['RS016','Price_USD']= Stet;
+
+#region Status & Index copied from January to other months
+
+['Status' ] =S: IF (!t_Months@<>'01',
+			DB('Purchases', !Contract, !Product, !Supplier, !Entity, '01', !t_Scenario, 'Status'),
+			STET);
+
+['Index' ] =S: IF (!t_Months@<>'01',
+			DB('Purchases', !Contract, !Product, !Supplier, !Entity, '01', !t_Scenario, 'Index'),
+			STET);
+
+#endregion
+
+#region Metal index from cube Metal index following index selected
+
+['Index_USD' ] =N: IF (DB('Purchases', !Contract, !Product, !Supplier, !Entity, !t_Months, !t_Scenario, 'Index')@='Budget_Low',
+				DB('Metals_Index', !Product,'01', !t_Months, !t_Scenario, 'Budget_Low'),
+					IF (DB('Purchases', !Contract, !Product, !Supplier, !Entity, !t_Months, !t_Scenario, 'Index')@='Budget_High',
+					DB('Metals_Index', !Product, '01', !t_Months, !t_Scenario, 'Budget_High'),
+							IF (DB('Purchases', !Contract, !Product, !Supplier, !Entity, !t_Months, !t_Scenario, 'Index')@='Budget_Avg',
+							DB('Metals_Index', !Product,'01', !t_Months, !t_Scenario, 'Budget_Avg'),IF (DB('Purchases', !Contract, !Product, !Supplier, !Entity, !t_Months, !t_Scenario, 'Index')@='Bulletin_Low',
+				DB('Metals_Index', !Product,'01', !t_Months, !t_Scenario, 'Bulletin_Low'),
+					IF (DB('Purchases', !Contract, !Product, !Supplier, !Entity, !t_Months, !t_Scenario, 'Index')@='Bulletin_High',
+					DB('Metals_Index', !Product, '01', !t_Months, !t_Scenario, 'Bulletin_High'),
+							IF (DB('Purchases', !Contract, !Product, !Supplier, !Entity, !t_Months, !t_Scenario, 'Index')@='SMM_Low(Bismuth Only)',
+							DB('Metals_Index', !Product,'01', !t_Months, !t_Scenario, 'SMM_Low(Bismuth Only)'),
+				STET))))));
+
+#endregion
+
+#region Discount in USD calculation
+
+['Discount_USD' ] =N: IF(DB('Purchases', !Contract, !Product, !Supplier, !Entity, !t_Months, !t_Scenario, 'Discount_Perc')<> 0,
+				['Index_USD' ] *(1-['Discount_Perc' ] ),CONTINUE);
+
+
+#endregion
+
+#region Price Calculation
+
+ ['Price_USD' ]=N:['Index_USD' ] -['Discount_USD' ] ;
+
+#endregion
+
+#region Amount in USD Calculation
+
+['Amount_USD' ] =N:['Price_USD' ]*['Volume_Kg' ] ;
+
+#endregion
+
+#region Price calculation
+
+ ['Price_USD','All_Supplier' ]=C:['Amount_USD' ] \['Volume_Kg' ]  ;
+
+#endregion
+
+FEEDERS;
+
+['Index_USD' ]  => ['Price_USD' ];
+
+['Volume_Kg' ] => ['Amount_USD' ];
+
+#['Price_USD' ] => DB('Inventory_Spending', !Contract,  !Product, 'MHK', !t_Months, !t_Scenario, 'Metal_Cost_Contract');
+
+['Price_USD' ] => DB('Inventory_Spending', !Contract,  !Product, 'MHK', !t_Months, !t_Scenario, 'Metal_Cost_Per_Kg');
+
+#['P001' ]  => ['R250' ];

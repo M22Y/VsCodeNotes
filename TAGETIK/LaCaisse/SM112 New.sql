@@ -1,0 +1,86 @@
+/* SM112 - TRF - Budget Transfer Dataset Clean-up */
+/* RG - Added 4 new dimensions as part of Budget Transfer 2026*/
+
+DECLARE new_row INTEGER DEFAULT 0;
+DECLARE last_journal INTEGER DEFAULT 0;
+DECLARE flag_new_row INTEGER DEFAULT 0;
+DECLARE total_row INTEGER DEFAULT 0;
+
+/* identifier les nouvelles lignes*/
+
+/*UPDATE &TRANS& T
+SET TECH_ROW = (SELECT ROW_NUMBER() OVER () AS RN
+    FROM &TRANS& CTE
+    WHERE 1=1
+AND CTE.mov_type = 'GEN' 
+AND CTE.category = '$AMOUNT' 
+AND CTE.period =${$Scenario.attribute1} 
+AND CTE.TECH_ROW=0 
+AND CTE.TEXT_ORIGIN='000200' 
+AND CTE.SCENARIO='#SCENARIOS#'
+ AND T.ACCOUNT = CTE.ACCOUNT
+ AND T.COST_CENTER=CTE.COST_CENTER
+ AND T.ENTITY=CTE.ENTITY
+AND T.SCENARIO=CTE.SCENARIO
+ AND T.T_ENTITY=CTE.T_ENTITY
+ AND T.T_COST_CENTER=CTE.T_COST_CENTER
+ AND T.T_ACCOUNT=CTE.T_ACCOUNT
+ AND T.mov_type = CTE.MOV_TYPE AND T.category = CTE.CATEGORY AND T.period =CTE.PERIOD);*/
+
+MERGE INTO &TRANS& T
+USING ( 
+	SELECT *, ROW_NUMBER() OVER () AS RN
+    FROM &TRANS& CTE
+    WHERE 1=1
+AND CTE.mov_type = 'GEN' 
+AND CTE.category = '$AMOUNT' 
+AND CTE.period =${$Scenario.attribute1} 
+AND CTE.TECH_ROW=0 
+AND CTE.TEXT_ORIGIN='000200' 
+AND CTE.SCENARIO='#SCENARIOS#'
+	) A
+ON T.ACCOUNT = A.ACCOUNT
+ AND T.COST_CENTER=A.COST_CENTER
+ AND T.ENTITY=A.ENTITY
+ AND T.FOURNISSEUR=A.FOURNISSEUR
+ AND T.PROJECT=A.PROJECT
+ AND T.SNA=A.SNA
+ AND T.TRANSFER_TYPE=A.TRANSFER_TYPE
+ AND T.SCENARIO=A.SCENARIO
+ AND T.CURRENCY=A.CURRENCY
+ AND T.T_ENTITY=A.T_ENTITY
+ AND T.T_COST_CENTER=A.T_COST_CENTER
+ AND T.T_FOURNISSEUR=A.T_FOURNISSEUR
+ AND T.T_PROJECT=A.T_PROJECT
+ AND T.T_SNA=A.T_SNA
+ AND T.T_CURRENCY=A.T_CURRENCY
+ AND T.T_ACCOUNT=A.T_ACCOUNT
+ AND T.mov_type = A.MOV_TYPE 
+ AND T.category = A.CATEGORY 
+ AND T.period =A.PERIOD
+
+WHEN MATCHED THEN UPDATE SET T.TECH_ROW=A.RN;
+
+/*générer le numero d'ecriture unique*/
+
+flag_new_row := 1;
+SELECT COUNT(*) into new_row FROM &TRANS& WHERE NUM_ECR IS NULL AND mov_type = 'GEN' AND category = '$AMOUNT' AND period =${$Scenario.attribute1} AND TEXT_ORIGIN = '000200';
+SELECT MAX(num_count) into last_journal FROM &TRANS& WHERE TEXT_ORIGIN = '000200';
+total_row := last_journal + new_row;
+
+WHILE (last_journal < total_row ) DO
+       last_journal:=last_journal+1;
+       update &TRANS&
+       SET NUM_ECR =CAST(last_journal AS VARCHAR),                    
+        NUM_COUNT=last_journal
+        WHERE MOV_TYPE='GEN' AND CATEGORY = '$AMOUNT' AND SCENARIO='#SCENARIOS#' AND PERIOD =${$Scenario.attribute1} and TECH_ROW=flag_new_row;
+        flag_new_row=flag_new_row+1;
+
+END WHILE;
+
+
+UPDATE &TRANS& T
+SET TECH_ROW=-1
+WHERE TECH_ROW <>-1 OR TECH_ROW IS NULL AND SCENARIO='#SCENARIOS#';
+
+

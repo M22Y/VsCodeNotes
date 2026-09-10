@@ -1,0 +1,47 @@
+-- CALC1_000
+-- YTD to MTD conversion - Step 1
+
+--This step will help us update the blank item to a generic item to maintain consistency--
+
+--1. Update the SAccounts2 column in the CYR Transformation reporting layer:--
+
+UPDATE AW_FIN_000003_000001
+
+SET SACCOUNT2 = ACCOUNT
+WHERE SACCOUNT2 IS NULL;
+
+--2. Update the SENTTITYCTP column in the CYR Transformation reporting layer:--
+
+UPDATE AW_FIN_000003_000001
+
+SET SENTITYCTP = 'GEN'
+WHERE SENTITYCTP IS NULL;
+
+--3. Update the CTPENTITY column in the CYR Transformation reporting layer:--
+
+UPDATE AW_FIN_000003_000001
+
+SET CTPENTITY = 'GEN'
+WHERE CTPENTITY IS NULL;
+
+--4. Update the SACCOUNT column in the CYR Transformation reporting layer:--
+
+UPDATE AW_FIN_000003_000001
+
+SET SACCOUNT = ACCOUNT;
+
+--5. Update the SDEST1 column in the CYR Transformation reporting layer:--
+
+UPDATE AW_FIN_000003_000001
+
+SET SDEST1 = DEST1;
+
+--6. Update the SDEST2 column in the CYR Transformation reporting layer:--
+
+UPDATE AW_FIN_000003_000001
+
+SET SDEST2 = DEST2;
+
+
+
+

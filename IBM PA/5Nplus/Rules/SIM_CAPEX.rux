@@ -1,0 +1,106 @@
+##RG -  Mar 2024 - New Rules
+
+SKIPCHECK;
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+#[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','RPT_ALL','PlanningCube')@='YES' ,STET,CONTINUE);
+#[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+['Opening_Balance'] = N: IF( !t_scenario @= 'AC-2025' % !t_scenario @= 'MRF-2025'
+			, CONTINUE
+			, DB('SIM_CAPEX',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,!Currency,'Total_All_Months', DB('}ElementAttributes_t_Scenario',!t_Scenario,'Prev_Scenario'),'Dollars')
+		          );
+
+
+
+#   Subst(!t_scenario, 1,3) @= ''
+
+
+###########
+# MRF - ACT to FCT rule
+###########
+
+#All months
+[] = N: IF( Subst(!t_scenario, 1,3) @= 'MRF'
+                                & NUMBR(!t_months) <= NUMBR(DB('SIM_CAPEX','5N Plus Conso','No_Account','RPT_All_Project','RPT_Category_Capex','All_Other','no_currency','no_months','All_Scenario','month'))
+		, DB('SIM_CAPEX',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,!Currency,!t_Months,'AC-' | DB('}ElementAttributes_t_Scenario',!t_Scenario,'Year'),'Dollars')
+		, CONTINUE
+		);
+
+#Opening Balance
+['Opening_Balance'] = N: IF( Subst(!t_scenario, 1,3) @= 'MRF'
+		, DB('SIM_CAPEX',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,!Currency,!t_Months,'AC-' | DB('}ElementAttributes_t_Scenario',!t_Scenario,'Year'),'Dollars')
+		, CONTINUE
+		);
+
+
+###########
+# FX conversion
+###########
+
+#No_month
+['no_months'] = N: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+			  , CONTINUE
+			  , DB('SIM_Capex',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,DB('}ElementAttributes_Entity',!Entity,'Local Currency'),!t_Months,!t_Scenario,'Dollars')
+			    *DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-' |!Currency, '01', 'BU-' | DB('}ElementAttributes_t_Scenario',!t_Scenario,'Year'), 'Period Average')
+	);
+#['no_months'] = C: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+#			  , CONTINUE
+#			  , DB('SIM_Capex',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,DB('}ElementAttributes_Entity',!Entity,'Local Currency'),!t_Months,!t_Scenario,'Dollars')
+#			    *DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-' |!Currency, '01', 'BU-' | DB('}ElementAttributes_t_Scenario',!t_Scenario,'Year'), 'Period Average')
+#	);
+
+
+#Opening balance conversion
+['Opening_Balance'] = N: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+			  , CONTINUE
+			  , DB('SIM_Capex',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,DB('}ElementAttributes_Entity',!Entity,'Local Currency'),!t_Months,!t_Scenario,'Dollars')
+			    *DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-' |!Currency, '12', DB('}ElementAttributes_t_Scenario',!t_Scenario,'Prev_Scenario'), 'Period Average')
+	);
+
+#['Opening_Balance'] = C: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+#			  , CONTINUE
+#			  , DB('SIM_Capex',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,DB('}ElementAttributes_Entity',!Entity,'Local Currency'),!t_Months,!t_Scenario,'Dollars')
+#			    *DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-' |!Currency, '12', DB('}ElementAttributes_t_Scenario',!t_Scenario,'Prev_Scenario'), 'Period Average')
+#	);
+
+#All other months
+
+[] = N: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+			  , CONTINUE
+			  , DB('SIM_Capex',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,DB('}ElementAttributes_Entity',!Entity,'Local Currency'),!t_Months,!t_Scenario,'Dollars')
+			    *DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-' |!Currency, !t_months, !t_Scenario, 'Period Spot')
+	);
+#[] = C: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+#			  , CONTINUE
+#			  , DB('SIM_Capex',!Entity,!Accounts_Capex,!Projects_CAPEX,!Category_Capex,!Activity_Type,DB('}ElementAttributes_Entity',!Entity,'Local Currency'),!t_Months,!t_Scenario,'Dollars')
+#			    *DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-' |!Currency, !t_months, !t_Scenario, 'Period Spot')
+#	);
+
+
+###########
+# Business Rules
+###########
+##Copy actuals
+
+['SB2000_10','RPT_All_Project','Dollars', 'RPT_Category_Capex'] = N: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+						,DB('RPT_All','SB2000_10','C-All_Product','AllJournals',!Activity_Type,'C-All_Department - Total',!Entity,'All Counter Comp','CL ALL',!Currency,!t_Months,!t_Scenario,'Dollars')
+						,CONTINUE);
+
+['CAP2000_10','RPT_All_Project','Dollars', 'RPT_Category_Capex'] = N: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+						,DB('RPT_All','SB2000_10','C-All_Product','AllJournals',!Activity_Type,'C-All_Department - Total',!Entity,'All Counter Comp','CL ALL',!Currency,!t_Months,!t_Scenario,'Dollars')
+						,CONTINUE);
+
+['SB2100_10','RPT_All_Project','Dollars', 'RPT_Category_Capex'] = N: IF(!Currency @= DB('}ElementAttributes_Entity',!Entity,'Local Currency')
+						,DB('RPT_All','SB2100_10','C-All_Product','AllJournals','c-i999','C-All_Department - Total',!Entity,'All Counter Comp','CL ALL',!Currency,!t_Months,!t_Scenario,'Dollars')
+						,CONTINUE);
+
+FEEDERS;
+['USD'] => ['EUR'];
+['EUR', {'AZUR', 'EARTH'}] => ['USD'];
+['USD'] => ['CNY'];
+['CNY', {'MHC'}] => ['USD'];
+['Actuals'] => ['Forecast'];

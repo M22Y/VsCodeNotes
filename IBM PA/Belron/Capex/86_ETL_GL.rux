@@ -1,0 +1,640 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+
+########################################################################
+########################################################################
+## DESCRIPTION
+#
+#  Rules for 86_ETL_GL
+#
+#
+#
+#
+## HISTORIQUE
+#
+# 2022-05-13 Claude-Sebastien JEAN 	 Added transfer Budget, Forecast cube 10 for CALIB
+# 2022-06-01 Claude-Sebastien JEAN   Delete extra versions
+# 2022-06-11 Claude-Sebastien JEAN   Added COS$ for 111 (Calibration Camera)
+# 2025-03-08 M. Youssef - RCGT       Added 2025 Rolling_fct_Adj as 2+10 with final_budget as baseline
+#
+#
+########################################################################
+########################################################################
+
+
+#
+
+#Region Gross Margin Lines
+#Variation Version calculation
+['Var%_Act-Bud'] = (['Actual'] - ['Budget']) \ ['Budget'];
+
+#Prime Sales
+#Gross Margin Calculation Windshield
+['008120'] = N: ['000120'] +  ['002120'] +  ['002310'] + ['002420']+ ['003120'] + ['004120'];
+#Gross Margin Calculation Side
+['008130'] = N:['000130'] +  ['002130'] +  ['002315'] + ['002430']+ ['003130'] + ['004130'];
+#Gross Margin Calculation Back
+['008140'] = N:['000140'] +  ['002140'] +  ['002320'] + ['002440']+ ['003140'] + ['004140'];
+#Gross Margin Calculation Glass Accessories
+['008142'] = N:['000145'] +  ['002145'] + ['003142'] + ['004145'];
+#Gross Margin Calculation Sales Discounts
+['008150'] = N:['000150'];
+#Gross Margin Calculation Special Discounts
+['008155'] = N:['002325'] +  ['002327'] +  ['002328'] + ['002329']+ ['002330'] + ['002335'];
+#Gross Margin Calculation Wholesale Cost Adjustment
+['008157'] = N: ['003144'] + ['003145'] +  ['003146'] +  ['003150'] + ['003154']+ ['003155'] + ['003157'] + ['003158']+ ['003159'];
+#Gross Margin Calculation Deductibles
+['008160'] = N:['000160'];
+#Gross Margin Calculation Bus
+['008190'] = N:['000144'] +  ['002144'] +  ['002352'] + ['002490']+ ['003190'] + ['004190'];
+#Gross Margin Calculation RV
+['008191'] = N:['000142'] +  ['002142'] +  ['002351'] + ['002491']+ ['003191'] + ['004191'];
+#Gross Margin Calculation Repairs
+['008110'] = N:['000110'] + ['002110'];
+
+#Flat Glass
+['008180'] = N:['000180'] +  ['002180'] +  ['002345'] + ['002480']+ ['003180'] + ['004180'];
+['008181'] = N:['000181'] +  ['002342'] +  ['002181'] + ['002481']+ ['003181'] + ['004181'];
+['008182'] = N:['000182'] +  ['002343'] +  ['002182'] + ['002482']+ ['003182'] + ['004182'];
+['008183'] = N:['000183'] +  ['002344'] +  ['002183'] + ['002483']+ ['003183'] + ['004183'];
+['008184'] = N:['000184'] +  ['002346'] +  ['002184'] + ['002484']+ ['003184'] + ['004184'];
+['008185'] = N:['000185'] +  ['002347'] +  ['002185'] + ['002485']+ ['003185'] + ['004185'];
+['008186'] = N:['000186'];
+['008187'] = N:['000187'] +  ['002348'] +  ['002186'] + ['002486']+ ['003186'] + ['004186'];
+['008188'] = N:['000188'] +  ['002349'] +  ['002187'] + ['002487']+ ['003187'] + ['004187'];
+['008189'] = N:['000189'];
+
+#Other Sales
+#R&R
+['008195'] = N:['000195'];
+#GLass Accessories
+['008210'] = N:['000210'] +  ['002210'] +  ['002365'] + ['002510'] + ['003210'] + ['004210'];
+#Electronic
+['008231'] = N:['000220'] +  ['002220'] +  ['003220'] + ['004220'];
+['008232'] = N:['000239'] +  ['002239'] +  ['002375'] + ['002530'] + ['003239'] + ['004239'];
+['008233'] = N:['000245'] +  ['002245'] +  ['003245'] + ['004245'];
+#Remotes & Starters
+['008235'] = N:['000235'] +  ['002235'] +  ['003235'] + ['004235'];
+#mart 11-07-2018 NEW CAMERA CALIBRATION
+['008236'] = N:['000236'] +  ['002236'] +  ['003236'] + ['004236'];
+#Alcometer & Drive Safe
+['008241'] = N:['000241'];
+['008242'] = N:['000242'] +  ['002242'] +  ['003252'] + ['004252'];
+#Small Damage Repair
+['008244'] = N:['000244'] +  ['002244'] +  ['003244'] + ['004244'];
+#Other Products
+['008225'] = N:['000225'] +  ['002225'] +  ['003225'] + ['004225'];
+['008255'] = N:['000255'] +  ['002255'] +  ['003255'] + ['004255'];
+['008273'] = N:['000273'] +  ['002273'] +  ['002386'] + ['002586']+ ['003273'] + ['004273'];
+['008274'] = N:['000274'] +  ['002274'] +  ['002387'] + ['002587']+ ['003274'] + ['004274'];
+['008279'] = N:['000279'] +  ['002279'] +  ['002389'] + ['002579']+ ['003279'] + ['004279'];
+['008299'] = N:['000199'] +  ['002195'] +  ['002350'] + ['003195'];
+['008276'] = N:['000276'] +  ['002276'] +  ['003276'] + ['004276'];
+#Security
+['008261'] = N:['000261'] +  ['002261'] +  ['003261'] + ['004261'];
+['008262'] = N:['000262'] +  ['002262'] +  ['003262'] + ['004262'];
+['008263'] = N:['000263'] +  ['002263'] +  ['003263'] + ['004263'];
+#Glass Related Products
+['008296'] = N:['000266'];
+['008297'] = N:['000267'] +  ['002267'] +  ['002367'] + ['002567']+ ['003267'] + ['004267'];
+['008298'] = N:['000268'] +  ['002268'] +  ['002368'] + ['002568']+ ['003268'] + ['004268'];
+['008295'] = N:['000269'] +  ['002269'] +  ['003269'] + ['004269'];
+
+
+#Unrealized Profit on Transfert
+['008265'] = N:['004265'];
+##Other Revenus
+['008300'] = N:['000300'];
+
+
+#Gross margin after Other Costs
+['012700'] = N: ['008010'] + ['009500'];
+#Total Gross Profit
+['030000'] = N: ['012700'] + ['019000'];
+#Operating Profit
+['051700'] = N: ['030000'] + ['040001'] + ['050180'];
+#(Profit)Loss before Taxes
+['052000'] = N: ['051700'] + ['051800'] + ['051900'];
+#Net Profit
+['052400'] = N: ['052000'] + ['052005'];
+#endregion
+
+#Mart 2014-04-14 Put at zero years without reference Start new process date
+['Forecast', t_years:{'2009', '2010','2011','2012'}] =N: 0;
+['Budget', t_years:{'2009', '2010','2011','2012'}] =N: 0;
+
+#Stet Budget and Forecast Version previous year (copy from Budget Final and Forecast Final)
+[{'Budget', 'Forecast'}, {'2013', '2014'}]= STET;
+#Put at zero previous year
+#[{'Rolling_Fct_Adj', 'Budget_V1', 'Budget_V2', 'Budget_V3', 'Rolling_Forecast', 'Forecast_6_6', 'Forecast_7_5', 'Forecast_8_4', 'Forecast_9_3', 'Forecast_10_2', 'Forecast_11_1'},  t_years:{'2009', '2010', '2011', '2012', '2013', '2014'}] = 0;
+
+##
+## Deleted unused Version
+[{'Rolling_Forecast', 'Forecast_6_6'},  t_years:{'2009', '2010', '2011', '2012', '2013', '2014'}] = 0;
+
+
+#AJUSTER L'ATTRIBUT BS VERSUS P&L using ATTRS('GL_Accounts_Leaf', !GL_Accounts, 'Type')
+
+#2014-04-07 CSJ
+#Mart 09/10/13:Test avec Load par TI
+['Actual', 'Dollars$']=N:
+		DB('84_Actuals_GL', !Org_Structure, !GL_Accounts, !Versions, !t_Years, !t_Months, !m_ETL_GL);
+#Martfix : replace GL_Line by GL from the Attributes of GL_Line 'Child'
+#Mart 24/10/13: Flag 1 Forecast feed from 84
+[{'Forecast', 'Rolling_Fct_Adj'}, 'Dollars$']=N:
+		IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+		DB('86_ETL_GL', !Org_Structure, !GL_Accounts, 'Actual', !t_Years, !t_Months, !m_ETL_GL), CONTINUE);
+
+#Mart 04-11-2013 Upload Budget 2013 from Cognos Planning to TM1
+#Mart 27-02-2014 trsf Budget 2013 by TI
+['Budget', '2013', 'Dollars$']= N: IF( !GL_Accounts @= ATTRS('GL_Accounts_Line', ELPAR('GL_Accounts', !GL_Accounts, 1), 'Child'),
+	DB('20_OtherGL', !Org_Structure, ELPAR('GL_Accounts', !GL_Accounts, 1) , !Versions, !t_Years, !t_Months, 'Adjusted_Total'),0);
+
+
+#region Bilan du Cube 51
+#fk6fix add Attributes on GL_Acc to know the BS lines
+#remove the list from the left : add an if on the right
+#will be slower... no maintenance
+[Org_Structure:'6001', 'Dollars$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}, {'0910C',  '0910D',  '0911A',  '0911B',  '0912A',  '0912B',  '0811',  '0825A',  '0821A',  '0895A',  '0880A',  '0825B',  '0821B',  '0895B',  '0880B',  '0867A',  '0867B',  '7046E'
+,  '7536B',  '0800'
+,  '0856A',  '0857A',  '0858A',  '0859A',  '0855A',  '0800B',  '0856B',  '0857B',  '0858B',  '0859B',  '0855B',  '0840A',  '0850A',  '0865A',  '0870A',  '7512B',  '0805A',  '0806A',  '0807A',  '0840B',  '0850B',  '0860D',  '0870B',  '0805B',  '0806B',  '0
+807B',  '0830A',  '0890A',  '0830B',  '0890B',  '0300D',  '0300I',  '0300C',  '0300F',  '0300M',  '0300P',  '0300T',  '0300V',  '0300R',  '0410A',  '0405A',  '0400A',  '0407A',  '0401A',  '0408A',  '0470A',  '0404A',  '0471A',  '0472A',  '0473A',  '0474A'
+,  '0476A',  '0479A',  '0483A',  '0488A',  '0489A',  '0490A',  '0415A',  '0416A',  '0403A',  '0450A',  '0930',  '0427A',  '1220',  '0421A',  '0423A',  '0436A',  '0438A',  '0431A',  '0446A',  '0439A',  '0449A',  '1499V',  '0455A',  '0478A',  '0565A',  '059
+5A',  '0550A',  '0120',  '0110C',  '0111',  '0112',  '0130',  '0746C',  '0120A',  '0140',  '0141',  '0142',  '0142A',  '0143T',  '0143A',  '0150',  '0138',  '0155D',  '0156',  '0157',  '0156D',  '0156A',  '0148',  '0139',  '1933',  '0144F',  '0750',  '013
+7',  '0149',  '0662',  '0144Z',  '0145',  '0610V',  '0613',  '0612U',  '0613Z',  '0609V',  '0740',  '0741',  '0741A',  '0741U',  '0741L',  '0753',  '0753C',  '0748',  '0748D',  '0754',  '0742A',  '0743',  '0745',  '0747',  '0752',  '0708',  '0749',  '0751
+',  '1015',  '1095',  '1018',  '1020Z',  '1020Y',  '1035',  '1027R',  '1029',  '1897',  '1582',  '1020D',  '1076',  '1076Q',  '1075',  '1077',  '1075A',  '1080A',  '1072',  '1073',  '1074V',  '1078',  '1079',  '1081',  '1082',  '1083',  '1084',  '1110','1
+111',  '1112',  '1130',  '1120D',  '0950',  '1041',  '1065S',  '1046',  '1140V',  '1067S',  '1055V',  '1038H',  '1066V',  '1069V',  '1043',  '1068Q',  '1062V',  '1056V',  '1057V',  '1058V',  '1059',  '1061V',  '1060Y',  '1063',  '1064A',  '1051',  '1053A'
+,  '0611V',  '0614',  '0648U',  '0146',  '0147',  '1142',  '1142A',  '1142B',  '1142D',  '1142E',  '1142G',  '1142K',  '1142S',  '1142Y',  '1142Z',  '1052C',  '1141Z',  '1149',  '1150',  '1148',  '1025U',  '1143', '1144',  '1050V',  '0984',  '1067B',  '10
+67V','10
+67C',  '1067M',  '1067A',  '1142R',  '1142F',  '1144A',  '1144F',  '1144Q',  '1144S',  '1142C',  '1145A',  '1145F',  '1145G',  '1145Q',  '1145S',  '1146F',  '1146S',  '1146',  '1146C',  '1146I',  '1146L',  '1146V',  '0920',  '1065V',  '1142T',  '1166',  '
+0020',  '1010',  '1085',  '1085U',  '1285',  '1290',  '1231',  '1232',  '2010',  '2020',  '2030A',  '2036',  '2025',  '2035',  '2050',  '0700',  '0744',  '0704',  '0705',  '0710'} ]=N: DB('51_BS_Manual', ELPAR('GL_Accounts', !GL_Accounts, 1), !Versions, !
+t_Months |'-' | SUBST(!t_Years,3,2) , 'Closing_Balance');
+
+
+
+#endregion
+
+#region Sales Cube 10-11
+###################GL External sales= Customer segments Externe+Retail
+###################GL Interco Sales = Customer segment interne
+
+#########################Bring Prime Sales from cube 10############################
+#GL External Sales, Prime
+
+
+[{'3810U','3807','3808','3816','3815','3850','6065G','5027S','3811'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'Net_Sales')
+		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf', !GL_Accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'Net_Sales');
+#GL Interco Sales, Prime VANFAX ONLY
+[{'4120','4130','4131', '4116', '4170'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'Net_Sales');
+
+['4699', 'Dollars$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=N:
+	-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'Net_Sales');
+
+#GL External COS, Prime
+[{'3710U','3707','3708', '3716', '3720', '3750','3711'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'COS$_Pure')+
+		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+
+#GL Interco COS, Prime VANFAX ONLY
+[{'4620','4630','4631', '4616', '4670'} , 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+
+######################### Bring Prime Sales from cube 10 from Cube 111) ############################
+#CALIB
+['3255', 'Dollars$', 'Budget']= N:
+    IF( !t_Years@< '2023',
+        CONTINUE,
+		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
+	);
+
+['3255', 'Dollars$', 'Forecast']= N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
+	);
+
+# adjusted for 2025 Rolling_Fct_Adj
+['3255', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025']= N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+		-DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
+	);
+
+######################### Bring COS$ from cube 10 from Cube 111) ############################
+#CALIB
+['3643', 'Dollars$', 'Budget']= N:
+    IF( !t_Years@< '2023',
+        CONTINUE,
+		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
+	);
+
+['3643', 'Dollars$', 'Forecast']= N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
+	);
+['3643', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025']= N:
+    IF( !t_Years@< '2022',
+        CONTINUE,
+		DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
+	);
+#########################Bring NON-Prime Sales from cube 11############################
+#GL External Sales, Non-Prime
+[{'3840',  '3283',  '3273',  '3272',  '3271',  '3288',  '3889',  '3874',  '3289',  '4302',  '3202',  '3150Z',  '3825',  '3882',  '3813',  '3823',  '3326',  '3246',  '3203',  '6802',  '4337',  '3835',  '3832',  '6874',  '3836',  '3838',  '3831', '3255'},
+'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+		-DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'Net_Sales')
+		-DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'Net_Sales');
+
+#Glass Related linked on Glass related sales $
+[{'3251',  '3839',  '3849', '4225'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+	IF(ATTRS('Org_Structure_Leaf',  !Org_Structure, 'SB_Code') @<> 'WH',
+		-DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'Net_Sales'),
+		-DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'Net_Sales'));
+#endregion
+
+#region COS from Cube 11
+#GL External COS, NonPrime
+[{'3740',  '3783',  '3773',  '3772',  '3771',  '3788',  '3774',  '3789',  '3650Z',  '3725',  '3780',  '3713',  '3723',  '3746',  '3703',  '6590',  '4830',  '3735',  '3732',  '6706U',  '3736',  '3738',  '3731',  '3739',  '3749', '4725', '3643'},
+ 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+		DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'COS$_Pure')
+		+DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+#GL Interco Sales, Non Prime VANFAX ONLY
+[{'4183',  '4173',  '4172',  '4160',  '4171',  '4188',  '4174', '4175',  '4189',  '4150',  '4190',  '4140',  '4180',  '4952',  '4139',  '4149'},
+ 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}] =N:
+		-DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'Net_Sales');
+#GL Interco COS, non Prime VANFAX ONLY
+[{'4660',  '4683',  '4673',  '4672',  '4671',  '4688',  '4674', '4675',  '4689',  '4650',  '4685',  '4745A',  '4640',  '4680',  '4639',  '4649'},
+ 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=  N:
+		DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+
+
+
+#endregion
+
+#region PPV Cube 10-11
+#So 5 août modif PPV BRK Buy out lire 10
+['0315B','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'PPV$')+
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'PPV$')+
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Inventory_Revaluation$')+
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Inventory_Revaluation$');
+
+['0315T','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Exchange_Rate$_Impact')+
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Exchange_Rate$_Impact');
+
+['0410','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'BuyOut$')+
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'BuyOut$');
+
+['3795', 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}] =N:
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Breakage$')+
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Breakage$');
+
+##Mart 2014-11-04 nouvelle mesure
+['4691', 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}] =N:
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Unrealized_Profit_on_Trans$')+
+		DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Unrealized_Profit_on_Trans$');
+
+
+[{'0470',  '0483B',  '0473B',  '0472B',  '0471B',  '0488B',  '0474B',  '0489B',  '0350B',  '0425',  '0427',  '0413',  '0423',  '0446',  '0403',  '0445',  '0565',  '0440',  '0480',  '1400V',  '0436B',  '0438B',  '0431',  '0439B',  '0449B', '0570', '0590', '0455'},
+'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+		DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'PPV$');
+
+[{'3796',  '3796F',  '3696M',  '3696I',  '3696D',  '3796M',  '3696C',  '3796L',  '3695',  '3799M',  '3799D',  '3799V',  '3791',  '3799J',  '3799F',  '4287A',  '3794',  '3798',  '4293A',  '3790A',  '3790B',  '3799S',  '3794W',  '3794A', '4288', '1400u', '3799k'},
+'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+		DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Breakage$');
+#endregion
+
+#region Capex depuis Cube 56
+[{'5029',  '5029A',  '5029B',  '5029C',  '5029E', '5029F', '5029I', '5029L', '5029P', '5029R', '5029S',  '5029T', '5029V', '9014', '9014E', '9014F', '9014I', '9014L', '9014P', '9014R', '9014S', '9014V'}, {'Forecast', 'Rolling_Fct_Adj'}, 'Dollars$']= N:
+	IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+	['Actual', 'Dollars$'],
+	DB('56_Capex_Dep', !Org_Structure, !GL_accounts, !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation'));
+
+[{'5029',  '5029A',  '5029B',  '5029C',  '5029E', '5029F', '5029I', '5029L', '5029P', '5029R', '5029S',  '5029T', '5029V', '9014', '9014E', '9014F', '9014I', '9014L', '9014P', '9014R', '9014S', '9014V'}, 'Budget', 'Dollars$']= N:
+	DB('56_Capex_Dep', !Org_Structure,  !GL_accounts, !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation');
+#endregion
+
+[{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Dollars$']= N: IF( !GL_Accounts @= ATTRS('GL_Accounts_Line', ELPAR('GL_Accounts', !GL_Accounts, 1), 'Child'),
+	DB('20_OtherGL', !Org_Structure, ELPAR('GL_Accounts', !GL_Accounts, 1) , !Versions, !t_Years, !t_Months, 'Adjusted_Total'),0);
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FEEDERS;
+
+#Region Gross margin lines
+['Budget']=>['Var%_Act-Bud'];
+
+#Prime Sales
+#Gross Margin Calculation Windshield
+['000120'] => ['008120'];
+['002120'] => ['008120'];
+['002310'] => ['008120'];
+['002420'] => ['008120'];
+['003120'] => ['008120'];
+['004120'] => ['008120'];
+#Gross Margin Calculation Side
+['000130'] => ['008130'];
+['002130'] => ['008130'];
+['002315'] => ['008130'];
+['002430'] => ['008130'];
+['003130'] => ['008130'];
+['004130'] => ['008130'];
+#Gross Margin Calculation Back
+['000140'] => ['008140'];
+['002140'] => ['008140'];
+['002320'] => ['008140'];
+['002440'] => ['008140'];
+['003140'] => ['008140'];
+['004140'] => ['008140'];
+#Gross Margin Calculation Glass Accessories
+['000145'] => ['008142'];
+['002145'] => ['008142'];
+['003142'] => ['008142'];
+['004145'] => ['008142'];
+#Gross Margin Calculation Sales Discounts
+['000150'] => ['008150'];
+#Gross Margin Calculation Special Discounts
+['002325'] => ['008155'];
+['002327'] => ['008155'];
+['002328'] => ['008155'];
+['002329'] => ['008155'];
+['002330'] => ['008155'];
+['002335'] => ['008155'];
+#Gross Margin Calculation Wholesale Cost Adjustment
+['003144'] => ['008157'];
+['003145'] => ['008157'];
+['003146'] => ['008157'];
+['003150'] => ['008157'];
+['003154'] => ['008157'];
+['003155'] => ['008157'];
+['003157'] => ['008157'];
+['003158'] => ['008157'];
+['003159'] => ['008157'];
+#Gross Margin Calculation Deductibles
+['000160'] => ['008160'];
+#Gross Margin Calculation Bus
+['000144'] => ['008190'];
+['002144'] => ['008190'];
+['002352'] => ['008190'];
+['002490'] => ['008190'];
+['003190'] => ['008190'];
+['004190'] => ['008190'];
+#Gross Margin Calculation RV
+['000142'] => ['008191'];
+['002142'] => ['008191'];
+['002351'] => ['008191'];
+['002491'] => ['008191'];
+['003191'] => ['008191'];
+['004191'] => ['008191'];
+#Gross Margin Calculation Repairs
+['000110'] => ['008110'];
+['002110'] => ['008110'];
+
+#Flat Glass
+['000180'] => ['008180'];
+['002180'] => ['008180'];
+['002345'] => ['008180'];
+['002480'] => ['008180'];
+['003180'] => ['008180'];
+['004180'] => ['008180'];
+['000181'] => ['008181'];
+['002342'] => ['008181'];
+['002181'] => ['008181'];
+['002481'] => ['008181'];
+['003181'] => ['008181'];
+['004181'] => ['008181'];
+['000182'] => ['008182'];
+['002343'] => ['008182'];
+['002182'] => ['008182'];
+['002482'] => ['008182'];
+['003182'] => ['008182'];
+['004182'] => ['008182'];
+['000183'] => ['008183'];
+['002344'] => ['008183'];
+['002183'] => ['008183'];
+['002483'] => ['008183'];
+['003183'] => ['008183'];
+['004183'] => ['008183'];
+['000184'] => ['008184'];
+['002346'] => ['008184'];
+['002184'] => ['008184'];
+['002484'] => ['008184'];
+['003184'] => ['008184'];
+['004184'] => ['008184'];
+['000185'] => ['008185'];
+['002347'] => ['008185'];
+['002185'] => ['008185'];
+['002485'] => ['008185'];
+['003185'] => ['008185'];
+['004185'] => ['008185'];
+['000186'] => ['008186'];
+['000187'] => ['008187'];
+['002348'] => ['008187'];
+['002186'] => ['008187'];
+['002486'] => ['008187'];
+['003186'] => ['008187'];
+['004186'] => ['008187'];
+['000188'] => ['008188'];
+['002349'] => ['008188'];
+['002187'] => ['008188'];
+['002487'] => ['008188'];
+['003187'] => ['008188'];
+['004187'] => ['008188'];
+['000189'] => ['008189'];
+
+#Other Sales
+#R&R
+['000195'] => ['008195'];
+#GLass Accessories
+['000210'] => ['008210'];
+['002210'] => ['008210'];
+['002365'] => ['008210'];
+['002510'] => ['008210'];
+['003210'] => ['008210'];
+['004210'] => ['008210'];
+#Electronic
+['000220'] => ['008231'];
+['002220'] => ['008231'];
+['003220'] => ['008231'];
+['004220'] => ['008231'];
+['000239'] => ['008232'];
+['002239'] => ['008232'];
+['002375'] => ['008232'];
+['002530'] => ['008232'];
+['003239'] => ['008232'];
+['004239'] => ['008232'];
+['000245'] => ['008233'];
+['002245'] => ['008233'];
+['003245'] => ['008233'];
+['004245'] => ['008233'];
+#Remotes & Starters
+['000235'] => ['008235'];
+['002235'] => ['008235'];
+['003235'] => ['008235'];
+['004235'] => ['008235'];
+
+#MART 11-07-2018 NEW CAMERA CALIBRATION
+['000236'] => ['008236'];
+['002236'] => ['008236'];
+['003236'] => ['008236'];
+['004236'] => ['008236'];
+
+#Alcometer & Drive Safe
+['000241'] => ['008241'];
+['000242'] => ['008242'];
+['002242'] => ['008242'];
+['003252'] => ['008242'];
+['004252'] => ['008242'];
+#Small Damage Repair
+['000244'] => ['008244'];
+['002244'] => ['008244'];
+['003244'] => ['008244'];
+['004244'] => ['008244'];
+#Other Products
+['000225'] => ['008225'];
+['002225'] => ['008225'];
+['003225'] => ['008225'];
+['004225'] => ['008225'];
+['000255'] => ['008255'];
+['002255'] => ['008255'];
+['003255'] => ['008255'];
+['004255'] => ['008255'];
+['000273'] => ['008273'];
+['002273'] => ['008273'];
+['002386'] => ['008273'];
+['002586'] => ['008273'];
+['003273'] => ['008273'];
+['004273'] => ['008273'];
+['000274'] => ['008274'];
+['002274'] => ['008274'];
+['002387'] => ['008274'];
+['002587'] => ['008274'];
+['003274'] => ['008274'];
+['004274'] => ['008274'];
+['000279'] => ['008279'];
+['002279'] => ['008279'];
+['002389'] => ['008279'];
+['002579'] => ['008279'];
+['003279'] => ['008279'];
+['004279'] => ['008279'];
+['000199'] => ['008299'];
+['002195'] => ['008299'];
+['002350'] => ['008299'];
+['003195'] => ['008299'];
+['000276'] => ['008276'];
+['002276'] => ['008276'];
+['003276'] => ['008276'];
+['004276']=>  ['008276'];
+
+
+#Security
+['000261'] => ['008261'];
+['002261'] => ['008261'];
+['003261'] => ['008261'];
+['004261'] => ['008261'];
+['000262'] => ['008262'];
+['002262'] => ['008262'];
+['003262'] => ['008262'];
+['004262'] => ['008262'];
+['000263'] => ['008263'];
+['002263'] => ['008263'];
+['003263'] => ['008263'];
+['004263'] => ['008263'];
+#Glass Related Products
+['000266'] => ['008296'];
+['000267'] => ['008297'];
+['002267'] => ['008297'];
+['002367'] => ['008297'];
+['002567'] => ['008297'];
+['003267'] => ['008297'];
+['004267'] => ['008297'];
+['000268'] => ['008298'];
+['002268'] => ['008298'];
+['002368'] => ['008298'];
+['002568'] => ['008298'];
+['003268'] => ['008298'];
+['004268'] => ['008298'];
+['000269'] => ['008295'];
+['002269'] => ['008295'];
+['003269'] => ['008295'];
+['004269'] => ['008295'];
+
+
+
+#Unrealized Profit on Transfert
+['004265'] => ['008265'];
+##Other Revenus
+['000300'] => ['008300'];
+
+
+#Gross margin after Other Costs
+['008010'] => ['012700'];
+['009500'] => ['012700'];
+#Total Gross Profit
+['012700'] => ['030000'];
+['019000'] => ['030000'];
+#Operating Profit
+['030000'] => ['051700'];
+['040001'] => ['051700'];
+['050180'] => ['008265'];
+
+#(Profit)Loss before Taxes
+['051700']=> ['052000'];
+['051800']=> ['052000'];
+['051900']=> ['052000'];
+
+#Net Profit
+['052000']=> ['052400'];
+['052005']=> ['052400'];
+#endregion
+
+#Mart 2014-04-14 Excluded years fedders at zero
+#Mart 2014-05-05 enlever les années 2013-2014-2015 de la formule
+['Actual', 'Dollars$']=> DB(IF(DB('97_Actual_Flags', !t_Years, !t_Months, 'Forecast')=1, '86_ETL_GL', ''),
+	!Org_Structure, !GL_Accounts, 'Forecast', !t_Years, !t_Months, !m_ETL_GL);
+
+['Actual', 'Dollars$']=> DB(IF(DB('97_Actual_Flags', !t_Years, !t_Months, 'Rolling_Fct_Adj')=1, '86_ETL_GL', ''),
+	!Org_Structure, !GL_Accounts, 'Rolling_Fct_Adj', !t_Years, !t_Months, !m_ETL_GL);
+	
+###########################################################
+## CSJ Feeders TESTS: 2013-10-17
+## Ajout.
+#
+
+#Mart 11-05-2013 Actual for Actual anf Forecast with month =1  came from cube 84
+#[{'5029',  '5029A',  '5029B',  '5029C',  '5029S',  '5029T',  '9014',  '9014S'}, 'Actual', 'Dollars$'] => DB(IF(['Dollars$'] = 0, '', '86_ETL_GL'), !Org_Structure, !GL_Accounts, 'Forecast', !t_Years, !t_Months, 'Dollars$');
+#region Feed Cube 40
+#Actual, forecast and budget for P&L
+#Mart 2014-11-03 replaced by excel PL under TM1 Applications folder
+#['043001', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Other_Operating_Expenses');
+#['045310', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Indirect_Salaries');
+#['050180', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Overhead');
+#['000300', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Other_Income');
+#['009500', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Other_Cost_of_Sales');
+#['019000', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Direct_Labour');
+#['040001', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'RBI');
+#['040005', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Occupancy_Cost');
+#['041400', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Vehicule_Cost');
+#['044900', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Depreciation');
+#[{'019000', '051500', '045310', '051302'}, 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment', !Versions, !t_Years, !t_Months, 'Total_Labour');
+#
+#['043001', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Other_Operating_Expenses');
+#['045310', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Indirect_Salaries');
+#['050180', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Overhead');
+#['000300', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Other_Income');
+#['009500', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Other_Cost_of_Sales');
+#['019000', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Direct_Labour');
+#['040001', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'RBI');
+#['040005', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Occupancy_Cost');
+#['041400', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Vehicule_Cost');
+#['044900', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Depreciation');
+#[{'019000', '051500', '045310', '051302'}, 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Other_Products', 'No_Segment_Ext', !Versions, !t_Years, !t_Months, 'Total_Labour');
+#
+#['000050', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Windshield', 'Insurance', !Versions, !t_Years, !t_Months, 'Diff_GL_vs_Stats');
+#['002300', 'Dollars$', {'Actual','Forecast','Budget'}]=> DB(IF(['Dollars$'] = 0, '', '40_P&L'), !Org_Structure, 'Windshield', 'Interne', !Versions, !t_Years, !t_Months, 'Diff_GL_vs_Stats');
+#endregion
+#['Budget'] => DB('86_ETL_GL_overfeed', !Org_Structure, !GL_Accounts, !Versions, !t_Years, !t_Months, !m_ETL_GL);

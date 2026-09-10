@@ -1,0 +1,84 @@
+																																		#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté  -- 2014 --
+#             2017-09-14- Martial B-A : Removed Feeders Metal_Cost_Entity
+#             2017-09-07- Abdellatif AZIKI : Added LRP Scenario
+#	2015-01-27 - Philippe Comtois:	Added formula for yielded metal costs
+#	2014-11-08 - Francis Côté:	Initial & Backup Scénario STET
+#	2015-05-29 - Alexandra Gautier : production units yield
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube', 'Production_Cost','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#region  To calculate the yielded metal costs
+
+#['Yield'] =C:0;
+['Cost_Yield' ] = (['Cost_Unit' ] \['Yield' ]) -  ['Cost_Unit' ];
+
+#endregion
+
+#region Calculation production units yield
+
+['Units_Yield' ] =N:['Units' ]\['Yield' ] ;
+#endregion
+
+
+#region Entities enter in their Local Currency, USD based need to be set, other use Exch.Rate
+#['USD', 'Dollars'] =N:
+#	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+#		CONTINUE,
+#		DB('Production_Cost',  !Entity, !Product,!Account, ATTRS('Entity', !Entity, 'Local Currency'), !t_Months, !t_Scenario, 'Dollars')
+#		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', !t_Months, !t_Scenario, 'Period Average'));
+
+['USD', 'Dollars'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('Production_Cost',  !Entity, !Product,!Account, ATTRS('Entity', !Entity, 'Local Currency'), !t_Months, !t_Scenario, 'Dollars')
+		* IF (!Account @= 'SPV100', 1, DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', !t_Months, !t_Scenario, 'Period Average'))
+		);
+#endregion
+
+
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['Yield' ] => ['Cost_Yield' ];
+['Units'] => ['Units_Yield' ];
+
+## feeder production to cube inventory spending
+['Units_Yield' ] => DB( IF (SUBST(!t_Scenario,1,3)@='MRF',
+					'Inventory_Spending',''),'Not_Affected', !Product, !Entity, !t_Months, !t_Scenario, 'Production_Yield_Kg');
+
+['Units_Yield' ] => DB( IF (SUBST(!t_Scenario,1,2)@='BU',
+					'Inventory_Spending',''),'Not_Affected', !Product, !Entity, !t_Months, !t_Scenario, 'Production_Yield_Kg');
+
+['Units_Yield' ] => DB( IF (SUBST(!t_Scenario,1,3)@='LRP',
+					'Inventory_Spending',''),'Not_Affected', !Product, !Entity, !t_Months, !t_Scenario, 'Production_Yield_Kg');
+
+
+['Dollars'] => ['USD'];
+
+
+#Region  Fixed and Variables Costs from Production_Cost cube
+# Only on Closion Version 'REPO', CounterCie '@None' and Journal Number '0_'
+# Mapped from 'D988- Employee Benefit'
+# Added on May 2017 - ABO
+#Fixed and Variables Costs children Calculation
+#############################
+
+['Dollars']=>DB('RPT_All',!Account, !Product, '0_', 'All_Other', 'D998',!Entity, '@None', 'REPO',!Currency,!t_Months,!t_Scenario, 'Dollars');

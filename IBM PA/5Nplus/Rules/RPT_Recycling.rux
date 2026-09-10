@@ -1,0 +1,96 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#	2018-05-21 - Abdellatif
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','RPT_Recycling','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#Region MRF
+
+###new rules for MRF (Not for MRF3 and more)
+[] =N: IF (SUBST(!t_Scenario, 1, 4) @= 'MRF-',
+			IF (!t_Months @<= DB('SYS_TimeRef', 'Actuals', 'Month'),
+				DB('RPT_Recycling', !Contract, !Product, !Supplier, !Entity,!Counter_Cie, !t_Months,
+					'AC-' | SUBST(!t_Scenario, 5, 4) , !m_Recycling),
+				CONTINUE),
+			CONTINUE);
+#EndRegion
+
+#region Metail Index based on m_Sales:Markup_Base (Picklist formated)
+['Markup_Base'] =N:
+	DB('Metals_Index', !Product, '01', !t_Months, !t_Scenario, DB('RPT_Recycling', !Contract, !Product, !Supplier, !Entity,!Counter_Cie, !t_Months, !t_Scenario, 'Markup_Index'));
+#ATTRS('Product', !Product, 'Main_Product')
+
+['Markup_Factor'] =N: ['Markup_Base'] * (1 +['Markup_Percent']) + ['MarkUp_Fixe'];
+[{'MarkUp_Base','MarkUp_Percent','MarkUp_Fixe','Markup_Factor'} ] =C:0;
+#endregion
+
+#region Purchases Amount , Purchases in $/kg
+['Volume'] =N: ['Volume_KG']/1000;
+['Amount_LC' ] = N: ['Volume' ]*['Markup_Factor'];
+['Purchases_$Kg' ] =N: ['Amount_LC' ] \ ['Volume_Kg' ] ;
+
+#endregion,
+
+#region Currency conversion
+
+['Amount_USD'] = N: ['Amount_LC' ] + ['All_Costs' ]-['Amount_USD_Group'] ;
+
+###### Ne pas changer pour l'instant SVP ######
+
+#*
+#			IF( ATTRS('Customers',!Customers, 'Currency')@<>'USD',
+#				DB('Exchange_Rate', DB('}ElementAttributes_Customers', !Customers, 'Currency')|'-USD', !t_months, !t_Scenario, 'Period Average'),
+#				1);
+
+#endregion
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['Recycling_cost' ]=> ['Amount_LC' ];
+['Amount_LC' ]=> ['Amount_USD' ];
+
+['Volume_Kg' ] =>   ['Markup_Base'],
+				['Markup_Factor'],
+				['Purchases_$Kg' ],
+				['Volume'];
+['Markup_Index'] => ['Markup_Base'];
+
+['Volume'] => ['Amount_LC'];
+
+### Purchases incl. Interco
+['Amount_USD', 'All_Contracts','All_Supplier'] =>
+	 DB('RPT_All', 'UP2300', !Product, '101_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+['Amount_USD_Group', 'All_Contracts','All_Supplier'] =>
+	 DB('RPT_All', 'UP2500', !Product, '101_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+#['Amount_USD', 'All_Contracts','All_Supplier'] =>
+#	 DB('RPT_All', 'UP2300', !Product, '101_', 'All_Other', 'All_Department', !Entity,!Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Amount_USD', 'All_Contracts','SUPP_0172'] =>
+	 DB('RPT_All', 'UP2500', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+### Purchases to cover for Actuals
+['UP1000', 'All_Contracts','All_Supplier'] =>
+	 DB('RPT_All', 'UP1000', !Product, '101_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+['UP1500', 'All_Contracts','All_Supplier'] =>
+	 DB('RPT_All', 'UP1500', !Product, '101_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+
+#Region MRF
+###  New Rules for MRF
+[]=> DB (IF( SUBST(!t_Scenario,1,2)@='AC','RPT_Recycling',''),  !Contract, !Product, !Supplier, !Entity, !Counter_Cie,!t_Months,
+			'MRF-'| SUBST(!t_Scenario,4,4), !m_Recycling);

@@ -1,0 +1,19 @@
+#############################################
+###  Design par FPM360 -2017-
+###
+###  Versions:
+##    2017-05    ABO -- Initial version
+###
+#############################################
+
+
+SKIPCHECK;
+
+#Calculates the average value in a consolidation. Option 2 ignores blank cells.
+
+[ 'Gen_Admin', 'All_Months'] = C: ConsolidatedAvg(2,'HYP_Allocation_Other_Expenses', !Product, !Entity, !t_Months, !t_Scenario, !m_Allocation_Other_Expenses) ;
+['Other_Exp', 'All_Months'] = C: ConsolidatedAvg(2,'HYP_Allocation_Other_Expenses', !Product, !Entity, !t_Months, !t_Scenario, !m_Allocation_Other_Expenses) ;
+['UP6119', 'All_Months'] = C: ConsolidatedAvg(2,'HYP_Allocation_Other_Expenses', !Product, !Entity, !t_Months, !t_Scenario, !m_Allocation_Other_Expenses) ;
+
+
+FEEDERS;

@@ -1,0 +1,32 @@
+			['ACTUAL+TARGET','VALUE'] = N: IF(!t_years @<> DB('SYS_TimeRef','Actuals','Year')
+			,DB('EHS_KPI',!Entity,!EHS_KPI,!t_Months,!t_Years,'ACTUAL','VALUE')
+			,CONTINUE);
+
+['ACTUAL+TARGET','VALUE'] = N: IF(!t_years @= DB('SYS_TimeRef','Actuals','Year') & NUMBR(!t_Months) < DB('EHS_KPI','5N MTL','SITE_INSPECTION','no_months','no_years','ACTUAL','VALUE')
+			,DB('EHS_KPI',!Entity,!EHS_KPI,!t_Months,!t_Years,'ACTUAL','VALUE')
+			,DB('EHS_KPI',!Entity,!EHS_KPI,!t_Months,!t_Years,'TARGET','VALUE')
+);
+
+
+
+
+[ 'PERCENTAGE_VALUE']= IF(DB('EHS_KPI',!Entity,!EHS_KPI,!t_Months,!t_Years,'TARGET','VALUE') = 0
+			, 0
+			, DB('EHS_KPI',!Entity,!EHS_KPI,!t_Months,!t_Years,'ACTUAL','VALUE') / DB('EHS_KPI',!Entity,!EHS_KPI,!t_Months,!t_Years,'TARGET','VALUE'));
+
+
+
+
+## For carbon intensity Update the MRF for the current scenario at the end of the formula ##
+
+['CARBON INTENSITY']= (DB('EHS_KPI',!Entity,'ELECTRICITY_CONSUMPTION',!t_Months,!t_Years,!EHS_SCENARIOS,!EHS_measures) * DB('EHS_KPI',!Entity,'FACTEURS DEMISSION ELECTRICITE',!t_Months,!t_Years,!EHS_SCENARIOS,!EHS_measures)
+			+DB('EHS_KPI',!Entity,'DIESEL_CONSUMPTION',!t_Months,!t_Years,!EHS_SCENARIOS,!EHS_measures) * DB('EHS_KPI',!Entity,'FACTEURS DEMISSION DIESEL',!t_Months,!t_Years,!EHS_SCENARIOS,!EHS_measures)
+			+DB('EHS_KPI',!Entity,'NATURAL_GAS_CONSUMTION',!t_Months,!t_Years,!EHS_SCENARIOS,!EHS_measures) * DB('EHS_KPI',!Entity,'FACTEURS DEMISSION GAZ',!t_Months,!t_Years,!EHS_SCENARIOS,!EHS_measures))
+			/DB('RPT_All','Sales External','C-PROD','AllJournals','C-All_Other','C-All_Department - Total',!Entity,'All Counter Comp','CL ALL','USD',!t_Months,'MRF-2025','Dollars');
+
+
+
+['GASEOUS_EMISSIONS_CO2_EQU']=( DB('EHS_KPI',!Entity,'ELECTRICITY_CONSUMPTION',!t_Months,!t_Years,!EHS_SCENARIOS,!EHS_measures)*['ELECTRICITY_TONS_CO2']+['NATURAL_GAS_CONSUMTION']*['NATURAL_GAS_TONS_CO2']+['DIESEL_CONSUMPTION']*['DIESEL_TONS_OF_CO2']);
+
+##Rule to get the headcount from the Otherexpense cube uses t_Years to sub out for t_scenario. MG 02.16.2026 ## 
+['NUM_EMPLOYEES'] =  DB('Other_Expenses','ST9000',!Entity,'C-All_Department','@None','REPO','USD',!t_Months,'AC-' | !t_Years,'Dollars');

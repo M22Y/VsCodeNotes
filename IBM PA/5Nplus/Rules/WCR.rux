@@ -1,0 +1,84 @@
+												#####################################################################################
+#--------------------------------------------------------------------#
+#
+#	2015-08-27 - Philippe Comtois : Cube Creation
+#
+#	2023-03-23 - Matthew Glucksman : Modified dates for AC-2024 and MRF  Delta values Rule needs to be updated anually when a new AC sceario is created in Jan of the current year
+#   2025-01-02 - Matthew Glucksman : Modified dates for AC-2025 and MRF  Delta values Rule needs to be updated anually when a new AC sceario is created in Jan of the current year
+#   2026-01-13 - Matthew Glucksman : Modified dates for AC-2026 and MRF  Delta values Rule needs to be updated anually when a new AC sceario is created in Jan of the current year Lines 19 thru 23
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+#region Rules for MRF vs Actual Delta
+
+['Delta WCR','Total_USD']=N:['AC-2026'] - ['MRF-2026'];
+['Delta WCR','Total_USD']=C:['AC-2026'] - ['MRF-2026'];
+
+['Delta_ABS_WCR','Total_USD']=N:ABS(['AC-2026'] - ['MRF-2026']);
+['Delta_ABS_WCR','Total_USD']=C:ABS(['AC-2026'] - ['MRF-2026']);
+
+#endregion
+
+#region Entities enter in their Local Currency, USD based need to be set, other use Exch.Rate
+
+
+['Total_USD'] =  ['CAD' ] * DB('Exchange_Rate_Week', 'CAD-USD', !t_Weeks, !t_Scenario, 'Period Spot')
+			+ ['CNY' ] * DB('Exchange_Rate_Week', 'CNY-USD', !t_Weeks, !t_Scenario, 'Period Spot')
+			+ ['EUR' ] * DB('Exchange_Rate_Week', 'EUR-USD', !t_Weeks, !t_Scenario, 'Period Spot')
+			+ ['GBP' ] * DB('Exchange_Rate_Week', 'GBP-USD', !t_Weeks, !t_Scenario, 'Period Spot')
+			+ ['MYR' ] * 1/DB('Exchange_Rate_Week', 'USD-MYR', !t_Weeks, !t_Scenario, 'Period Spot')
+			+ ['KRW' ] * 1/DB('Exchange_Rate_Week', 'USD-KRW', !t_Weeks, !t_Scenario, 'Period Spot')
+			+ ['USD' ];
+
+#endregion
+
+#region To calculate the drawn amount on the Facility of loans
+
+['CBC Drawings' ] = ['CBC_Drawn' ] ;
+['HSBC Swinline - Drawing' ] = ['Swingline_Drawn' ];
+['HSBC_Loan' ] = [ 'HSBC_Drawn'] ;
+['Changsha Drawings' ] = ['Changsha_Drawn'];
+['BEA Drawings' ] = [ 'BEA_Drawn'];
+['KBC Drawings' ] = ['KBC_Drawn' ];
+['Debentures_used' ] = ['Debentures' ];
+['Other_Loan_used' ]  = ['General_Loan' ];
+
+#endregion
+
+#region To signal if inputs have been made in "3rd party Cash flows"
+
+ ['Dollars', 'completed?','comment'] =C: IF(['Net Debt beg. of week','Total_USD' ] <>0, 1, 0);
+
+#endregion
+
+
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['CAD' ] => ['Total_USD' ] ;
+['CNY' ] => ['Total_USD' ] ;
+['GBP' ] => ['Total_USD' ] ;
+['EUR' ] => ['Total_USD' ] ;
+['MYR' ] => ['Total_USD' ] ;
+['KRW' ] => ['Total_USD' ] ;
+['USD' ] => ['Total_USD' ] ;
+['CBC_Drawn' ] => ['CBC Drawings' ] ;
+['HSBC_Drawn' ] => ['HSBC_Loan' ] ;
+['Swingline_Drawn' ] => ['HSBC Swinline - Drawing' ];
+['Changsha_Drawn' ] => ['Changsha Drawings'];
+['BEA_Drawn' ] => [ 'BEA Drawings'];
+['KBC_Drawn' ] => ['KBC Drawings' ];
+['Debentures' ] => ['Debentures_used' ];
+['General_Loan' ] => ['Other_Loan_used' ];
+
+['Net Debt beg. of week' ] =>['Completed ?','Dollars','comment' ] ;
+
+['3rd party Cash flows' ] =>['Delta WCR' ] ;
+['3rd party Cash flows' ] =>['Delta_ABS_WCR' ] ;

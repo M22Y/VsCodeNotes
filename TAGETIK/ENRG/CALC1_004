@@ -1,0 +1,96 @@
+-- CALC1_004
+-- YTD to MTD conversion - Step 1 version 1
+
+
+-- Step 1: Create a list of all unique combinations of SENTITY, SACCOUNT, and other relevant columns---
+
+ SELECT 
+        S.SCENARIO,
+        P.COD_PERIODO AS PERIOD,
+        UNIQ.SENTITY,
+        UNIQ.SACCOUNT,
+        UNIQ.CATEGORY,
+        UNIQ.SACCOUNT2,
+        UNIQ.SENTITYCTP,
+        UNIQ.SDEST1,
+        UNIQ.SDEST2,
+        UNIQ.ENTITY,
+        UNIQ.CURRENCY,
+        UNIQ.ACCOUNT,
+        UNIQ.CTPENTITY,
+        UNIQ.DEST1,
+        UNIQ.DEST2,
+        UNIQ.DEST3,
+        UNIQ.DEST4,
+        UNIQ.DEST5
+    FROM AW_FIN_000003_000001 AS UNIQ
+    
+    CROSS JOIN AW_FIN_000003_000001 S
+
+    CROSS JOIN PERIODO AS P
+
+
+
+-- Step 7: Calculate PreviousAmount and MTD_AMOUNT--
+
+WITH MonthlyAmounts AS (
+    SELECT 
+         SCENARIO, 
+        PERIOD, 
+        CATEGORY,
+        SENTITY, 
+        SACCOUNT, 
+        SACCOUNT2,
+        SENTITYCTP,
+        SDEST1,
+        SDEST2, 
+        ENTITY,
+        CURRENCY,
+        ACCOUNT,
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        AMOUNT, 
+        LAG(AMOUNT) OVER (PARTITION BY SCENARIO,CATEGORY, SENTITY, SACCOUNT,SACCOUNT2, SENTITYCTP,SDEST1,SDEST2,ENTITY,CURRENCY,ACCOUNT,CTPENTITY,DEST1,DEST2,DEST3,DEST4,DEST5 ORDER BY SCENARIO, PERIOD) AS PreviousAmount,
+        CASE 
+            WHEN PERIOD = '01' THEN AMOUNT 
+            ELSE AMOUNT - LAG(AMOUNT) OVER (PARTITION BY SCENARIO,CATEGORY, SENTITY, SACCOUNT,SACCOUNT2, SENTITYCTP,SDEST1,SDEST2,ENTITY,CURRENCY,ACCOUNT,CTPENTITY,DEST1,DEST2,DEST3,DEST4,DEST5  ORDER BY SCENARIO, PERIOD)
+        END AS MTD_AMOUNT
+    FROM AW_FIN_000003_000001
+)
+-- Step 8: Merge results into target table
+MERGE AW_FIN_000003_000001 AS Target
+USING MonthlyAmounts AS Source
+ON Target.SCENARIO = Source.SCENARIO
+    AND Target.PERIOD = Source.PERIOD
+    AND Target.CATEGORY = Source.CATEGORY
+   AND Target.SENTITY = Source.SENTITY
+   AND Target.SACCOUNT = Source.SACCOUNT
+   AND Target.SACCOUNT2 = Source.SACCOUNT2
+   AND Target.SENTITYCTP = Source.SENTITYCTP
+   AND Target.SDEST1 = Source.SDEST1 
+   AND Target.SDEST2 = Source.SDEST2
+   AND Target.ENTITY = Source.ENTITY
+   AND Target.CURRENCY = Source.CURRENCY
+   AND Target.ACCOUNT = Source.ACCOUNT
+   AND Target.CTPENTITY=Source.CTPENTITY
+   AND Target.DEST1 = Source.DEST1
+   AND Target.DEST2 = Source.DEST2
+   AND Target.DEST3 = Source.DEST3
+   AND Target.DEST4 = Source.DEST4
+   AND Target.DEST5 = Source.DEST5
+   AND LEFT(Target.ACCOUNT, 1) NOT IN ('1', '2', '3')
+WHEN MATCHED THEN
+    UPDATE 
+SET Target.MTD_AMOUNT = Source.MTD_AMOUNT
+
+       ;
+
+-- Step 9: Directly update MTD_AMOUNT for specific accounts
+UPDATE AW_FIN_000003_000001
+SET MTD_AMOUNT = AMOUNT
+WHERE LEFT(ACCOUNT, 1) IN ('1', '2', '3')
+;

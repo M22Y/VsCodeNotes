@@ -1,0 +1,130 @@
+												#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté
+#
+#   2026-01-27 - Matt Glucksman Added current year 2026 to Month 01 updated needed at year change over Line 34
+#   2025-01-27 - Matt Glucksman Added current year 2025 to Month 01 updated needed at year change over Line 34
+#   2024-01-05 - Matt Glucksman Added current year 2024 to Month 01 updated needed at year change over
+#   2023-01-23 - Matt Glucksman Added current year 2023 to Month 01 updated needed at year change over
+#   2022-01-02 - Matt Glucksman Added current year 2022 to Month 01 updated needed at year change over
+#	2020-02-06 - Matt Glucksman Added current year 2020 to Month 01 updated needed at year change over
+#	2017-06-06 - Martial Bien-Aimé  Added a feeder ++1 for the current-previous period. Because when the current period YTD is 0, no calculation is done. Previous patch was rebooting the system.
+#	2014-11-06 - Francis Côté: 	Monthly value (by YTD-PrevMthYTD) skipped since Next Period Actuals doesn't exist
+#	2014-09-24 - Francis Côté: 	Added Dimension, Added measure item Production Source
+#	2014-07-31 - Alexandra Gautier: Initial setup Alexandra
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+
+#endregion
+
+#region Monthly from YTD value
+### disable rules on Monthly, Data value directly transfered from FAP_MthlyCieDetails
+#['Monthly'] = N: STET;
+
+###To calculate the Monthly value using the YTD value
+# Month 01 YTD from FAP corresponds to first month Monthly value
+# Others months will need to Calculate a variance with YTD and PriorMonth YTD
+
+['Monthly', {'201201', '201301', '201401', '201501',
+             '201601','201701','201801','201901','202001',
+             '202101','202201','202301','202401','202501','202601'}]=N:
+
+  
+	IF (DB('}ElementAttributes_Account', !Account, 'Account Type')@='C' % DB('}ElementAttributes_Account', !Account, 'Account Type')@='I' % DB('}ElementAttributes_Account', !Account, 'Account Type')@='U',
+			DB('FAP_Staging', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Origin_Cie, !Closing_Version, !Conso_Level, !Contrib_Version, !Elim_Interco, !Segment, !Currency, !Transaction_Currency, !Version, !Period, 'YTD'),
+			CONTINUE);
+
+['Monthly', 'BU'] =N:
+		['YTD']
+		- DB('FAP_Staging', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Origin_Cie, !Closing_Version, !Conso_Level, !Contrib_Version, !Elim_Interco, !Segment, !Currency, !Transaction_Currency, !Version,
+			ATTRS('Period', !Period, 'Prev_Mth'), 'YTD');
+
+
+
+['Monthly']=N:
+	IF ( (NUMBR(ATTRS('Period', !Period, 'Month')) = (DB('SYS_TimeRef', 'Actuals_CTRL', 'MonthNb')+1)
+			& ATTRS ('Period', !Period, 'Year') @= DB('SYS_TimeRef', 'Actuals_CTRL', 'Year')),
+		CONTINUE,
+		['YTD']
+		- DB('FAP_Staging', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Origin_Cie, !Closing_Version, !Conso_Level, !Contrib_Version, !Elim_Interco, !Segment, !Currency, !Transaction_Currency, !Version,
+			ATTRS('Period', !Period, 'Prev_Mth'), 'YTD')
+		);
+
+#endregion
+
+
+####################++++++++  FEEDERS  ++++++++####################
+
+FEEDERS;
+#region Internal feeder
+['YTD']=> ['Monthly'];
+['YTD']=> DB('FAP_Staging', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Origin_Cie, !Closing_Version, !Conso_Level, !Contrib_Version, !Elim_Interco, !Segment, !Currency, !Transaction_Currency, !Version,
+			ATTRS('Period', !Period, 'Next_Mth'), 'Monthly');
+['YTD']=> DB('FAP_Staging', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Origin_Cie, !Closing_Version, !Conso_Level, !Contrib_Version, !Elim_Interco, !Segment, !Currency, !Transaction_Currency, !Version,
+ATTRS( 'Period' ,  ATTRS('Period', !Period, 'Next_Mth'),   'Next_Mth')   , 'Monthly');
+#endregion
+
+#region Feeding RPT_ALL cube
+#To feed RPT_ALL
+#[ 'YTD', 'AllOrigComp',  'CT FL', Elim_Interco: 'C-All_Segment', Segment: 'C-D999', Transaction_Currency:'@None', Contrib_Version:'CO ALL'] =>
+#	DB('RPT_ALL', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version,  !Currency, 'All_Months', !Version | '-' | SUBST(!Period, 1, 4), 'Dollars');
+[{'Monthly', 'YTD'}, 'AllOrigComp',  'CT FL', Elim_Interco: 'C-All_Segment', Segment: 'C-D999', Transaction_Currency:'@None', Contrib_Version:'CO ALL'] =>
+	DB('RPT_ALL', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency,  SUBST(!Period, 5, 2), !Version | '-' | SUBST(!Period, 1, 4), 'Dollars');
+
+[{'Monthly', 'YTD'}, 'AllOrigComp',  'CT FL', Elim_Interco: 'C-All_Segment', Segment: 'C-D999', Transaction_Currency:'@None', Contrib_Version:'CO ALL'] =>
+	DB('SGA_allocation',!Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency,  SUBST(!Period, 5, 2), !Version | '-' | SUBST(!Period, 1, 4), 'Dollars');
+
+#endregion
+
+#To feed Ebitda
+#['YTD']=>DB('EBITDA', !Account, !Product, !Journal_Nb, !Entity, !Counter_Cie, !Origin_Cie, !Closing_Version, !Conso_Level,
+# !Contrib_Version, !Elim_Interco, !Segment, !Currency, !Version, 'All_Years', 'All_Months', 'Dollars');
+
+#Sales Actuals for Copntrols
+#['SSV100', Currency:'USD', 'AC', 'Monthly'] =>
+#	DB('Sales', 'Regular', !Product, 'CUST-1001', !Entity, 'All_Months', !Version | '-' | ATTRS('Period', !Period, 'Year'), 'KG_Control');
+#['SSV150', Currency:'USD', 'AC', 'YTD'] =>
+#	DB('Sales', 'Regular', !Product, 'CUST-1001', !Entity, 'All_Months', !Version | '-' | ATTRS('Period', !Period, 'Year'), 'KG_Control');
+
+[{'SSV100'} , '0_', 'All_Other', 'All_Department', 'AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All',
+ Elim_Interco:'All_Segment', Segment:'C-All_Segment', Currency:'USD', Transaction_Currency:'@None', 'AC', 'Monthly']  =>
+#	DB ('Sales', 'Regular', !Product, 'CUST_1001', !Entity, 'All_Months', !Version | '-' | ATTRS('Period', !Period, 'Year'), 'Kg_Control' );
+                DB('SIM_Commercial', 'Regular', 'Unassigned',!Entity, 'Unassigned','Unassigned',!Product,'CUST_1001','Unassigned','All_Months',  !Version | '-' | ATTRS('Period', !Period, 'Year'),'Kg_Control') ;
+
+#
+[{'UP1000'} , 'ALLjournals', 'C-All_Other', 'C-All_Department','AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All',
+ Elim_Interco:'C-All_Segment', Segment:'C-All_Segment', Currency:'USD', Transaction_Currency:'@None', 'AC', 'Monthly']  =>
+	#DB ('Sales', 'Regular', !Product, 'CUST_1001', !Entity, 'All_Months', !Version | '-' | ATTRS('Period', !Period, 'Year'), 'Amount_USD_Control' );
+                DB('SIM_Commercial','Regular','Unassigned',!Entity, 'Unassigned','Unassigned',!Product,'CUST_1001','Unassigned','All_Months',  !Version | '-' | ATTRS('Period', !Period, 'Year'),'Amount_USD_Control') ;
+
+
+[{'SSV150'} , '0_', 'All_Other', 'All_Department', 'AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All',
+ Elim_Interco:'All_Segment', Segment:'C-All_Segment', Currency:'USD', Transaction_Currency:'@None', 'AC', 'Monthly']  =>
+	#DB ('Sales', 'Regular', !Product, 'CUST_4900', !Entity, 'All_Months', !Version | '-' | ATTRS('Period', !Period, 'Year'), 'Volume_Interco_Control' );
+                DB('SIM_Commercial','Regular','Unassigned',!Entity, 'Unassigned','Unassigned',!Product,'CUST_4900','Unassigned','All_Months',  !Version | '-' | ATTRS('Period', !Period, 'Year'),'Volume_Interco_Control') ;
+
+#
+[{'UP1500'} , 'ALLjournals', 'C-All_Other', 'C-All_Department','AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All',
+ Elim_Interco:'C-All_Segment', Segment:'C-All_Segment', Currency:'USD', Transaction_Currency:'@None', 'AC', 'Monthly']  =>
+	#DB ('Sales', 'Regular', !Product, 'CUST_4900', !Entity, 'All_Months', !Version | '-' | ATTRS('Period', !Period, 'Year'), 'Amount_Interco_Control' );
+                DB('SIM_Commercial','Regular','Unassigned',!Entity, 'Unassigned','Unassigned',!Product,'CUST_4900', 'Unassigned','All_Months',  !Version | '-' | ATTRS('Period', !Period, 'Year'),'Amount_Interco_Control') ;
+
+#Other_Expenses
+[{'C-PROD','All_Product'}, 'ALLjournals', 'C-All_Other', 'CT FL', 'CO All', Elim_Interco:'C-All_Segment', Segment:'C-All_Segment', Transaction_Currency:'@None',
+ 'AC', 'YTD']=> DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, 'All_Months', !Version | '-' | SUBST(!Period, 1, 4), 'Dollars');
+
+#To feed the allocation cube
+['YTD', 'ALLOC_ADM']=> DB('Allocation', !Account, !Entity, !Segment, 'All_Years', 'All_Months','%');
+
+#region Inventory
+#To feed the inventory cube
+[{'QT1999', 'ST1599', 'ST1535'}] => DB('Inventory', 'Inventory_Account', !Product, !Entity, !Counter_Cie, !Journal_Nb, !Closing_Version, !Currency, SUBST(!Period, 5, 2), !Version | '-' | SUBST(!Period, 1, 4), 'Dollars');
+
+#['YTD', {'QT1999', 'ST1599', 'ST1535'}]=> DB('Inventory', 'Inventory_Account', !Product, !Entity, !Counter_Cie, !Journal_Nb, !Closing_Version, !Currency, SUBST(!Period, 5, 2), !Version | '-' | SUBST(!Period, 1, 4), 'Dollars');
+
+[{'Monthly','YTD'}]=>  DB('Inventory', !Account, !Product, !Entity, !Counter_Cie, !Journal_Nb, !Closing_Version, !Currency, SUBST(!Period, 5, 2), !Version | '-' | SUBST(!Period, 1, 4), 'Dollars');
+#endregion

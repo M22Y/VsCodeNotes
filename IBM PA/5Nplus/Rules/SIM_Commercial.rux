@@ -1,0 +1,270 @@
+																					#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté
+#      2018-01-30 - Abdellatif AZIKI: New cube SIM_Commercial
+#    2015-05-11 - Laurent Choisez    Ajout des rules MRF->ACT
+#      2014-11-09 - Francis Côté: STET on Backup Scenario
+#     2014-09-24 - Francis Côté:  Added Dimension, Added measure item Production Source
+#      2014-07-31 - Alexandra Gautier: Initial setup Alexandra
+#      2021-08-31 - Ravi Gauttom : Added rules for Azure and updated department aliases
+#      2021-11-16 - Matt Glucksman: removed referance to "C-P939" in the tolling rule as this group was removed in the new Segmentation Nov 2021
+#      2021-11-17 - Matt Glucksman: removed referance to "C-S937" in the tolling EM rule as this group was removed in the new Segmentation Nov 2021  All the Srap will be consoidated under "C-S958" -> tolling rule will continue to apply "C-S958"
+#      2022-08-22 - Ravi Gauttom : Added Sales_LC/kg
+
+#--------------------------------------------------------------------#
+#####################################################################################
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+#region STET on Backup
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','SIM_Commercial','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#Pour eliminer les Quantités Tolling EM (P916,P917 et P159) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+
+['Volume_KG', 'C-D497']=C:['Volume_KG', 'C-Z019']+['Volume_KG', 'C-Z029']+['Volume_KG', 'C-Z079']+['Volume_KG', 'C-Z089']+['Volume_KG', 'C-S938']+['Volume_KG', 'C-Z099']+['Volume_KG', 'C-P649']+['Volume_KG', 'C-P569']+['Volume_KG', 'C-S924']+['Volume_KG', 'C-P799'];
+['Internal_Volume', 'C-D497']=C:['Internal_Volume', 'C-Z019']+['Internal_Volume', 'C-Z029']+['Internal_Volume', 'C-Z079']+['Internal_Volume', 'C-Z089']+['Internal_Volume', 'C-S938']+['Internal_Volume', 'C-Z099']+['Internal_Volume', 'C-P649']+['Internal_Volume', 'C-P569']+['Internal_Volume', 'C-S924']+['Internal_Volume', 'C-P799'];
+['External_Volume', 'C-D497']=C:['External_Volume', 'C-Z019']+['External_Volume', 'C-Z029']+['External_Volume', 'C-Z079']+['External_Volume', 'C-Z089']+['External_Volume', 'C-S938']+['External_Volume', 'C-Z099']+['External_Volume', 'C-P649']+['External_Volume', 'C-P569']+['External_Volume', 'C-S924']+['External_Volume', 'C-P799'];
+['Volume', 'C-D497']=C:['Volume', 'C-Z019']+['Volume', 'C-Z029']+['Volume', 'C-Z089']+['Volume', 'C-S938']+['Volume', 'C-Z099']+['Volume', 'C-P649']+['Volume', 'C-P569']+['Volume', 'C-S924']+['Volume', 'C-P799'];
+
+['Volume_KG', 'Total Products']=C:['Volume_KG', 'C-D497']+['Volume_KG', 'C-D797']+['Volume_KG', 'C-D897']+['Volume_KG', 'C-D997'];
+['Internal_Volume', 'Total Products']=C:['Internal_Volume', 'C-D497']+['Internal_Volume', 'C-D797']+['Internal_Volume', 'C-D897']+['Internal_Volume', 'C-D997'];
+['External_Volume', 'Total Products']=C:['External_Volume', 'C-D497']+['External_Volume', 'C-D797']+['External_Volume', 'C-D897']+['External_Volume', 'C-D997'];
+['Volume', 'Total Products']=C:['Volume', 'C-D497']+['Volume', 'C-D797']+['Volume', 'C-D897']+['Volume', 'C-D997'];
+
+#Pour eliminer les Quantités Tolling EFM (P012) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+
+['Volume_KG', 'C-D797']=C:['Volume_KG', 'C-A049']+['Volume_KG', 'C-P049']+['Volume_KG', 'C-P099']+['Volume_KG', 'C-P149']+['Volume_KG', 'C-P199']+['Volume_KG', 'C-P249']+['Volume_KG', 'C-P299']+['Volume_KG', 'C-P349']+['Volume_KG', 'C-P399']+['Volume_KG', 'C-P419']+['Volume_KG', 'C-P429']+['Volume_KG', 'C-P439']+['Volume_KG', 'C-P449']+['Volume_KG', 'C-P499']+['Volume_KG', 'C-P749']+['Volume_KG', 'C-P959']+['Volume_KG', 'C-S099']+['Volume_KG', 'C-S108']+['Volume_KG', 'C-S958'];
+['Internal_Volume', 'C-D797']=C:['Internal_Volume', 'C-A049']+['Internal_Volume', 'C-P049']+['Internal_Volume', 'C-P099']+['Internal_Volume', 'C-P149']+['Internal_Volume', 'C-P199']+['Internal_Volume', 'C-P249']+['Internal_Volume', 'C-P299']+['Internal_Volume', 'C-P349']+['Internal_Volume', 'C-P399']+['Internal_Volume', 'C-P419']+['Internal_Volume', 'C-P429']+['Internal_Volume', 'C-P439']+['Internal_Volume', 'C-P449']+['Internal_Volume', 'C-P499']+['Internal_Volume', 'C-P749']+['Internal_Volume', 'C-P959']+['Internal_Volume', 'C-S099']+['Internal_Volume', 'C-S108']+['Internal_Volume', 'C-S958'];
+['External_Volume', 'C-D797']=C:['External_Volume', 'C-A049']+['External_Volume', 'C-P049']+['External_Volume', 'C-P099']+['External_Volume', 'C-P149']+['External_Volume', 'C-P199']+['External_Volume', 'C-P249']+['External_Volume', 'C-P299']+['External_Volume', 'C-P349']+['External_Volume', 'C-P399']+['External_Volume', 'C-P419']+['External_Volume', 'C-P429']+['External_Volume', 'C-P439']+['External_Volume', 'C-P449']+['External_Volume', 'C-P499']+['External_Volume', 'C-P749']+['External_Volume', 'C-P959']+['External_Volume', 'C-S099']+['External_Volume', 'C-S108']+['External_Volume', 'C-S958'];
+['Volume', 'C-D797']=C:['Volume', 'C-A049']+['Volume', 'C-P049']+['Volume', 'C-P099']+['Volume', 'C-P149']+['Volume', 'C-P199']+['Volume', 'C-P249']+['Volume', 'C-P299']+['Volume', 'C-P349']+['Volume', 'C-P399']+['Volume', 'C-P419']+['Volume', 'C-P429']+['Volume', 'C-P439']+['Volume', 'C-P449']+['Volume', 'C-P499']+['Volume', 'C-P749']+['Volume', 'C-P959']+['Volume', 'C-S099']+['Volume', 'C-S108']+['Volume', 'C-S958'];
+
+
+['Volume_KG', 'Total Products']=C:['Volume_KG', 'C-D497']+['Volume_KG', 'C-D797']+['Volume_KG', 'C-D897']+['Volume_KG', 'C-D997'];
+['Internal_Volume', 'Total Products']=C:['Internal_Volume', 'C-D497']+['Internal_Volume', 'C-D797']+['Internal_Volume', 'C-D897']+['Internal_Volume', 'C-D997'];
+['External_Volume', 'Total Products']=C:['External_Volume', 'C-D497']+['External_Volume', 'C-D797']+['External_Volume', 'C-D897']+['External_Volume', 'C-D997'];
+['Volume', 'Total Products']=C:['Volume', 'C-D497']+['Volume', 'C-D797']+['Volume', 'C-D897']+['Volume', 'C-D997'];
+
+
+#Region MRF
+
+### new rules for MRF (Not for MRF3 and more)
+#[] =N: IF (SUBST(!t_Scenario, 1, 4) @= 'MRF-',
+[] =N: IF(!t_Scenario @= DB('SYS_TimeRef', 'Forecast', 'Scenario'),
+			IF (!t_Months @<= DB('SYS_TimeRef', 'Actuals', 'Month'),
+				DB('SIM_Commercial', !Contract_Commercial,  !Industries,!Entity, !Prod_Entity,  !Sales_Rep, !Product, !Customers, !Countries, !t_Months,
+					'AC-' | SUBST(!t_Scenario, 5, 4) , !m_Commercial),
+				CONTINUE),
+			CONTINUE);
+
+
+#endregion
+
+#region Control Actuals from FAP_Staging : Amount, Kg
+
+#Sales Amount in Cognos Controller are in '000s, SIM_Commercial Cube is in Full Value (Budget) >> Keep on the same base for Var_Analysis
+['Regular', Industries:'Unassigned', Prod_Entity:'Unassigned', Sales_Rep:'Unassigned', 'CUST_1001',Countries:'Unassigned', 'Amount_USD_Control']  =N:
+     IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+	 (DB('FAP_Staging', 'UP1000',  !Product, 'ALLjournals', 'C-All_Other', 'C-All_Department', !Entity, 'AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All', 'C-All_Segment',
+ 'C-All_Segment', 'USD', '@None', 'AC', ATTRS ('t_Scenario', !t_scenario, 'Year') |!t_Months, 'Monthly'))
+		*1000,
+		CONTINUE);
+
+['Regular', Industries:'Unassigned', Prod_Entity:'Unassigned', Sales_Rep:'Unassigned', 'CUST_4900',Countries:'Unassigned', 'Amount_Interco_Control']  =N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		(DB('FAP_Staging', 'UP1500',  !Product, 'ALLjournals', 'C-All_Other', 'C-All_Department', !Entity, 'AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All', 'C-All_Segment',
+                     'C-All_Segment', 'USD', '@None', 'AC', ATTRS ('t_Scenario', !t_scenario, 'Year') |!t_Months, 'Monthly'))
+		*1000,
+		CONTINUE);
+
+['Regular', Industries:'Unassigned', Prod_Entity:'Unassigned', Sales_Rep:'Unassigned', 'CUST_1001',Countries:'Unassigned', 'Kg_Control']  = N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', 'SSV100',  !Product, 'ALLjournals', 'C-All_Other', 'C-All_Department', !Entity, 'AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All', 'C-All_Segment',
+                     'C-All_Segment', 'USD', '@None', 'AC', ATTRS ('t_Scenario', !t_scenario, 'Year') |!t_Months, 'Monthly')
+		,CONTINUE);
+
+['Regular', Industries:'Unassigned', Prod_Entity:'Unassigned', Sales_Rep:'Unassigned', 'CUST_4900',Countries:'Unassigned', 'Volume_Interco_Control']  = N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', 'SSV150',  !Product, 'ALLjournals', 'C-All_Other', 'C-All_Department', !Entity, 'AllCounterComp', 'AllOrigcomp', 'CL ALL', 'CT FL', 'CO All', 'C-All_Segment',
+                     'C-All_Segment', 'USD', '@None', 'AC', ATTRS ('t_Scenario', !t_scenario, 'Year') |!t_Months, 'Monthly')
+		,CONTINUE);
+#endregion
+
+#region Metail Index based on m_Sales:Markup_Base (Picklist formated)
+['Markup_Base'] =N:
+	DB('Metals_Index', !Product, '01', !t_Months, !t_Scenario, DB('SIM_Commercial', !Contract_Commercial,  !Industries,!Entity, !Prod_Entity,  !Sales_Rep, !Product, !Customers,!Countries, !t_Months, !t_Scenario, 'Markup_Index'));
+
+
+#A la demande de Richard, Le prochain MRF (MRF9-2018) sera faite avec l'ancienne methode. Les vendeurs pourront utilisés la nouvelle application a partir de MRF10 (et on ne change pas l'historique pour le BU-2018/LRP2018)
+#['Markup_Factor'] =N: IF (SUBST(!t_Scenario, 1, 7) @= 'BU-2018' % SUBST(!t_Scenario, 1, 10) @= 'LRP-2018-2' % SUBST(!t_Scenario, 1, 10) @= 'LRP-2018-3' % SUBST(!t_Scenario, 1, 8) @= 'MRF-2018',
+['Markup_Factor'] =N: IF (SUBST(!t_Scenario, 1, 7) @= 'BU-2018' % SUBST(!t_Scenario, 1, 10) @= 'LRP-2018-2' % SUBST(!t_Scenario, 1, 10) @= 'LRP-2018-3',
+                                    ['Markup_Base'] * (1 +['Markup_Percent']) + ['MarkUp_Fixe'],
+
+                                    CONTINUE);
+
+
+[{'MarkUp_Base','MarkUp_Percent','MarkUp_Fixe','Markup_Factor'} ] =C:0;
+#endregion
+
+#region Sales Amount , Sales in $/kg
+['Volume'] =N: ['Volume_KG'];
+
+['Amount_LC' ] = N: IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y'%(!t_Scenario @=  DB('SYS_TimeRef', 'FORECAST', 'scenario')&NUMBR(!t_Months) =NUMBR( DB('SYS_TimeRef', 'forecast', 'Month'))), STET, CONTINUE);
+['Amount_LC' ] = N: ['Volume' ]*['Markup_Factor'];
+
+['Sales_$kg' ] =N: ['Amount_USD' ] \ ['Volume_kg' ];
+['Sales_$kg' ] =c: ['Amount_USD' ] \ ['Volume_kg' ];
+['Sales_LC/kg' ] =N: ['Amount_LC' ] \ ['Volume_kg' ];
+['Sales_LC/kg' ] =C: ['Amount_LC' ] \ ['Volume_kg' ];
+#endregion
+
+#region Currency conversion
+##RG Added for Azure
+
+['Amount_USD'] = N: ['Amount_LC' ]
+*
+IF (DB('}ElementAttributes_Entity',!Entity,'Company Type')  @= 'A',
+			IF( ATTRS('Entity',!Entity, 'Local Currency')@<>'USD',
+				DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-USD', !t_months, !t_Scenario, 'Period Average'),
+				1), CONTINUE);
+
+['Amount_USD'] = N: ['Amount_LC' ]
+*
+IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @<> 'Y', 1,
+			IF( ATTRS('Entity',!Entity, 'Local Currency')@<>'USD',
+				DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency')|'-USD', !t_months, !t_Scenario, 'Period Average'),
+				1));
+
+
+#endregion
+
+#region Split internal & external sales and volume
+
+
+['Internal_Volume' ] =N: IF(!Entity@<>!Prod_Entity,
+					DB('SIM_Commercial', !Contract_Commercial,  !Industries,!Entity, !Prod_Entity,  !Sales_Rep, !Product, !Customers, !Countries,!t_Months, !t_Scenario, 'Volume' ) ,
+					STET);
+
+
+['External_Volume' ] =N: IF(!Entity@=!Prod_Entity,
+					DB('SIM_Commercial', !Contract_Commercial,  !Industries,!Entity, !Prod_Entity,  !Sales_Rep, !Product, !Customers, !Countries,!t_Months, !t_Scenario, 'Volume' ) ,
+					STET);
+
+#MRF From SIM_Commercial_Input & SIM_Selling_Price
+
+#A la demande de Richard, Le prochain MRF (MRF9-2018) sera faite avec l'ancienne methode. Les vendeurs pourront utilisés la nouvelle application a partir de MRF10
+
+
+
+#['Volume_Kg' ]=N:   IF( !t_Months @>DB('SYS_TimeRef', 'Actuals', 'Month') & SUBST(!t_Scenario, 1,3) @= 'MRF',
+   #                                                                               DB('SIM_Commercial_Input',!Contract_Commercial,!Industries,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!Countries,!t_Months,!t_Scenario,'Metal_Content_Kg'),
+      #                                                                            CONTINUE);
+#['Fix_Selling_Price' ]=N:  IF( !t_Months @>DB('SYS_TimeRef', 'Actuals', 'Month') & SUBST(!t_Scenario, 1,3) @= 'MRF',
+   #                                                                               DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,DB('SYS_TimeRef','Forecast','Scenario'),'Fix_Selling_Price'),
+      #                                                                            CONTINUE);
+#['Markup_Percent' ]=N:IF( !t_Months @>DB('SYS_TimeRef', 'Actuals', 'Month') & SUBST(!t_Scenario, 1,3) @= 'MRF',
+   #                                                                               DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,DB('SYS_TimeRef','Forecast','Scenario'),'Markup_%'),
+      #                                                                            CONTINUE);
+#['Markup_Fixe' ]=N:IF( !t_Months @>DB('SYS_TimeRef', 'Actuals', 'Month') & SUBST(!t_Scenario, 1,3) @= 'MRF',
+   #                                                                              DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,DB('SYS_TimeRef','Forecast','Scenario'),'Markup_Fix'),
+      #                                                                           CONTINUE);
+#['Markup_Index_Calcul' ]=N: IF( !t_Months @>DB('SYS_TimeRef', 'Actuals', 'Month') & SUBST(!t_Scenario, 1,3) @= 'MRF',
+   #                                                                               DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,DB('SYS_TimeRef','Forecast','Scenario'),'Markup_Index_Calcul'),
+      #                                                                             CONTINUE);
+#['Markup_factor' ]=N:  IF( !t_Months @>DB('SYS_TimeRef', 'Actuals', 'Month') & SUBST(!t_Scenario, 1,3) @= 'MRF',
+   #                                                                              DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,DB('SYS_TimeRef','Forecast','Scenario'),'Markup_Factor_USD'),
+      #                                                                          CONTINUE);
+
+#BU/LRP From SIM_Commercial_Input & SIM_Selling_Price
+#La nouvelle application des vendeurs sera effective a partir du BU-2019/LRP-2019-2&3
+[] =N: IF (SUBST(!t_Scenario, 1, 7) @= 'BU-2018'%SUBST(!t_Scenario, 1, 10) @= 'LRP-2018-2'%SUBST(!t_Scenario, 1, 10) @= 'LRP-2018-3',STET,CONTINUE);
+
+['Volume_Kg' ] = N: IF (!t_Scenario @=  DB('SYS_TimeRef', 'FORECAST', 'scenario')&NUMBR(!t_Months) =NUMBR( DB('SYS_TimeRef', 'forecast', 'Month')), STET, CONTINUE);
+
+ #['Volume_Kg' ]=N: IF (SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%(SUBST(!t_Scenario, 1,3) @= 'MRF'&NUMBR(!t_Months) >NUMBR( DB('SYS_TimeRef', 'forecast', 'Month'))),
+['Volume_Kg' ]=N: IF (SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%SUBST(!t_Scenario, 1,3) @= 'MRF',
+                                                                                      DB('SIM_Commercial_Input',!Contract_Commercial,!Industries,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!Countries,!t_Months,!t_Scenario,'Metal_Content_Kg'),
+                                                                                       CONTINUE);
+
+ ['Markup_Percent' ]=N:  IF  (SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%SUBST(!t_Scenario, 1,3) @= 'MRF',
+                                                                                     DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,!t_Scenario,'Markup_%'),
+                                                                                     CONTINUE);
+
+ ['Markup_Fixe' ]=N: IF  (SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%SUBST(!t_Scenario, 1,3) @= 'MRF',
+                                                                                       DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,!t_Scenario,'Markup_Fix_Calcul'),
+                                                                                       CONTINUE);
+
+ ['Markup_Index_Calcul' ]=N: IF (SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%SUBST(!t_Scenario, 1,3) @= 'MRF',
+                                                                                         DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,!t_Scenario,'Markup_Index_Calcul'),
+                                                                                         CONTINUE);
+##############Added MG Test 03.17.2026
+ ['Markup_Index_Ref' ]=S: IF (SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%SUBST(!t_Scenario, 1,3) @= 'MRF',
+                                                                                         DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,!t_Scenario,'Markup_Index'),
+                                                                                         CONTINUE);
+#############Added MG Test 03.17.2026
+
+##RG Added condition for Azure
+ ['Markup_factor' ]=N: IF  (SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%SUBST(!t_Scenario, 1,3) @= 'MRF',
+                                                                                     IF(DB('}ElementAttributes_Entity',!Entity,'Company Type')  @= 'A',
+							DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,!t_Scenario,'Fix_Selling_Price_EUR'),
+							DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,!t_Scenario,'Markup_Factor_USD')),
+ 				                         CONTINUE);
+
+ ['Fix_Selling_Price' ]=N:  IF(SUBST(!t_Scenario, 1, 3) @= 'BU-'  % SUBST(!t_Scenario, 1, 4) @= 'LRP-'%SUBST(!t_Scenario, 1,3) @= 'MRF',
+                                                                                     DB('SIM_Selling_Price',!Contract_Commercial,!Entity,!Prod_Entity,!Sales_Rep,!Product,!Customers,!t_Months,!t_Scenario,'Fix_Selling_Price_Calcul'),
+                                                                                     CONTINUE);
+
+
+
+
+
+#endregion
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['Amount_LC' ]=> ['Amount_USD' ];
+['Volume_Kg' ] =>   ['Markup_Base'],
+				['Markup_Factor'],
+				['Sales_$kg' ],
+				['Sales_LC/kg' ],
+				['Volume'];
+['Markup_Base'] => ['Markup_Factor'];
+
+
+
+['Volume'] => ['Amount_LC'];
+
+['Volume'] => ['Internal_Volume' ],['External_Volume' ];
+
+### Sales incl Interco
+['Amount_USD', 'All_Contracts','All_Customers'] =>
+	 DB(IF ( SUBST(!t_Scenario, 1,2) @='BU','RPT_All',''), 'UP1000', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Amount_USD', 'All_Contracts','All_Customers'] =>
+	 DB(IF ( SUBST(!t_Scenario, 1,3) @='LRP','RPT_All',''), 'UP1000', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Amount_USD', 'All_Contracts','All_Customers'] =>
+	 DB(IF(NUMBR(!t_Months) <=DB('SYS_TimeRef', 'Actuals', 'MonthNb'),'Metal_Cost_Per_Entity',''), 'UP1000', !Product, !Entity, '@None', !t_Months, !t_Scenario, 'Sales_Amount_USD');
+
+#Region MRF
+### New Rules for MRF
+[]=> DB (IF( SUBST(!t_Scenario,1,2)@='AC','SIM_Commercial',''), !Contract_Commercial,  !Industries,!Entity, !Prod_Entity,  !Sales_Rep, !Product, !Customers,!Countries, !t_Months,
+			'MRF-'| SUBST(!t_Scenario,4,4), !m_Commercial);
+
+
+## Feeder for volume in cube RPT_All
+['Volume_Kg','All_Contracts' ,'All_Customers']  => DB('RPT_All', 'SSV100', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+#

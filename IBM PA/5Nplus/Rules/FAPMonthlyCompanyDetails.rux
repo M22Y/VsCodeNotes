@@ -1,0 +1,42 @@
+skipcheck;
+
+# If it's the first period, then use the YTD value
+['Monthly'] = N: if(ATTRN('FAP_PeriodMonthly', !FAP_PeriodMonthly, 'MonthNo') = 1, DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, !FAP_Company, !FAP_Journal Number, !FAP_PeriodMonthly, 'YTD'), CONTINUE);
+
+# Else calculate the monthly value, i.e. current period YTD - previous period YTD
+['Monthly'] = N: DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, !FAP_Company, !FAP_Journal Number, !FAP_PeriodMonthly, 'YTD')
+ - 
+ DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, !FAP_Company, !FAP_Journal Number, ATTRS('FAP_PeriodMonthly', !FAP_PeriodMonthly, '-1'), 'YTD');
+
+# YTD Month level. Handle non consolidated calc accounts
+['YTD' ] = IF (ELLEV('FAP_PeriodMonthly', !FAP_PeriodMonthly) = 0,
+
+# Add all non consolidated calc account to the list. Set value from adjustment company e.g LE.2011-05.1000 gets its value from 1000
+IF(DTYPE('FAP_Company',!FAP_Company) @= 'C' & (!FAP_Account @= 'ICPRFT_NEG' % !FAP_Account @= 'ICGMPCT' % !FAP_Account @= 'ICPRFT_POS' ),
+ DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, ATTRS('FAP_Company', !FAP_Company, 'Company Code'), !FAP_Journal Number, !FAP_PeriodMonthly, !FAP_Measures),
+continue), continue);
+
+# YTD Quarter level
+['YTD' ] = IF (ELLEV('FAP_PeriodMonthly', !FAP_PeriodMonthly) = 1,
+
+# If the current period is the first Q, then use the monthly measure, i.e. monthly values aggregated from January to March
+IF(ATTRN('FAP_PeriodMonthly', !FAP_PeriodMonthly, 'MonthNo') = 1, DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, !FAP_Company, !FAP_Journal Number, !FAP_PeriodMonthly, 'Monthly'),
+
+# Else, calculate the correct accumulated value
+ DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, !FAP_Company, !FAP_Journal Number, !FAP_PeriodMonthly, 'Monthly')
++
+ DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, !FAP_Company, !FAP_Journal Number, ATTRS('FAP_PeriodMonthly', !FAP_PeriodMonthly, '-1'), 'YTD')), continue);
+
+# Year level
+['YTD' ] = IF (ELLEV('FAP_PeriodMonthly', !FAP_PeriodMonthly)=2, ['Monthly'], continue);
+
+feeders;
+['YTD'] => ['Monthly'], DB('FAPMonthlyCompanyDetails', !FAP_Segment, !FAP_Counter Dimension, !FAP_Product, !FAP_Department, !FAP_Other, !FAP_Currency, !FAP_Transaction Currency, !FAP_Consolidation Perspective
+, !FAP_Closing Version, !FAP_Contribution Version, !FAP_Account, !FAP_ActualityMonthly, !FAP_Origin Company, !FAP_Counter Company, !FAP_Company, !FAP_Journal Number, ATTRS('FAP_PeriodMonthly', !FAP_PeriodMonthly, '+1'), 'Monthly');

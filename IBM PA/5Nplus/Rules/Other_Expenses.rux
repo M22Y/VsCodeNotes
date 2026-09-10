@@ -1,0 +1,219 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté  --2014--
+#
+#   2015-05-17 - Martial Bien-Aimé Ajout d'un feeder pour RPT_ALL
+#   2015-06-08 - Laurent Choisez   Ajust Rules for MRF (unique scenario with backup)
+#   2015-04-09 - Laurent Choisez   MRF4-2015
+#	2014-11-08 - Francis Côté:	MRF3-2015
+#	2014-11-08 - Francis Côté:	Backup Scénario STET
+#	2014-11-05 - Frencis Côté:	HC calculations, HC value for Totals/Consolidations, excl. from Currency Conversion
+#	2014-10-30 - Frencis Côté:	Currency Conversion
+#	2014-10-24 - Francis Côté:	YTD HeadCount should be last period not a Sum
+#							    Align code & Added comments
+#							    Linked Actuals HC in ST9000
+#	2014-10-03 - Philippe Comtois : Cube Creation
+#	2024-03-13 - Ravi Gauttom : Added rule for $/HC
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+##Added by RG for $ per HC
+
+['ST9000-Simplified'] = N:['ST9000'];
+
+['ST9000-AVG', {'EUR', 'CNY'}] = DB('Other_Expenses', 'ST9000-AVG', !Entity, !Department, !Counter_Cie, !Closing_Version, 'USD', !t_Months, !t_Scenario, !m_EBITDA );
+
+##Layer 3 - At YTD level
+['ST9000-AVG', 'USD'] = C: IF(SUBST(!t_Months, 1,3) @= 'YTD'
+                        ,( DB('Other_Expenses', 'ST9000-Simplified', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA )
+                         + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, 'Dec', DB('}ElementAttributes_t_Scenario', !t_Scenario, '$HC_Scenario'), !m_EBITDA )
+                         )
+                         /(DB('}ElementAttributes_t_Months', !t_Months, 'Cost_Mth' ) + 1)
+                        ,CONTINUE
+                       );
+
+##Layer 2 - At month Q level
+['ST9000-AVG', 'USD', 'Q1'] = C: IF(SUBST(!t_Months, 1,1) @= 'Q'
+                        ,( DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', !t_Months, 'Last_Period' ), !t_Scenario, !m_EBITDA )
+                         + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', !t_Months, 'Last_Period' ), 'Prev_Mth' ), !t_Scenario, !m_EBITDA )
+                         + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', !t_Months, 'Last_Period' ), 'Prev_Mth' ), 'Prev_Mth' ), !t_Scenario, !m_EBITDA )
+                         + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, 'Dec', DB('}ElementAttributes_t_Scenario', !t_Scenario, '$HC_Scenario'), !m_EBITDA )
+                         )
+                         /4
+                        ,CONTINUE
+                       );
+
+
+['ST9000-AVG', 'USD'] = C: IF(SUBST(!t_Months, 1,1) @= 'Q'
+                        ,( DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', !t_Months, 'Last_Period' ), !t_Scenario, !m_EBITDA )
+                         + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', !t_Months, 'Last_Period' ), 'Prev_Mth' ), !t_Scenario, !m_EBITDA )
+                         + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', !t_Months, 'Last_Period' ), 'Prev_Mth' ), 'Prev_Mth' ), !t_Scenario, !m_EBITDA )
+                         + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', DB('}ElementAttributes_t_Months', !t_Months, 'Last_Period' ), 'Prev_Mth' ), 'Prev_Mth' ), 'Prev_Mth' ), !t_Scenario, !m_EBITDA )
+                         )
+                         /4
+                        ,CONTINUE
+                       );
+
+##Layer 1 - At month level
+['ST9000-AVG', 'USD', 'Jan'] = (DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA )
+                     + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, 'Dec', DB('}ElementAttributes_t_Scenario', !t_Scenario, '$HC_Scenario'), !m_EBITDA ))
+                     /2;
+
+['ST9000-AVG', 'USD'] = (DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA )
+                     + DB('Other_Expenses', 'ST9000', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, DB('}ElementAttributes_t_Months', !t_Months, 'Prev_Mth' ), !t_Scenario, !m_EBITDA ))
+                     /2;
+
+['$/HC'] = IF(DB('Other_Expenses', 'ST9000-AVG', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA ) = 0
+                  ,0
+                  ,DB('Other_Expenses', 'TCE', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA )
+                    / DB('Other_Expenses', 'ST9000-AVG', !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA )*1000
+              );
+
+##End of code addition
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','Other_Expenses','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#bypass for 2017 HC error of 2
+
+['ST9000', Entity:'FLADJ', 'D998', Counter_Cie:'@None', 'REPO', 'USD', '12', 'AC-2016','Dollars' ] = STET;
+['Dollars', 'TCE_All']=C:['Dollars', 'TCOE'];
+
+###Velo HC on (2015-03-19)
+#['D998', {'UP2003','UP2007','UP2237','UP3003','UP3004','UP6106'}] = IF (ATTRS ('t_Scenario', !t_scenario, 'Version') @= 'AC', STET, CONTINUE);
+
+
+###new rules for MRF (Not for MRF3 and more)
+[] =N: IF (SUBST(!t_Scenario, 1, 4) @= 'MRF-',
+			IF (!t_Months @<= DB('SYS_TimeRef', 'Actuals', 'Month'),
+				DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months,
+					'AC-' | SUBST(!t_Scenario, 5, 4) , !m_EBITDA),
+				CONTINUE),
+			CONTINUE);
+
+#region Consolidation HC (Total Yr, YTD)
+#HeadCount should be the latest period
+['ST9000', {'All_YTD', 'All_Variances'}] = 0;
+
+
+
+#Total HC for Current Year has to be linked to most recent month of Actuals available
+
+['ST9000', 'All_Months'] =C:IF (SUBST(!t_Scenario, 1, 3) @= 'AC-',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency,DB('SYS_TimeRef', 'Actuals_CTRL', 'Month'), !t_Scenario, !m_EBITDA),DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, ATTRS('t_Months', !t_Months, 'Last_Period'), !t_Scenario, !m_EBITDA));
+
+
+
+['ST9000', {'YTD_Jan','YTD_Feb','YTD_Mar','YTD_Apr','YTD_May','YTD_Jun','YTD_Jul','YTD_Aug','YTD_Sep','YTD_Oct','YTD_Nov','YTD_Dec', 'Q1', 'Q2','Q3','Q4'}] =
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, ATTRS('t_Months', !t_Months, 'Last_Period'), !t_Scenario, !m_EBITDA);
+
+['ST9000', Currency:'USD'] =N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', !Account, 'All_Product', 'ALLjournals', 'C-All_Other', !Department, !Entity, !Counter_Cie, 'AllOrigcomp', !Closing_Version, 'CT FL', 'CO All', 'C-All_Segment',
+                     'C-All_Segment', !Currency, '@None', 'AC', ATTRS ('t_Scenario', !t_scenario, 'Year')  |''|!t_Months, 'YTD'),
+		IF(ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+			STET,
+			DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, ATTRS('Entity', !Entity, 'Local Currency'), !t_Months, !t_Scenario, !m_EBITDA))
+		);
+
+#['ST9000'] =N:round(['ST9000'],2);
+#endregion)
+
+#region OPEX Actuals from FAP_Staging
+### Actuals in Labor to read from ST9--- equivalent account by Dept details
+['Dollars', {'UP2003','UP2007','UP2237','UP3003','UP3004','UP6106','UP6108'}]= N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging',  ATTRS('Account', !Account, 'Salaries_Department_Level'), 'C-All_Product', 'ALLjournals', 'C-All_Other', !Department, !Entity, !Counter_Cie, 'AllOrigcomp', !Closing_Version, 'CT FL', 'CO All', 'C-All_Segment',
+                    'C-All_Segment - Total', !Currency, '@None', 'AC', ATTRS ('t_Scenario', !t_scenario, 'Year')  |''|!t_Months, 'Monthly'),
+		CONTINUE);
+
+['Dollars']= N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', !Account, 'C-All_Product', 'ALLjournals', 'C-All_Other', !Department, !Entity, !Counter_Cie, 'AllOrigcomp', !Closing_Version, 'CT FL', 'CO All', 'C-All_Segment',
+                     'C-All_Segment - Total', !Currency, '@None', 'AC', ATTRS ('t_Scenario', !t_scenario, 'Year')  |''|!t_Months, 'Monthly'),
+		CONTINUE);
+
+['Dollars']= N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', !Account, 'C-All_Product', 'ALLjournals', 'C-All_Other', !Department, !Entity, !Counter_Cie, 'AllOrigcomp', !Closing_Version, 'CT FL', 'CO All', 'C-All_Segment',
+                     'C-All_Segment - Total', !Currency, '@None', 'BU', ATTRS ('t_Scenario', !t_scenario, 'Year')  |''|!t_Months, 'Monthly'),
+		CONTINUE);
+#endregion
+
+#region Entities enter in their Local Currency, USD based need to be set, other use Exch.Rate
+['USD', 'Dollars'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, ATTRS('Entity', !Entity, 'Local Currency'), !t_Months, !t_Scenario, !m_EBITDA)
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', !t_Months, !t_Scenario, 'Period Average'));
+#endregion
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['ST9000', t_Months:{'All_Months'}, Counter_Cie:'@None' , Closing_Version:'REPO', Currency:'USD', 'C-All_Department', 'Dollars']  =>
+	DB('Other_Expenses', !Account, !Entity, 'C-D999', !Counter_Cie, !Closing_Version, !Currency,  '01' , !t_Scenario, !m_EBITDA);
+
+['ST9000', t_Months:{'All_Months'}, Counter_Cie:'@None' , Closing_Version:'REPO', Currency:'USD', 'C-All_Department', 'Dollars', 'AC-2014']  =>
+	DB('Other_Expenses', !Account, !Entity, 'D993', !Counter_Cie, !Closing_Version, !Currency,  '01' , 'BU-2015', !m_EBITDA);
+
+['ST9000', t_Months:{'01','02','03','04','05','06','07','08','09','10','11','12'}, Counter_Cie:'@None' , Closing_Version:'REPO', Currency:'USD', 'C-All_Department']  =>
+	DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, 'YTD_' | !t_Months, !t_Scenario, !m_EBITDA);
+
+['ST9003'] => ['UP2003'];
+['ST9007'] => ['UP2007'];
+['ST9037'] => ['UP2237'];
+['ST9103'] => ['UP3003'];
+['ST9104'] => ['UP3004'];
+['ST9106'] => ['UP6106'];
+['ST9108'] => ['UP6108'];
+
+['Dollars'] =>
+DB( IF( SUBST(!t_Scenario,1,3)@='BU-' % SUBST(!t_Scenario,1,4)@='MRF-' % SUBST(!t_Scenario,1,4)@='LRP-', 'RPT_All',''), !Account,
+	'd497', '0_', 'All_Other', !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario,!m_EBITDA);
+
+['Dollars'] =>
+DB( IF( SUBST(!t_Scenario,1,3)@='BU-' % SUBST(!t_Scenario,1,4)@='MRF-' % SUBST(!t_Scenario,1,4)@='LRP-','RPT_All',''),!Account,
+	'd797', '0_', 'All_Other', !Department, !Entity,!Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA);
+
+['Dollars'] =>
+DB(IF( SUBST(!t_Scenario,1,3)@='BU-' % SUBST(!t_Scenario,1,4)@='MRF-' % SUBST(!t_Scenario,1,4)@='LRP-','RPT_All',''), !Account,
+	'D897', '0_', 'All_Other', !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA);
+
+['Dollars']	=>
+DB(IF( SUBST(!t_Scenario,1,3)@='BU-' % SUBST(!t_Scenario,1,4)@='MRF-' % SUBST(!t_Scenario,1,4)@='LRP-','RPT_All',''), !Account,
+	'P996', '0_', 'All_Other', !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA);
+
+['Dollars'] => ['USD'];
+#['Dollars'] => ['Dollars', 'USD'];
+
+#Region MRF
+###New Rules for MRF
+['Dollars']=> DB (IF( SUBST(!t_Scenario,1,2)@='AC','Other_Expenses',''), !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months,
+				'MRF-'| SUBST(!t_Scenario,4,4), !m_EBITDA);
+#EndRegion
+
+##RG - Added feeders for $/HC
+['ST9000'] => ['ST9000-Simplified'];
+['ST9000'] => ['ST9000-AVG'];
+['ST9000'] => ['$/HC'];
+['ST9000-AVG', 'USD' ] => ['EUR'];
+['ST9000-AVG', 'USD' ] => ['CNY'];
+
+
+##MG - Added feeders for EHS Num_Employees 02.16.2026
+
+
+##End of feeders

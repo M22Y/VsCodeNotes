@@ -1,0 +1,84 @@
+DECLARE all_columns VARCHAR;
+DECLARE  delete_sql VARCHAR;
+DECLARE  insert_sql VARCHAR;
+DECLARE  debug VARCHAR;
+DECLARE  columns VARCHAR;
+DECLARE  source_partition VARCHAR;
+DECLARE  source_scn VARCHAR;
+ 
+BEGIN
+ 
+SET @source_scn = ${$Scenario.code};
+-- 2025ACY
+SET @source_period = ${$Period.code};
+SET @columns = UPPER('&A_5_COLUMNS&');
+SET @source_partition = '${DatasetPARTITION("&A_1_AWCODE&", "&A_3_SOURCE_DATASET_CODE&", $Scenario.code)}';
+
+
+-- 2025ACT
+SET @target_scn =  
+'SELECT DISTINCT TGK_COD_SCENARIO 
+FROM ' || source_partition || ' 
+WHERE
+    TGK_COD_SCENARIO_ETL = ''' || source_scn || '''
+    AND TGK_COD_PERIODO = ''' || source_period || '''
+    ';
+
+SET @target_period =  
+'SELECT DISTINCT TGK_COD_PERIODO 
+FROM ' || source_partition || ' 
+WHERE
+    TGK_COD_SCENARIO_ETL = ''' || source_scn || '''
+    AND TGK_COD_PERIODO = ''' || source_period || '''
+    ';
+
+
+/* Generate the delete statement to delete ALL rows for the target scenario */
+SET @delete_sql = 
+ 'DELETE FROM &A_4_TARGET_DATASET&
+      WHERE TGK_COD_SCENARIO  = ''' || target_scn || '''
+       AND TGK_COD_PERIODO = ''' || target_period || '''
+       AND TGK_COD_AZIENDA IN (SELECT COD_AZIENDA FROM AZIENDA_GERARCHIA_ABBI WHERE COD_AZIENDA_GERARCHIA='800' AND COD_AZIENDA_ELEGER='CYR')
+       AND PROVENIENZA = 'DTP_ELAB'
+        ';
+
+
+-- dataset/reporting layer
+/* Generate Insert Statement */
+SET @insert_sql = 
+'INSERT INTO &A_4_TARGET_DATASET& (
+    &A_5_COLUMNS&,
+    PROVENIENZA,
+    USERUPD,
+    DATEUPD,
+    TGK_IMPORTO
+)
+SELECT
+    &A_5_COLUMNS&,
+    ''DTP_ELAB'' AS PROVENIENZA,
+    ''#USER#'' AS USERUPD,
+    CURRENT_TIMESTAMP AS DATEUPD,
+    TGK_IMPORTO_CALC AS TGK_IMPORTO
+FROM ' || source_partition || '
+WHERE
+    TGK_COD_PERIODO = ''' || source_scn || '''
+    AND TGK_COD_PERIODO = ''' || target_period || '''
+    AND TGK_COD_AZIENDA IN (SELECT COD_AZIENDA FROM AZIENDA_GERARCHIA_ABBI WHERE COD_AZIENDA_GERARCHIA='800' AND COD_AZIENDA_ELEGER='CYR')
+    AND PROVENIENZA = 'DTP_ELAB'
+    ';
+
+
+-- prepare scenario and period
+EXECUTE (@target_scn)
+EXECUTE (@target_period)
+
+/* Delete ALL rows */
+EXECUTE (@delete_sql)
+/* Execute Insert Statement */
+EXECUTE (@insert_sql)
+
+END;
+ 
+
+
+

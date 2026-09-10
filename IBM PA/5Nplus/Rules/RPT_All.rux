@@ -1,0 +1,794 @@
+								#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté
+#
+#	2020-06-23 Ajout des calcul FC_$KG VC_$Kg Gross Margin $Kg Matt Glucksman
+#              2017-06-27 MBA Enlever le NUMBR dans le calcul ACT=>FCT
+#              2017-05-24 MBA Ajout de nouveau éléments calculé par le cube d'hypothèse via other expenses
+#              2017-05-16 MBA Ajout du critère budget du cube Other Expense (si budget 2017, la règle ne s'applique pas)
+#              2017-05 - ABO Ajout du transfert des donnees entre Production Cost et RPT_ALL
+#                                                              pour les couts fixes et variables
+#
+##	2017-05 - Martial Bien Aimé Ajout des nouvelles règles d'allocation pour les Other_Expenses
+#                                                              via des pourcentages du cube HYP_Allocation_Other_Expenses
+#
+#	2016-11-04 - Francis Côté	 Corection Opening balance for MRF (BS)
+#								*Rule doit s'appliquer seulement aux comptes de BS pour le pas fausser valeurs YTD
+#								*Opening ne prenait pas la bonne valeurs de l'année précédente
+#	2016-09-19 - Laurent Choisez   Opening balance for MRF (BS)
+#     	2016-09-16 - Laurent Choisez   Rules for Bud availables for all years
+#     	2015-06-04 - Laurent Choisez   Ajust Rules for MRF (unique scenario with backup)
+#	2015-06-04 - Alexandra Gautier Modify rules for sales & cost of sales : DB from cube Metal_Cost_Per_Entity instead of Cubes Sales & Inventory_Spending
+#     	2015-05-28 - Laurent Choisez   Modify reference with new cube Inventory_Spending (Old Recycling)
+#     	2015-04-09 - Laurent Choisez   MRF4-2015
+#	2015-03-19 - Francis Côté:	MRF Rules on Actuals
+#							  +Other Expenses Labor
+#     	2015-01-13 - Francis Côté & Laurent Choisez :
+#							 Adding opening Balance
+#	2014-12-03 - Francis Côté:	HC rules reorder in order to accomodate Exceptions on D993, D994, D996 N & C rule from Opex directly
+#	2014-11-07 - Francis Côté:	Backup Scénario STET
+#	2014-11-06 - Francis Côté:	UP100 to include Recycling (Special Products)
+#							 Ajout TCE et calcul sur TCE / employees
+#	2014-11-05 - Francis Côté:	HC Totals/Consolidation
+#							 Sales by Qty Feeders fixed, Conlidation Calculation are valid
+#								>> New Account for Consolidation of Sales SYS_UP1000, SYS_UP1500 >> with Internal Feeders
+#	2014-10-30 - Francis Côté:	Updated Rules for HC and from Other Expenses Cube
+#	2014-09-24 - Francis Côté:	Removed DIM : Contrib_Verion
+#							 Replace Time DIMS for Months & Scenario arppoach (Removed Continuous time DIMs)
+#							 Optimized Rules & Feeders, Added comments
+#	2014-06    - Philipe Comtois & Alexandra Gautier:
+#							 Initial version for training & Validation of Needs
+#	2021-08    - Ravi Gauttom:                                                 Updated for Azure and corrected departments with priniciple element names (aliases were used)
+#             2021-11-16 - Matt Glucksman: removed referance to "C-P939" in the tolling rule as this group was removed in the new Segmentation Nov 2021
+#             2021-11-17 - Matt Glucksman: removed referance to "C-S937" in the tolling EM rule as this group was removed in the new Segmentation Nov 2021  All the Srap will be consoidated under "C-S958" -> tolling rule will continue to apply "C-S958"
+#	2021-08    - Ravi Gauttom: Included exceptions for Metal accounts for AZUR and EUR
+#	2024-04    - Ravi Gauttom: Added feeders to CAPEX cube
+#	2024-06    - Ravi Gauttom: Corrected feeders for UP2218 and other similar accounts (EUR to USD)
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','RPT_ALL','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#Pour eliminer les Quantités Tolling D497 (grouped unde C-P950) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+['SSV100', 'C-D497']=C:['SSV100', 'C-Z019']+['SSV100', 'C-Z029']+['SSV100', 'C-Z079']+['SSV100', 'C-Z089']+['SSV100', 'C-S938']+['SSV100', 'C-Z099']+['SSV100', 'C-P649']+['SSV100', 'C-P569']+['SSV100', 'C-S924']+['SSV100', 'C-P799'];
+['SSV150', 'C-D497']=C:['SSV150', 'C-Z019']+['SSV150', 'C-Z029']+['SSV150', 'C-Z079']+['SSV150', 'C-Z089']+['SSV150', 'C-S938']+['SSV150', 'C-Z099']+['SSV150', 'C-P649']+['SSV150', 'C-P569']+['SSV150', 'C-S924']+['SSV150', 'C-P799'];
+['Sales_by_Quantity', 'C-D497']=C:['SSV100', 'C-D497']+['SSV150', 'C-D497'];
+
+['SSV100',  'Total Products']=C:['SSV100', 'C-D497']+['SSV100', 'C-D797']+['SSV100', 'C-D897']+['SSV100', 'C-D997'];
+['SSV150',  'Total Products']=C:['SSV150', 'C-D497']+['SSV150', 'C-D797']+['SSV150', 'C-D897']+['SSV150', 'C-D997'];
+['Sales_by_Quantity', 'Total Products']=C:['Sales_by_Quantity', 'C-D497']+['Sales_by_Quantity', 'C-D797']+['Sales_by_Quantity', 'C-D897']+['Sales_by_Quantity', 'C-D997'];
+
+#Pour eliminer les Quantités Tolling D797 (P012 P412 P453 grouped under C-P100) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+['SSV100', 'C-D797']=C:['SSV100', 'C-P049']+['SSV100', 'C-S108']+['SSV100', 'C-P149']+['SSV100', 'C-P299']+['SSV100', 'C-P349']+['SSV100', 'C-P419']+['SSV100', 'C-P429']+['SSV100', 'C-P439']+['SSV100', 'C-P449']+['SSV100', 'C-P499']+['SSV100', 'C-P959']+['SSV100', 'C-S958']+['SSV100', 'C-P399']+['SSV100', 'C-A049']+['SSV100', 'C-P099']+['SSV100', 'C-P199']+['SSV100', 'C-P249']+['SSV100', 'C-P749']+['SSV100', 'C-S099'];
+['SSV150', 'C-D797']=C:['SSV150', 'C-P049']+['SSV150', 'C-S108']+['SSV150', 'C-P149']+['SSV150', 'C-P299']+['SSV150', 'C-P349']+['SSV150', 'C-P419']+['SSV150', 'C-P429']+['SSV150', 'C-P439']+['SSV150', 'C-P449']+['SSV150', 'C-P499']+['SSV150', 'C-P959']+['SSV150', 'C-S958']+['SSV150', 'C-P399']+['SSV150', 'C-A049']+['SSV150', 'C-P099']+['SSV150', 'C-P199']+['SSV150', 'C-P249']+['SSV150', 'C-P749']+['SSV150', 'C-S099'];
+['Sales_by_Quantity', 'C-D797']=C:['SSV100', 'C-D797']+['SSV150', 'C-D797'];
+
+['SSV100',  'Total Products']=C:['SSV100', 'C-D497']+['SSV100', 'C-D797']+['SSV100', 'C-D897']+['SSV100', 'C-D997'];
+['SSV150',  'Total Products']=C:['SSV150', 'C-D497']+['SSV150', 'C-D797']+['SSV150', 'C-D897']+['SSV150', 'C-D997'];
+['Sales_by_Quantity', 'Total Products']=C:['Sales_by_Quantity', 'C-D497']+['Sales_by_Quantity', 'C-D797']+['Sales_by_Quantity', 'C-D897']+['Sales_by_Quantity', 'C-D997'];
+
+#Pour eliminer les Quantités Tolling Old Segment Stamp 2021 11 05 (P916,P917 et P159) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+['SSV100', 'C-D497 - 20211105']=C:['SSV100', 'C-P099 - 20211105']+['SSV100', 'C-P199 - 20211105']+['SSV100', 'C-P249 - 20211105']+['SSV100', 'C-S938 - 20211105']+['SSV100', 'C-S099 - 20211105']+['SSV100', 'C-P649 - 20211105']+['SSV100', 'C-P749 - 20211105']+['SSV100', 'C-S924 - 20211105']+['SSV100', 'C-P939 - 20211105']+['SSV100', 'C-S937 - 20211105'];
+['SSV150', 'C-D497 - 20211105']=C:['SSV150', 'C-P099 - 20211105']+['SSV150', 'C-P199 - 20211105']+['SSV150', 'C-P249 - 20211105']+['SSV150', 'C-S938 - 20211105']+['SSV150', 'C-S099 - 20211105']+['SSV150', 'C-P649 - 20211105']+['SSV150', 'C-P749 - 20211105']+['SSV150', 'C-S924 - 20211105']+['SSV150', 'C-P939 - 20211105']+['SSV150', 'C-S937 - 20211105'];
+['Sales_by_Quantity', 'C-D497 - 20211105']=C:['SSV100', 'C-D497 - 20211105']+['SSV150', 'C-D497 - 20211105'];
+
+['SSV100',  'Total Products']=C:['SSV100', 'C-D497 - 20211105']+['SSV100', 'C-D797 - 20211105']+['SSV100', 'C-D897 - 20211105']+['SSV100', 'C-D997 - 20211105'];
+['SSV150',  'Total Products']=C:['SSV150', 'C-D497 - 20211105']+['SSV150', 'C-D797 - 20211105']+['SSV150', 'C-D897 - 20211105']+['SSV150', 'C-D997 - 20211105'];
+['Sales_by_Quantity', 'Total Products']=C:['Sales_by_Quantity', 'C-D497 - 20211105']+['Sales_by_Quantity', 'C-D797 - 20211105']+['Sales_by_Quantity', 'C-D897 - 20211105']+['Sales_by_Quantity', 'C-D997 - 20211105'];
+
+#Pour eliminer les Quantités Tolling Old Segment Stamp 2021 11 05 EFM (P012) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+['SSV100', 'C-D797 - 20211105']=C:['SSV100', 'C-P049 - 20211105']+['SSV100', 'C-S108 - 20211105']+['SSV100', 'C-P149 - 20211105']+['SSV100', 'C-P299 - 20211105']+['SSV100', 'C-P349 - 20211105']+['SSV100', 'C-P419 - 20211105']+['SSV100', 'C-P429 - 20211105']+['SSV100', 'C-P439 - 20211105']+['SSV100', 'C-P449 - 20211105']+['SSV100', 'C-P499 - 20211105']+['SSV100', 'C-P959 - 20211105']+['SSV100', 'C-P399 - 20211105']+['SSV100', 'C-A049 - 20211105'];
+['SSV150', 'C-D797 - 20211105']=C:['SSV150', 'C-P049 - 20211105']+['SSV150', 'C-S108 - 20211105']+['SSV150', 'C-P149 - 20211105']+['SSV150', 'C-P299 - 20211105']+['SSV150', 'C-P349 - 20211105']+['SSV150', 'C-P419 - 20211105']+['SSV150', 'C-P429 - 20211105']+['SSV150', 'C-P439 - 20211105']+['SSV150', 'C-P449 - 20211105']+['SSV150', 'C-P499 - 20211105']+['SSV150', 'C-P959 - 20211105']+['SSV150', 'C-P399 - 20211105']+['SSV150', 'C-A049 - 20211105'];
+['Sales_by_Quantity', 'C-D797 - 20211105']=C:['SSV100', 'C-D797 - 20211105']+['SSV150', 'C-D797 - 20211105'];
+
+['SSV100',  'Total Products']=C:['SSV100', 'C-D497 - 20211105']+['SSV100', 'C-D797 - 20211105']+['SSV100', 'C-D897 - 20211105']+['SSV100', 'C-D997 - 20211105'];
+['SSV150',  'Total Products']=C:['SSV150', 'C-D497 - 20211105']+['SSV150', 'C-D797 - 20211105']+['SSV150', 'C-D897 - 20211105']+['SSV150', 'C-D997 - 20211105'];
+['Sales_by_Quantity', 'Total Products']=C:['Sales_by_Quantity', 'C-D497 - 20211105']+['Sales_by_Quantity', 'C-D797 - 20211105']+['Sales_by_Quantity', 'C-D897 - 20211105']+['Sales_by_Quantity', 'C-D997 - 20211105'];
+
+#region EBITDA costs in kg
+['SSV151' ] = N: ['SSV150' ];
+
+['Prod_costs_Kg', 'Conso.C999' , 'C-All_Department - Total', 'C-All_Other' , 'All Counter Comp' ] = C :
+					(['Variable costs other than metal'] + ['Total fixed costs']) * 1000
+					\round(['ssv100'] + ['ssv151']);
+
+
+['Prod_costs_Kg'] =  (['Variable costs other than metal'] + ['Total fixed costs'])* 1000\
+                                                                              round(['ssv100'] + ['ssv151']);
+
+['Prod_costs_WO_FreightOut_Kg', 'Conso.C999' , 'C-All_Department - Total', 'C-All_Other' , 'All Counter Comp' ] = C :
+					(['Variable costs other than metal'] - ['Freight Out'] + ['Total fixed costs']) * 1000
+					\round(['ssv100'] + ['ssv151']);
+
+
+['Prod_costs_WO_FreightOut_Kg'] =  (['Variable costs other than metal'] - ['Freight Out'] + ['Total fixed costs'])* 1000\
+                                                                              round(['ssv100'] + ['ssv151']);
+
+['EBITDA_costs_WO_FreightOut_kg', 'Conso.C999' , 'C-All_Department - Total', 'C-All_Other' , 'All Counter Comp' ] = C :
+					(['Variable costs other than metal'] - ['Freight Out'] + ['Total fixed costs'] + ['Selling General and Administrative Expenses'] + ['Total other expenses'] + ['UP6119']) * 1000
+					\round(['ssv100'] + ['ssv151']);
+
+
+['EBITDA_costs_WO_FreightOut_kg'] =  (['Variable costs other than metal'] - ['Freight Out'] + ['Total fixed costs'] + ['Selling General and Administrative Expenses'] + ['Total other expenses'] + ['UP6119'] )* 1000\
+                                                                              round(['ssv100'] + ['ssv151']);
+
+
+['EBITDA_costs_kg', 'Conso.C999' , 'C-All_Department - Total', 'C-All_Other' , 'All Counter Comp' ] = C :
+					(['Variable costs other than metal'] + ['Total fixed costs'] + ['Selling General and Administrative Expenses'] + ['Total other expenses'] + ['UP6119']) * 1000
+					\round(['ssv100'] + ['ssv151']);
+
+
+['EBITDA_costs_kg'] =  (['Variable costs other than metal'] + ['Total fixed costs'] + ['Selling General and Administrative Expenses'] + ['Total other expenses'] + ['UP6119'] )* 1000\
+                                                                              round(['ssv100'] + ['ssv151']);
+
+
+['FC_$Kg', 'Conso.C999' , 'C-All_Department - Total', 'C-All_Other' , 'All Counter Comp' ] = N :
+					(['Total fixed costs']) * 1000
+					\round(['ssv100']);
+
+
+['FC_$Kg'] =  (['Total fixed costs'])* 1000\
+                                                                              round(['ssv100'] + ['ssv151']);
+
+
+['VC_$Kg', 'Conso.C999' , 'C-All_Department - Total', 'C-All_Other' , 'All Counter Comp' ] = N :
+					(['Variable costs other than metal']) * 1000
+					\round(['ssv100']);
+
+
+['VC_$Kg'] =  (['Variable costs other than metal'] )* 1000\
+                                                                              round(['ssv100'] + ['ssv151']);
+
+['Gross_Margin_$kg', 'Conso.C999' , 'C-All_Department - Total', 'C-All_Other' , 'All Counter Comp' ] = N :
+					(['Gross margin']) * 1000
+					\round(['ssv100']);
+
+['Gross_Margin_$kg'] =  (['Gross margin' ])* 1000\
+                                                                              round(['ssv100'] + ['ssv150']);
+
+# Original GM/kg formula. Modified 02.19.2024 MG
+#['Gross_Margin_$kg'] =  (['Gross margin' ])* 1000\
+#                                                                            round(['ssv100'] + ['ssv151']);
+
+
+
+
+#endregion
+
+
+['Conso.C999', {'SYS_UP1500','SSV150'} ]  = C: 0 ;
+
+
+###vlo new rules for MRF (Not for MRF3 and more)
+[] =N: IF (SUBST(!t_Scenario, 1, 4) @= 'MRF-',
+			IF (!t_Months @= 'Opening_Balance' & SUBST(!Account, 2,1) @= 'B',
+				DB('RPT_All', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency,
+					'YTD_Dec', 'AC-' | STR(NUMBR(SUBST(!t_Scenario, 5, 4))-1,4,0) , !m_EBITDA),
+				CONTINUE),
+			CONTINUE);
+
+[] =N: IF (SUBST(!t_Scenario, 1, 4) @= 'MRF-',
+			IF (!t_Months @<= DB('SYS_TimeRef', 'Actuals', 'Month'),
+				DB('RPT_All', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months,
+					'AC-' | SUBST(!t_Scenario, 5, 4) , !m_EBITDA),
+				CONTINUE),
+			CONTINUE);
+
+#region Calculate $/kg on purchases
+
+['Purchase_by_$kg' ] = ['PT1000' ] \['PUR100' ]*1000 ;
+
+#endregion
+
+
+#region Calculate $/kg on Inventory
+
+['Value in $/kg' ]  = ['ST1599' ] \['QT1599' ]*1000 ;
+
+#endregion
+
+#region Calculate Operating earnings (Loss)
+['Operating earnings (Loss)'] = ['UP1099'] - ['Cost of Sales'] - ['Selling General and Administrative Expenses'] - ['Other Expense'];
+#endregion
+
+
+#region Calcul particulié pour le conso sur les comptes interco
+
+['Conso.C999' , 'Sales_by_Quantity' ] = ['SSV100' ];
+
+#endregion
+
+#region Metal Margin and Gross Margin %
+
+['MetalMargin%' ] =  ['Métal Margin'] \ round(['Total revenue']);
+
+['Gross_Margin%' ] =  ['Gross margin' ] \ round(['Total revenue' ]);
+
+['adj_EBITA_%' ] = ['adj_EBITDA' ] \ round(['Total revenue' ]);
+
+['EBITDA_%' ] = ['EBITDA' ] \ round(['Total revenue' ]);
+
+#endregion
+
+#region Calcul du Tax Rate
+
+['Tax_Rate' ] = ['Total Income Tax Expense' ] \ ['Earnings Before Income Taxes' ] ;
+
+#endregion
+
+#region Calculate sales by kg
+
+['Sales_Entity_Kg' ] =
+ (['SYS_UP1500'] +['SYS_UP1000'])
+  \(['SSV100', 'All_Department', 'All_Other', 'AllCounterComp'] +['SSV150', 'All_Department', 'All_Other', 'AllCounterComp']) *1000;
+
+['Interco_sales_by_kg'] = ['SYS_UP1500'] \['SSV150', 'All_Department', 'All_Other', 'AllCounterComp'] * 1000 ;
+
+['Sales_Qty_in_KG'] = (['SYS_UP1000'] + ['SYS_UP1500']) \(['SSV100', 'All_Department', 'All_Other', 'AllCounterComp'] + ['SSV150', 'All_Department', 'All_Other', 'AllCounterComp']) *1000;
+#['Sales_Qty_in_KG'] = (['SYS_UP1000']) \(['SSV100', 'All_Department', 'All_Other', 'AllCounterComp']) *1000;
+
+[ 'MetalCosts_in_$kg'] = ([ 'Variable costs metal'] + [ 'Inventory fluctuation value'] + ['Variable costs metal - group'] + ['Impairment (Reversal)' ] ) \ (['SSV100', 'All_Department', 'All_Other', 'AllCounterComp']
++ ['SSV150', 'All_Department', 'All_Other', 'AllCounterComp']) *1000;
+
+
+#[ 'MetalMargin_$kg'] = ['Sales_Qty_in_KG'] -  ['MetalCosts_in_$kg'];
+#[ 'MetalMargin_$kg'] =( ['Métal Margin'] \['SSV100', 'All_Department', 'All_Other', 'AllCounterComp'])*1000 ;
+[ 'MetalMargin_$kg'] = IF ( SUBST(!t_Scenario, 1, 3) @= 'AC-' , ['Sales_Qty_in_KG'] -  ['MetalCosts_in_$kg'],( ['Métal Margin'] \['SSV100', 'All_Department', 'All_Other', 'AllCounterComp'])*1000) ;
+
+#endregion
+
+
+#Region Data <<from Other Cubes>>   HC, Sales, OPEX (Act, Bud), Recycling
+
+#HC
+#Budget HC are loaded in OPEX cube
+['ST9000', Currency:'USD'] = DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA);
+['ST9000'] =N: STET;
+#endregion
+
+#fk6 Utiliser 'TCE' plutot que la somme manuelle des UP----
+#region Sales per employees and salaries by employees
+['sales_per_employees' , 'Dollars' ] = (['SSV100' ]+ ['SSV150' ] )\['ST9000'] ;
+['salaries_per_employees', 'Dollars'  ] = ((['UP2003']+['UP2006']+['UP2007'] +['UP3003']+['UP3004']+['UP3100']+['UP3120']+['UP3150']+['UP3200']+ ['UP6106'] + ['UP6107']+ + ['UP2237'])*12 ) \['ST9000'];
+#endregion
+
+
+#region Total Costs of employment
+['TCE_yees', 'Dollars' ] = ((['TCE'])) \['ST9000'];
+#['TCE_yees', 'Dollars' ] = ((['UP2003']+['UP2006']+['UP2007'] +['UP3003']+['UP3004']+['UP3100']+['UP3120']+['UP3150']+['UP3200']+ ['UP6106'] + ['UP6107']+ ['UP2237'])) \['ST9000'];
+#endregion
+
+#Region SYS_UP1000 & SYS_UP1500
+[{'SYS_UP1000'}, 'All_Other',  'All_Department', Currency:'USD', 'Dollars'] =N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', SUBST(!Account, 5, 6), !Product, !Journal_Nb, 'C-All_Other', 'C-DEPT', !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment',
+			'C-D999', !Currency, '@None', ATTRS ('t_Scenario', !t_scenario, 'Version'), ATTRS ('t_Scenario', !t_scenario, 'Year') |!t_Months, 'Monthly'),
+		['UP1000']);
+
+[{'SYS_UP1500'}, 'All_Other', 'All_Department', Counter_Cie:'@None', Currency:'USD', 'Dollars'] =N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', SUBST(!Account, 5, 6), !Product, !Journal_Nb, 'C-All_Other', 'C-DEPT', !Entity, 'AllCounterComp', 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment',
+			'C-D999', !Currency, '@None', ATTRS ('t_Scenario', !t_scenario, 'Version'), ATTRS ('t_Scenario', !t_scenario, 'Year') |!t_Months, 'Monthly'),
+		CONTINUE);
+
+[{'SYS_UP1500'}, 'All_Other', 'All_Department', Currency:'USD', 'Dollars'] =N: IF ( SUBST(!t_Scenario, 1, 3) @= 'BU-' ,
+			DB('RPT_All', 'UP1500', !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA),
+			CONTINUE);
+
+[{'SYS_UP1500'}, 'All_Other', 'All_Department', Currency:'USD', 'Dollars'] =N: IF ( SUBST(!t_Scenario, 1, 3) @= 'LRP' ,
+			DB('RPT_All', 'UP1500', !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA),
+			CONTINUE);
+
+#[{'SYS_UP1500'}, 'All_Other', 'All_Department',  '0_', Currency:'USD', 'Dollars'] =N:
+#	 IF (SUBST(!t_Scenario, 1, 4) @= 'MRF-',
+#		IF (!t_Months @<= DB('SYS_TimeRef', 'Actuals', 'Month'),
+#			DB('RPT_All', 'UP1500', !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA),
+#			CONTINUE),
+#		CONTINUE);
+
+#endregion
+
+#Region Opening_Balance
+#To calculate the opening balance of the Rpt_ALL
+['Opening_Balance', 'Dollars'] =N:
+ 	IF ( ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+         IF(ATTRS ('Account' , !Account, 'Account Type') @= 'A'
+         % (ATTRS ('Account' , !Account, 'Account Type') @= 'L')
+         % (ATTRS ('Account' , !Account, 'Account Type') @= 'E')
+	    % (ATTRS ('Account' , !Account, 'Account Type') @= 'R')
+	    % (ATTRS ('Account' , !Account, 'Account Type') @= 'F'),
+			DB('FAP_Staging', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version,
+			 'CT FL', 'CO ALL', 'C-All_Segment', 'C-All_Segment', !Currency,
+		     '@None', ATTRS('t_Scenario', !t_scenario ,'Version'), ATTRS('t_Scenario', !t_scenario , 'PrevYear') | '12', 'YTD'),
+		STET),
+		STET);
+
+#EndRegion
+
+#Region Other Expenses Exceptions (avoid duplicate on PROD & All_Other Activity_type
+###Fk6 Labor accounts all reads from OPEX
+['PROD', 'OP10', 'Dollars'] =N:
+	  IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		IF ( ATTRS('Account', !Account, 'Salaries_Department_Level') @<> '', 0, CONTINUE),
+		 CONTINUE);
+
+['D998', 'OP10', 'Dollars']=N:
+	IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		IF ( ELISANC('Account', 'TEC', !Account) = 1 & ATTRS('Account', !Account, 'Salaries_Department_Level') @= '', 0, CONTINUE),
+		 CONTINUE);
+
+
+
+#EndRegion
+
+
+###Fk6 Rule générale qui porte sur le périmètre Actual
+#Region GENERAL Rules :: Actuals, Budget & LBE
+['Dollars'] =N: IF (ATTRS ('t_Scenario', !t_scenario, 'isActual') @= 'Y',
+		DB('FAP_Staging', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment',
+		    'C-D999', !Currency, '@None', ATTRS ('t_Scenario', !t_scenario, 'Version'), ATTRS ('t_Scenario', !t_scenario, 'Year') |!t_Months, 'Monthly'),
+		CONTINUE);
+######La seule regle Linké au RPT_Commercial au lieu de SIM_Commercial (La raison: Pour controller l'input des vendeurs vers le modele TM1)
+['SSV100', '0_', 'All_Other', 'All_Department', Counter_Cie:'@None', 'REPO', Currency:{'USD', 'EUR'}, 'Dollars'] =N:
+#		DB('Sales', 'All_Contracts', !Product, 'All_Customers', !Entity, !t_Months, !t_Scenario, 'Volume_KG');
+                                DB ('RPT_Commercial', 'All_Contracts','All_Industries',!Entity, 'All_Prod_Entity', 'All_Sales_rep',!Product, 'All_Customers','World', !t_Months,!t_Scenario, 'Volume_KG');
+
+#endregion
+
+
+
+#Region Interco Purchases & Sales  <::>  Interco Group (SUPP_0172) Interco Cusotmer (CUST_4899)
+# l'information Metal cost pour BU-2015 est encore depuis le cube Recycling (qui inclu des Suppliers) en attendant de passer au mode Inventory Spending et ses TIs
+['BU-2015',
+'UP1500', '0_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:
+       #   DB('Sales', 'All_Contracts', !Product, 'CUST_4899',!Entity, !t_Months, !t_Scenario, 'Amount_USD')\1000;
+           DB ('SIM_Commercial', 'All_Contracts','All_Industries',!Entity, 'All_Prod_Entity', 'All_Sales_rep', 'Cust_4899', 'World',!t_Months,!t_Scenario, 'Amount_USD')\1000;
+
+#['BU-2015',
+#'UP2500', '0_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:
+ #        DB('Recycling', 'All_Contracts', !Product, 'SUPP_0172',!Entity, !t_Months, !t_Scenario, 'Amount_USD')\1000;
+
+
+#Ventes Externes- RPT_Recycling
+['UP1000', '101_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:
+                        DB('RPT_Recycling', 'All_Contracts', !Product, 'All_Supplier',!Entity,!Counter_Cie, !t_Months, !t_Scenario, 'UP1000')\1000;
+
+#Les ventes interco- RPT_Recycling
+
+['UP1500', '101_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:IF(!Entity@<>'999ADJ',
+                        DB('RPT_Recycling', 'All_Contracts', !Product, 'All_Supplier',!Entity,!Counter_Cie, !t_Months, !t_Scenario, 'UP1500')\1000,STET);
+
+
+
+
+#Ventes Externes- Metel Cost Cube
+['UP1000', '0_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:
+		DB('Metal_Cost_Per_Entity', !Account, !Product, !Entity, !Counter_Cie, !t_Months, !t_Scenario, 'Sales_Amount_USD')\1000;
+
+#Ventes Internes- Metel Cost Cube
+
+['UP1500', '0_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N: IF(!Entity@<>'999ADJ',
+		DB('Metal_Cost_Per_Entity', !Account, !Product, !Entity, !Counter_Cie, !t_Months, !t_Scenario, 'Sales_Amount_USD')\1000,
+		STET);
+#Kg des Ventes Intercos
+['SSV150','Counter_Cie':'@none','REPO' ] =N:DB('Metal_Cost_Per_Entity', 'UP1500', !Product, !Entity, 'AllCounterComp', !t_Months, !t_Scenario, 'Volume_Sales');
+
+#Metal cost Externe-RPT_Recycling
+['UP2300', '101_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:
+		DB('RPT_Recycling', 'All_Contracts', !Product, 'All_Supplier',!Entity,!Counter_Cie, !t_Months, !t_Scenario, 'Amount_USD')\1000;
+#Metal Cost Interne-RPT_Recycling
+['UP2500', '101_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:IF(!Entity@<>'999ADJ',
+		DB('RPT_Recycling', 'All_Contracts', !Product, 'All_Supplier',!Entity,!Counter_Cie, !t_Months, !t_Scenario, 'Amount_USD_Group')\1000,STET);
+
+#Metal cost Externe- Metal Cost Cube
+['UP2300', '0_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:
+		DB('Metal_Cost_Per_Entity', !Account, !Product, !Entity, !Counter_Cie, !t_Months, !t_Scenario, 'Metal_Cost_Total_USD')\1000;
+#Metal cost Interne- Metal Cost Cube
+['UP2500', '0_', 'All_Other', 'All_Department', 'REPO', Currency:'USD', 'Dollars'] =N:IF(!Entity@<>'999ADJ',
+		DB('Metal_Cost_Per_Entity', !Account, !Product, !Entity, !Counter_Cie, !t_Months, !t_Scenario, 'Metal_Cost_Total_USD')\1000,
+		STET);
+
+#endregion
+
+
+
+#####  BUDGET AND FORECAST RULES CATCH ALL #####
+# Only calculate on Scenario Budget / Forecast
+[] = N: IF(SUBST(!t_Scenario,1,3)@='MRF' % SUBST(!t_Scenario,1,2)@='BU'% SUBST(!t_Scenario,1,3)@='LRP',
+CONTINUE, STET);
+#####################################
+
+#Region OPEX, incl Allocation from Other_Expenses by Allocation % from HYP_Allocation
+# Only on Closion Version 'REPO' and Journal Number '0_'
+# Added on May 2017 - MBA
+##########################################################
+
+#SG&A Expenses children Calculation
+#############################
+#[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+ #                                            IF ( ELISANC('Account', 'Gen_admin', !Account)=1 & !t_Scenario @<>'BU-2017',
+#		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+#	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'Gen_admin')
+ #                                          , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP3599 - Sal & Employ Ben', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP3599 - Sal & Employ Ben')
+                                            , CONTINUE);
+
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4099 - Facilities', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4099 - Facilities')
+                                            , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4199 - Technology', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4199 - Technology')
+                                            , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4299 - Travel & Entert', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4299 - Travel & Entert')
+                                            , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4399 - Client Related Exp', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4399 - Client Related Exp')
+                                            , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4499 - Business Development', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4499 - Business Development')
+                                            , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4599 - Professional Fees', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4599 - Professional Fees')
+                                            , CONTINUE);
+
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4699 - Financial Charges', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4699 - Financial Charges')
+                                            , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP4899 - Other General Exp', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP4899 - Other General Exp')
+                                            , CONTINUE);
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                             IF ( ELISANC('Account', 'UP5099 - Interco Alloc', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                            *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP5099 - Interco Alloc')
+                                            , CONTINUE);
+
+
+#Other Expenses children Calculation
+#############################
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                               IF ( ELISANC('Account', 'Other_exp', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                   DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                               *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'Other_exp')
+                                               , CONTINUE);
+#Stock Based Compensation Calculation (A la demande de Richard Ce compte est exclus de regroupement "Other Expenses" et donc de l'Adj Ebitda)
+#############################
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                               IF ( ELISANC('Account', 'UP6139', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                   DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                               *  DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'Other_exp')
+                                               , CONTINUE);
+
+
+#Research and Development children Calculation
+#############################
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                                IF ( ELISANC('Account', 'UP6119', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                   DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                              *   DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'UP6119')
+                                              	, CONTINUE);
+
+#Interest on long term debt
+#############################
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                                IF ( ELISANC('Account', 'Interest_LTD', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                   DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                              *   DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'Interest_LTD')
+                                              	, CONTINUE);
+
+#Other interest (income)
+#############################
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                                IF ( ELISANC('Account', 'Other_int', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                   DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                              *   DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'Other_int')
+                                              	, CONTINUE);
+
+#Depreciation and amortization
+#############################
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                                IF ( ELISANC('Account', 'Total_ACC', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                   DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                              *   DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'Total_ACC')
+                                              	, CONTINUE);
+
+#Intercompany financial transactions
+#############################
+[{'D497', 'D797', 'D897', 'P996'}, 'REPO', '0_', 'All_Other', 'Dollars'] =N:
+                                                IF ( ELISANC('Account', 'interco_fin', !Account)=1 & !t_Scenario @<>'BU-2017',
+		                   DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)
+	                              *   DB('HYP_Allocation_Other_Expenses',!Product,!Entity,!t_Months,!t_Scenario, 'interco_fin')
+                                              	, CONTINUE);
+
+#Region  Fixed and Variables Costs from Production_Cost cube
+# Only on Closion Version 'REPO', CounterCie '@None' and Journal Number '0_'
+# Mapped to 'D998 - Employees Benefit'
+# Added on May 2017 - MBA
+##########################################################
+#Fixed and Variables Costs children Calculation
+#############################
+['0_',  'All_Other', 'D998',Counter_Cie:'@None', 'REPO', 'Dollars'] =N:
+                                                IF ( ELISANC('Account', 'Fixed & Variable (other than metal)', !Account)=1 & !t_Scenario @<>'BU-2017',
+                                              DB('Production_Cost',!Entity,!Product,!Account,!Currency,!t_Months,!t_Scenario, 'Dollars')
+                                              	, CONTINUE);
+#endregion
+
+#Region Production units from Productoin_Cost cube
+
+['SPV100 - Production Units'] = N: IF (!t_Scenario @='AC-2023', STET, DB('Production_Cost',!Entity,!Product,!Account,!Currency,!t_Months,!t_Scenario,'Dollars'));
+
+#endregion
+
+#Region OPEX, incl Allocation on MSP, WISC, MCPUS, MHK FOR ONLY BU-2017
+['d497', 'All_Other'] =N:
+	IF (ATTRS ('Entity', !Entity, 'Electronic') @= 'Y' ,
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA),
+	CONTINUE),
+	CONTINUE);
+
+['d797', 'All_Other'] =N:
+	IF (ATTRS ('Entity', !Entity, 'EcoFriendly') @= 'Y' ,
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA),
+	CONTINUE),
+	CONTINUE);
+['D897', 'All_Other'] =N:
+	IF (ATTRS ('Entity', !Entity, 'Recycling') @= 'Y' ,
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA),
+	CONTINUE),
+	CONTINUE);
+
+['P996', 'All_Other'] =N:
+	IF (ATTRS ('Entity', !Entity, 'Corporate') @= 'Y' ,
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA),
+	CONTINUE),
+	CONTINUE);
+
+['d497', Entity:'MSP', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.28,
+	CONTINUE);
+
+['d797', Entity:'MSP', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.42,
+	CONTINUE);
+
+['D897', Entity:'MSP', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.3,
+	CONTINUE);
+
+['d497', Entity:'WISC', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.28,
+	CONTINUE);
+
+['d797', Entity:'WISC', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.42,
+	CONTINUE);
+
+['D897', Entity:'WISC', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.3,
+	CONTINUE);
+
+['d497', Entity:'CIR', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.44,
+	CONTINUE);
+
+['d797', Entity:'CIR', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.56,
+	CONTINUE);
+
+['d497', Entity:'MCPUS', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.5,
+	CONTINUE);
+
+['d797', Entity:'MCPUS', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.5,
+	CONTINUE);
+
+['d497', Entity:'MHK', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.299,
+	CONTINUE);
+
+['d797', Entity:'MHK', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.318,
+	CONTINUE);
+
+['D897', Entity:'MHK', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.373,
+	CONTINUE);
+
+['P996', Entity:'MHK', 'All_Other'] =N:
+	IF (!t_Scenario @='BU-2017',
+		DB('Other_Expenses', !Account, !Entity, !Department, !Counter_Cie, !Closing_Version, !Currency, !t_Months, !t_Scenario, !m_EBITDA)*0.01,
+	CONTINUE);
+#endregion
+
+##RG Added for Azure
+##Exception Added for accounts and for EUR;
+##Exception UP2218 removed as per MC request
+['EUR', {'UP2300','UP2301','UP2375','UP2501','UP2500','UP2515','UP2401','UP2402','UP2218'}] = STET;
+
+['EUR']=N: IF(DB('}ElementAttributes_Entity',!Entity,'Company Type')  @= 'A',
+				['USD'] *
+		                           		IF( ATTRS('Entity',!Entity, 'Local Currency')@<>'USD',
+						DB('Exchange_Rate','USD-' | DB('}ElementAttributes_Entity', !Entity, 'Local Currency'), !t_months, !t_Scenario, 'Period Average'),
+						1), CONTINUE);
+
+##Convert EUR to USD only for the exception accounts
+['USD', {'UP2300','UP2301','UP2375','UP2501','UP2500','UP2515','UP2401','UP2402','UP2218'}] =N:  IF(DB('}ElementAttributes_Entity',!Entity,'Company Type')  @= 'A',
+                                                                                    				['EUR'] * DB('Exchange_Rate','EUR-USD', !t_months, !t_Scenario, 'Period Average')
+                                                                                                    , CONTINUE);
+
+#Region FBI
+#####  ONLY FORECAST RULES CATCH ALL #####
+# Only calculate on Current Scenario Forecast
+[] = N:IF(!t_Scenario @= DB('SYS_TimeRef','Forecasting','Scenario'),
+	 CONTINUE, STET);
+#####################################
+
+#Data FROM Current ACT Scenario to Current Focecast ACT Months
+['Dollars'] = N:
+	 IF( (NUMBR(!t_Months)<= NUMBR( DB('SYS_TimeRef','Forecasting','Month') ) ),
+                DB('RPT_ALL',!Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity,!Counter_Cie,!Closing_Version, !Currency, !t_Months,DB('SYS_TimeRef','Actuals','Scenario'),'Dollars'),
+	 CONTINUE);
+
+#EndRegion
+
+
+############################# +++++++++++++++++FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+#region HC
+['ST9000', 'C-All_Other', 'C-Dept', 'C-All_Product' , 'Dollars'] => ['salaries_per_employees' , 'C-All_Other'],
+									['TCE_yees', 'C-All_Other' ],
+									['salaries_BU_per_employee', 'C-All_Other'];
+
+['ST9000', t_Months:{'01','02','03','04','05','06','07','08','09','10','11','12'}]  =>
+	DB('RPT_All', !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, 'YTD_' | !t_Months, !t_Scenario, !m_EBITDA);
+#endregion
+
+#region Sales
+['UP1000', 'C-All_Other', 'C-DEPT', Currency:'USD', 'Dollars'] => ['SYS_UP1000', 'All_Other',  'All_Department'];
+
+
+['UP1500', 'C-All_Other', 'C-DEPT', Currency:'USD', 'Dollars'] => ['SYS_UP1500', 'All_Other',  'All_Department'];
+
+['UP1500', 'C-All_Other', 'C-DEPT', Counter_Cie:'AllCounterComp', Currency:'USD', 'Dollars'] => ['SYS_UP1500', 'All_Other',  'All_Department', Counter_Cie:'@None'];
+
+['UP1000', 'All_Other', 'All_Department', 'REPO', Currency:{'USD','EUR'}, 'Dollars'] => ['SSV100'], ['SYS_UP1000'];
+#['UP1000', 'All_Other', 'All_Department', Counter_Cie:'@None', 'REPO', Currency:'USD', 'Dollars'] => ['SSV100'], ['SYS_UP1000'];
+
+['SYS_UP1000'] =>
+	['Sales_Qty_in_KG'],
+	['Sales_Entity_Kg'];
+['SYS_UP1500'] =>
+                ['Sales_Qty_in_KG'],
+	['Sales_Entity_Kg'],
+	['Interco_sales_by_kg'];
+['Total revenue' ]  => ['MetalMargin%' ],
+				   ['Gross_Margin%' ],
+				   ['adj_EBITA_%' ],
+				   ['EBITDA_%' ];
+
+['Earnings Before Income Taxes' ]  => ['Tax_Rate' ];
+
+#endregion
+
+#region $/kg value
+
+['PUR100', 'C-All_Other', 'C-All_Department', 'AllJournals', 'AllCounterComp', 'REPO', 'C-All_Product', 'Dollars'] => ['Purchase_by_$kg' ];
+
+['SSV100', 'C-All_Other', 'C-All_Department', '0_', Counter_Cie:'@None', 'REPO', 'Dollars'] =>
+	['Sales_Qty_in_KG'],
+	['Sales_Entity_Kg'],
+	['Interco_sales_by_kg'],
+	['EBITDA_costs_WO_FreightOut_kg'],
+	['Prod_costs_WO_FreightOut_Kg'],
+	['Prod_costs_Kg'],
+	['EBITDA_costs_kg' ];
+
+['Sales_Qty_in_KG', 'All_Other', 'All_Department', '0_', Counter_Cie:'@None', 'REPO', 'Dollars'] =>
+			[ 'MetalMargin_$kg'],
+			[ 'MetalCosts_in_$kg'];
+
+
+['SSV150', 'C-All_Other', 'C-All_Department', '101_', 'All Counter Comp', 'J1', 'Dollars'] => ['Sales_Qty_in_Kg'];
+
+
+# Feeders MetalMargin
+
+ [ 'Variable costs metal'] => [ 'MetalCosts_in_$kg'];
+ [ 'Inventory fluctuation value'] => [ 'MetalCosts_in_$kg'];
+ ['Variable costs metal - group'] => [ 'MetalCosts_in_$kg'];
+ ['Impairment (Reversal)' ] => [ 'MetalCosts_in_$kg'];
+
+ ['Sales_Qty_in_KG'] => [ 'MetalMargin_$kg'];
+ ['MetalCosts_in_$kg'] => [ 'MetalMargin_$kg'];
+
+
+
+#endregion
+
+#Region Opening_Balance
+['Dollars', 'Dec']=> DB (IF( SUBST(!t_Scenario,1,2)@='AC','RPT_All',''), !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, 'Opening_Balance', 'AC-'| STR(NUMBR(SUBST(!t_Scenario,4,4))+1,4,0),
+!m_EBITDA);
+
+#EndRegion
+
+#Region MRF
+###vlo  New Rules for MRF
+['Dollars']=> DB (IF( SUBST(!t_Scenario,1,2)@='AC','RPT_All',''), !Account, !Product, !Journal_Nb, !Activity_Type, !Department, !Entity, !Counter_Cie, !Closing_Version, !Currency, !t_Months, 'MRF-'| SUBST(!t_Scenario,4,4),
+!m_EBITDA);
+
+
+#EndRegion
+
+
+['UP1500' ] => ['SYS_UP1500' ];
+['UP1000' ]  => ['UP1500' ] ;
+['ssv150' ]  => ['ssv151' ] ;
+#Actual azur entity to be defined in below feeder
+['USD', Counter_Cie:'AZUR', Entity:'AZUR',  {'UP1000','UP2218'} ] => ['EUR'];
+['USD', Counter_Cie:'EARTH', Entity:'EARTH',{'UP1000','UP2218'} ] => ['EUR'];
+['USD', Counter_Cie:'@NONE', Entity:'AZUR', {'UP1000','UP2218'} ] => ['EUR'];
+['USD', Counter_Cie:'@NONE', Entity:'EARTH',{'UP1000','UP2218'} ] => ['EUR'];
+['EUR', Counter_Cie:{'AZUR', '@None'}, Entity:'AZUR', {'UP2300','UP2301','UP2375','UP2501','UP2500','UP2515','UP2401','UP2402','UP2218'} ] => ['USD'];
+['EUR', Counter_Cie:{'EARTH', '@None'}, Entity:'EARTH', {'UP2300','UP2301','UP2375','UP2501','UP2500','UP2515','UP2401','UP2402','UP2218'} ] => ['USD'];
+
+##RG - Feeders for the CAPEX cube
+['SB2000_10','C-All_Product','AllJournals','C-All_Department - Total','All Counter Comp','CL ALL','Dollars'] => DB('SIM_Capex',!Entity,'SB2000_10','RPT_All_Project','RPT_Category_Capex',!Activity_Type,!Currency,!t_Months,!t_Scenario,'Dollars');
+['SB2100_10','C-All_Product','AllJournals','C-All_Department - Total','All Counter Comp','CL ALL','Dollars'] => DB('SIM_Capex',!Entity,'SB2100_10','RPT_All_Project','RPT_Category_Capex',!Activity_Type,!Currency,!t_Months,!t_Scenario,'Dollars');
+['SB2000_10','C-All_Product','AllJournals','C-All_Department - Total','All Counter Comp','CL ALL','Dollars'] => DB('SIM_Capex',!Entity,'CAP2000_10','RPT_All_Project','RPT_Category_Capex',!Activity_Type,!Currency,!t_Months,!t_Scenario,'Dollars');
+['SB2100_10','C-All_Product','AllJournals','C-All_Department - Total','All Counter Comp','CL ALL','Dollars'] => DB('SIM_Capex',!Entity,'CAP2100_10','RPT_All_Project','RPT_Category_Capex',!Activity_Type,!Currency,!t_Months,!t_Scenario,'Dollars');
+

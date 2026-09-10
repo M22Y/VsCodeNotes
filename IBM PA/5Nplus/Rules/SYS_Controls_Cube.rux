@@ -1,0 +1,144 @@
+#Region System
+FEEDSTRINGS;
+SKIPCHECK;
+#EndRegion
+##########################
+###  Design par FPM360 -2016-
+###
+###  Versions:
+##    2017-05     ABO -- Initial version
+###
+##########################
+
+
+#Retrieves dimension names
+#########################
+
+['Dim1'] =S: TABDIM(!}Cubes, 1);
+['Dim2'] =S: TABDIM(!}Cubes, 2);
+['Dim3'] =S: TABDIM(!}Cubes, 3);
+['Dim4'] =S: TABDIM(!}Cubes, 4);
+['Dim5'] =S: TABDIM(!}Cubes, 5);
+['Dim6'] =S: TABDIM(!}Cubes, 6);
+['Dim7'] =S: TABDIM(!}Cubes, 7);
+['Dim8'] =S: TABDIM(!}Cubes, 8);
+['Dim9'] =S: TABDIM(!}Cubes, 9);
+['Dim10'] =S: TABDIM(!}Cubes, 10);
+['Dim11'] =S: TABDIM(!}Cubes, 11);
+['Dim12'] =S: TABDIM(!}Cubes, 12);
+['Dim13'] =S: TABDIM(!}Cubes, 13);
+['Dim14'] =S: TABDIM(!}Cubes, 14);
+
+# Calculates a cube dimension total count
+#########################
+['Nb_Dim'] = N: IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim14' )@<>'', 14,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim13' )@<>'', 13,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim12' )@<>'', 12,
+
+ 		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim11' )@<>'', 11,
+
+ 		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim10' )@<>'', 10,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim9' )@<>'', 9,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim8' )@<>'', 8,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim7' )@<>'', 7,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim6' )@<>'', 6,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim5' )@<>'', 5,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim4' )@<>'', 4,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim3' )@<>'', 3,
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim2' )@<>'', 2, CONTINUE
+
+) )  ) ) ) ) ) ) ) ) ) ) );
+
+
+#Calculates Scenario dimension position
+###########################
+
+['DimScenarioPosition'] = S: IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim12')@='t_Scenario', '12',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim11')@='t_Scenario', '11',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim10')@='t_Scenario', '10',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim9')@='t_Scenario', '9',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim8')@='t_Scenario', '8',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim7')@='t_Scenario', '7',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim6')@='t_Scenario', '6',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim5')@='t_Scenario', '5',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim4')@='t_Scenario', '4',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim3')@='t_Scenario', '3',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim2')@='t_Scenario', '2', CONTINUE
+
+) ) ) ) ) ) ) ) ) ) ) ;
+
+
+#Calculates Month dimension position
+###########################
+
+['DimMonthPosition'] = S: IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim12')@='t_Months', '12',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim11')@='t_Months', '11',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim10')@='t_Months', '10',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim9')@='t_Months', '9',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim8')@='t_Months', '8',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim7')@='t_Months', '7',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim6')@='t_Months', '6',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim5')@='t_Months', '5',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim4')@='t_Months', '4',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim3')@='t_Months', '3',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim2')@='t_Months', '2', CONTINUE
+
+) ) ) ) ) ) ) ) ) ) ) ;
+
+#Calculates Entity dimension position
+###########################
+
+['DimEntityPosition'] = S: IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim12')@='Entity', '12',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim11')@='Entity', '11',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim10')@='Entity', '10',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim9')@='Entity', '9',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim8')@='Entity', '8',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim7')@='Entity', '7',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim6')@='Entity', '6',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim5')@='Entity', '5',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim4')@='Entity', '4',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim3')@='Entity', '3',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim2')@='Entity', '2',
+
+		IF(DB('SYS_Controls_Cube', !}Cubes, 'Dim1')@='Entity', '1', CONTINUE
+) ) ) ) ) ) ) ) ) ) ) ) ;

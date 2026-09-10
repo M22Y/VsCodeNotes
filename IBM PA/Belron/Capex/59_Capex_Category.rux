@@ -1,0 +1,7 @@
+FEEDSTRINGS;
+SKIPCHECK;
+FEEDERS;
+['Dep_Account']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);
+['BSAccount']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);
+['BSAccount_AccAmort']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);
+['Life']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);

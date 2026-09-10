@@ -1,0 +1,112 @@
+-- CALC2_000
+-- MTD to YTD conversion
+
+-- Step 1: Calculate YTD Amount
+WITH YTD_Calculation AS (
+    SELECT
+        SCENARIO, 
+        FSCENARIO, 
+        PERIOD,
+        FPERIOD,
+        CATEGORY, 
+        SENTITY, 
+        SACCOUNT,
+        SACCOUNT2,
+        SENTITYCTP,
+        SDEST1,
+        SDEST2,
+        ENTITY,
+        CURRENCY, 
+        ACCOUNT, 
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        SUM(MTD_AMOUNT) OVER (
+            PARTITION BY FSCENARIO, SENTITY, SACCOUNT, DEST1, DEST2, DEST3, DEST4, DEST5
+            ORDER BY FSCENARIO, FPERIOD
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS YTD_AMOUNT
+    FROM AW_FIN_000001_000002
+    WHERE LEFT(ACCOUNT, 1) NOT IN ('1','2','3') 
+)
+
+-- Step 1: Update original table with the YTD amount using MERGE
+MERGE AW_FIN_000001_000002 AS Target
+USING (
+    SELECT 
+       SCENARIO, 
+        FSCENARIO, 
+        PERIOD,
+        FPERIOD,
+        CATEGORY, 
+        SENTITY, 
+        SACCOUNT,
+        SACCOUNT2,
+        SENTITYCTP,
+        SDEST1,
+        SDEST2,
+        ENTITY,
+        CURRENCY, 
+        ACCOUNT, 
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        SUM(YTD_AMOUNT) AS YTD_AMOUNT
+    FROM YTD_Calculation
+GROUP BY
+SCENARIO, 
+        FSCENARIO, 
+        PERIOD,
+        FPERIOD,
+        CATEGORY, 
+        SENTITY, 
+        SACCOUNT,
+        SACCOUNT2,
+        SENTITYCTP,
+        SDEST1,
+        SDEST2,
+        ENTITY,
+        CURRENCY, 
+        ACCOUNT, 
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5
+) AS Source
+ON 
+ Target.SCENARIO = Source. SCENARIO
+     AND Target.FSCENARIO = Source.FSCENARIO
+     AND  Target.PERIOD=Source. PERIOD
+     AND Target.FPERIOD = Source.FPERIOD
+     AND Target.CATEGORY = Source.CATEGORY
+    AND Target.SENTITY = Source.SENTITY
+    AND Target.SACCOUNT = Source.SACCOUNT
+    AND Target.SACCOUNT2 = Source.SACCOUNT2
+    AND Target.SENTITYCTP = Source.SENTITYCTP
+    AND Target.SDEST1 = Source.SDEST1
+    AND Target.SDEST2 = Source.SDEST2
+    AND Target.ENTITY = Source.ENTITY
+    AND Target.CURRENCY = Source.CURRENCY
+    AND Target.ACCOUNT = Source.ACCOUNT
+   AND Target.CTPENTITY = Source.CTPENTITY
+    AND Target.DEST1 = Source.DEST1
+    AND Target.DEST2 = Source.DEST2
+    AND Target.DEST3 = Source.DEST3
+    AND Target.DEST4 = Source.DEST4
+    AND Target.DEST5 = Source.DEST5
+    AND LEFT(Target.ACCOUNT, 1) NOT IN ('1','2','3')
+WHEN MATCHED THEN
+    UPDATE SET Target.YTD_AMOUNT = Source.YTD_AMOUNT;
+
+-- Step 2: Directly update YTD_AMOUNT = AMOUNT for specific accounts
+UPDATE AW_FIN_000001_000002
+SET YTD_AMOUNT = AMOUNT
+WHERE LEFT(ACCOUNT, 1) IN ('1','2','3');

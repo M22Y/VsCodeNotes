@@ -1,0 +1,45 @@
+
+#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté -- 2014 --
+#
+#	2014-10-28 - Francis Côté: 	Integration
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+#endregion
+
+
+[{'WeekDay', 'Holiday'}, 'All_Months'] = 0;
+
+#TM1 days are Monday =1, Sunday=7/0
+['WeekDay'] =N: IF (!t_Days @= '01',
+					CONTINUE,
+					MOD (DB('SYS_TimeRef_Calendar', !t_Years, ATTRS('t_Days', !t_Days, '-1'), !t_Months, !m_Calendar) +1, 7)
+				);
+
+#Lock 31st Day & Feb 30th
+['Holiday', t_Months:{'02','04','06','08','09','11'}, '31'] =N: 2;
+['Holiday', t_Months:'02', '30'] =N: 2;
+
+#Disable All periods that aren't real calendar months
+[t_Months:{'Opening_Balance', 'Q1vsQ4PY'}, 'WorkingDay'] =N: 0;
+['WorkingDay'] = N: IF(['WeekDay']=6 % ['WeekDay']=0 % ['WeekDay']=7 % ['Holiday']<>0, 0, 1);
+
+['NetWorkDay'] = N: IF(!t_Days @='01',
+					['WorkingDay'],
+					['WorkingDay']
+						+ DB('SYS_TimeRef_Calendar', !t_Years, ATTRS('t_Days', !t_Days, '-1'), !t_Months, !m_Calendar)
+				   );
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+['WeekDay'] => ['WorkingDay'],
+			DB('SYS_TimeRef_Calendar', !t_Years, ATTRS('t_Days', !t_Days, '+1'), !t_Months, 'WeekDay'),
+			['NetWorkDay'],
+			DB('SYS_TimeRef_Calendar', !t_Years, ATTRS('t_Days', !t_Days, '+1'), !t_Months, 'NetWorkDay');

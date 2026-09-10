@@ -1,0 +1,12 @@
+#['FXscenario', {'04', '05', '06', '07', '08', '09', '10', '11', '12'}, 'Backlog_Q1'] = S:!t_Scenario;
+#['FXscenario', {'01', '02', '03'}, 'Backlog_Q1'] = S: Subst(!t_Scenario,1,LONG(!t_Scenario)-4) | STR(NUMBR(Subst(!t_Scenario,LONG(!t_Scenario)-3,LONG(!t_Scenario)))-1, 4,0) ;
+
+#['FXscenario', {'07', '08', '09', '10', '11', '12'}, 'Backlog_Q2'] = S:!t_Scenario;
+#['FXscenario', {'01', '02', '03', '04', '05', '06'}, 'Backlog_Q2'] = S: Subst(!t_Scenario,1,LONG(!t_Scenario)-4) | STR(NUMBR(Subst(!t_Scenario,LONG(!t_Scenario)-3,LONG(!t_Scenario)))-1, 4,0) ;
+
+#['FXscenario', { '09', '10', '11', '12'}, 'Backlog_Q3'] = S:!t_Scenario;
+#['FXscenario', {'01', '02', '03','04', '05', '06', '07', '08'}, 'Backlog_Q3'] = S: Subst(!t_Scenario,1,LONG(!t_Scenario)-4) | STR(NUMBR(Subst(!t_Scenario,LONG(!t_Scenario)-3,LONG(!t_Scenario)))-1, 4,0) ;
+
+#['FXscenario', {'04', '05', '06', '07', '08', '09', '10', '11', '12'}, 'Backlog_Q4'] = S:!t_Scenario;
+#['FXscenario', {'01', '02', '03','04', '05', '06', '07', '08', '09', '10', '11', '12'}, 'Backlog_Q4'] = S: Subst(!t_Scenario,1,LONG(!t_Scenario)-4) | STR(NUMBR(Subst(!t_Scenario,LONG(!t_Scenario)-3,LONG(!t_Scenario)))-1, 4,0) ;
+

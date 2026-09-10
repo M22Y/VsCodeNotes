@@ -1,0 +1,91 @@
+/*
+Created by Ravi Gauttom - RCGT 2025/15/12
+ 
+NOTES:
+This special method copies data from a source scenario e.g. Actuals to target scenario e.g. FCT in DATI_SALDI_LORDI based on the period mentioned in the target scenario.
+*/
+ 
+DECLARE @DELETE_SQL_ACT NVARCHAR(4000)
+DECLARE @DELETE_SQL_FCT NVARCHAR(4000)
+DECLARE @INSERT_SQL_FCT NVARCHAR(4000)
+DECLARE @INSERT_SQL_ACT  NVARCHAR(4000)
+DECLARE @DEBUG NVARCHAR(4000)
+DECLARE @ALL_COLUMNS VARCHAR(4000)
+DECLARE @SOURCESCN VARCHAR(4000)
+DECLARE @ACTUALSCN VARCHAR(4000)
+DECLARE @ACTLMONTH VARCHAR(4000)
+DECLARE @TARGETSCN VARCHAR(4000)
+DECLARE @TARGETLCK VARCHAR(4000)
+DECLARE @MONTHLCK VARCHAR(4000)
+DECLARE @DEBUG_SQL VARCHAR(4000)
+DECLARE @TARGET_SQL VARCHAR(4000)
+DECLARE @SCNGROUP VARCHAR(4000)
+ 
+ 
+/*Select source month and closing month for actuals in parameters via scenario attributes*/
+--SET @SOURCESCN = ${$Scenario.&SOURCE_SCENARIO&.code}
+--SET @ACTUALSCN  =  ${$Scenario.&ACTUAL_SCENARIO&.code}
+SET @ACTLMONTH =  ${$Scenario.&ACTUAL_MONTH&.code}
+SET @SCNGROUP =  '&SCENARIO_GROUPING&'
+ 
+/*Target is automatically selected based on the process scenario it is running from. Passed as #Scenarios# in parameter*/
+SET @TARGETSCN = '&TARGET_SCENARIO&'
+ 
+BEGIN
+ 
+/*Generate the delete statement to delete ALL rows for the target scenario*/
+SET @DELETE_SQL_ACT =
+ 'DELETE FROM &TABLE_NAME&
+      WHERE COD_SCENARIO IN (SELECT GRP.COD_SCENARIO FROM SCENARIO_GERARCHIA_ABBIM AS GRP WHERE GRP.COD_SCENARIO_ELEGER = ''' + @SCNGROUP  + ''')
+        AND COD_PERIODO  <= ''' + @ACTLMONTH  + ''' '
+ 
+/*Generate the delete statement to delete ALL rows for the target scenario*/
+SET @DELETE_SQL_FCT =
+ 'DELETE FROM &TABLE_NAME&
+      WHERE COD_SCENARIO IN (SELECT GRP.COD_SCENARIO FROM SCENARIO_GERARCHIA_ABBIM AS GRP WHERE GRP.COD_SCENARIO_ELEGER = ''' + @SCNGROUP  + ''')
+        AND COD_PERIODO  >  ''' + @ACTLMONTH  + ''' '
+ 
+/*Create list of columns for the source and target table*/
+SELECT @ALL_COLUMNS = COALESCE(@ALL_COLUMNS + ', ', '') + column_Name
+FROM INFORMATION_SCHEMA.COLUMNS where table_NAME = '&TABLE_NAME&' AND column_name NOT IN ('OID_&TABLE_NAME&', 'COD_SCENARIO', 'PROVENIENZA', 'USERUPD', 'DATEUPD')
+ 
+/* Generate ACT Insert Statement */
+SET @INSERT_SQL_ACT =
+'
+WITH
+GRP_SCN AS
+(
+SELECT
+GRP.COD_SCENARIO AS TARGET_SCN,
+(SELECT SCN.attributo2 FROM SCENARIO AS SCN WHERE SCN.COD_SCENARIO = GRP.COD_SCENARIO) AS SOURCE_SCN
+FROM SCENARIO_GERARCHIA_ABBIM AS GRP
+WHERE GRP.COD_SCENARIO_ELEGER = ''' + @SCNGROUP  + '''
+),
+DATI AS
+(
+Select * from &TABLE_NAME& DSL
+)
+INSERT INTO &TABLE_NAME&
+(
+    ' + @ALL_COLUMNS + ',
+    COD_SCENARIO,
+    OID_&TABLE_NAME&,
+    PROVENIENZA,
+    USERUPD,
+    DATEUPD
+)
+Select ' + @ALL_COLUMNS + ',
+       GRP_SCN.TARGET_SCN,
+       NEWID() AS OID,
+       CONCAT(SOURCE_SCN, COD_PERIODO) AS PROVENIENZA,
+    ''#USER#'' AS USERUPD,
+       CURRENT_TIMESTAMP AS DATEUPD
+from DATI
+INNER JOIN GRP_SCN ON DATI.COD_SCENARIO = GRP_SCN.SOURCE_SCN
+AND DATI.COD_PERIODO <=  ''' + @ACTLMONTH  + ''' '
+ 
+/*Delete Actual month rows and insert actuals*/
+Exec (@DELETE_SQL_ACT )
+Exec (@INSERT_SQL_ACT )
+ 
+END

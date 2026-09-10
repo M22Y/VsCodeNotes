@@ -1,0 +1,10 @@
+SKIPCHECK;
+FEEDSTRINGS;
+['Expiry_Date']= S:(DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Day')| '/' | DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Month')| '/' | DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Year'));
+
+
+#['Full_Name'] =S: SUBST(!Org_Structure_Leaf,1,14) | ' ' | DB('}ElementAttributes_Org_Structure_Leaf', !Org_Structure_Leaf, 'Entity_Name');
+#['Desc_Length'] =S: STR(LONG(DB('}ElementAttributes_Org_Structure_Leaf', !Org_Structure_Leaf, 'Entity_Name')),2,0);
+FEEDERS;
+
+['Expiry_Date']=>  DB('55_Capex_Items', !Org_Structure, 'All_Capex', !Versions, 'All_Years', 'Lease_Expiry_Date');

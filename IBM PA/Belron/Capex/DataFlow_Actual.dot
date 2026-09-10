@@ -1,0 +1,18 @@
+digraph DataFlow {
+    rankdir=LR;
+    node [fontname=Arial];
+    "86_ETL_GL" [shape=box, style=filled, fillcolor=lightblue];
+    "97_Actual_Flags" [shape=box, style=filled, fillcolor=lightblue];
+    "rule_86_ETL_GL_30" [shape=oval, style=filled, fillcolor=lightgoldenrod, label="rule:86_ETL_GL_30"];
+    "rule_86_ETL_GL_141" [shape=oval, style=filled, fillcolor=lightgoldenrod, label="rule:86_ETL_GL_141"];
+    "rule_86_ETL_GL_147" [shape=oval, style=filled, fillcolor=lightgoldenrod, label="rule:86_ETL_GL_147"];
+    "rule_86_ETL_GL_597" [shape=oval, style=filled, fillcolor=lightgoldenrod, label="rule:86_ETL_GL_597"];
+    "rule_86_ETL_GL_600" [shape=oval, style=filled, fillcolor=lightgoldenrod, label="rule:86_ETL_GL_600"];
+    "rule_86_ETL_GL_30" -> "86_ETL_GL" [label="ASSIGN"];
+    "rule_86_ETL_GL_141" -> "86_ETL_GL" [label="ASSIGN"];
+    "86_ETL_GL" -> "rule_86_ETL_GL_147" [label="DB"];
+    "97_Actual_Flags" -> "rule_86_ETL_GL_597" [label="DB"];
+    "rule_86_ETL_GL_597" -> "86_ETL_GL" [label="ASSIGN"];
+    "97_Actual_Flags" -> "rule_86_ETL_GL_600" [label="DB"];
+    "rule_86_ETL_GL_600" -> "86_ETL_GL" [label="ASSIGN"];
+}

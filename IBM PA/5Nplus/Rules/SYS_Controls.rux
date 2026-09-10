@@ -1,0 +1,40 @@
+#####################################################################################
+
+[ ] =S: IF( ELLEV('SYS_Control_items', !SYS_Control_items) >=1, '', CONTINUE);
+['Value',{'SYS_DIM_Clone_FAP','SYS_DIM_Initialise_Subsets','SYS_DIM_Update_Account','Trsf_FAPCieDetail_FAPStaging'} ] =S: '';
+
+FORMAT==100
+#--------------------------------------------------------------------#
+#	2014-11-04 - Francis Côté:  Initial Design
+#	2019-10-24 - MG/5N - MBA/FPM360:  Modify rule on folder
+#
+#--------------------------------------------------------------------#
+
+#Region System
+FEEDSTRINGS;
+SKIPCHECK;
+#EndRegion
+
+#['Folder', 'ServerPath'] =S: DB('SYS_Controls','ServerName','Folder') | DB('SYS_Controls', 'ServerName' ,'Value') | CHAR(92);
+['Folder', 'ServerPath'] =S: DB('SYS_Controls','ServerName','Folder') ;
+
+['Folder', {'LogFiles','DebugFiles','SourceFiles','DataFiles','SYS_Backup'}] =S: DB('SYS_Controls','ServerPath','Folder') | DB('SYS_Controls',!SYS_Control_items,'Value') | CHAR(92);
+['Folder', {'MetaData','Data'}] =S: DB('SYS_Controls','SourceFiles','Folder') | DB('SYS_Controls',!SYS_Control_items,'Value') | CHAR(92);
+['Folder'] =S: IF( ELPAR('SYS_Control_items', !SYS_Control_items, 1) @= 'Global', STET , CONTINUE);
+['Folder'] =S: IF( ELLEV('SYS_Control_items', !SYS_Control_items) =0,
+	( DB('SYS_Controls', ELPAR('SYS_Control_items', !SYS_Control_items, 1) , 'Folder')
+	| DB('SYS_Controls', !SYS_Control_items, 'FileName')),
+	 CONTINUE);
+
+
+#['HeaderRecord'] =C: IF( ELLEV('SYS_Control_Items', !SYS_Controls_Items) >=1, 0, CONTINUE);
+#[] =S: IF( ELLEV('SYS_Controls_Items', !SYS_Control_Items) >=1, STET, CONTINUE);
+
+
+# Status for Current Budget, Current Forecast & Current LRP
+['Budget', 'Status' ] = S :  IF (DB('}ElementAttributes_t_Scenario', DB('SYS_TimeRef', 'Budget', 'Scenario') ,'isFrozen') @='YES', 'FROZEN', 'LIVE');
+['Forecast', 'Status' ] = S :  IF (DB('}ElementAttributes_t_Scenario', DB('SYS_TimeRef', 'Forecast', 'Scenario') ,'isFrozen') @='YES', 'FROZEN', 'LIVE');
+['LRP', 'Status' ] = S :  IF (DB('}ElementAttributes_t_Scenario', DB('SYS_TimeRef', 'LRP', 'Scenario') ,'isFrozen') @='YES', 'FROZEN', 'LIVE');
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+#FEEDERS;

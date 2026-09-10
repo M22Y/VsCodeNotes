@@ -1,0 +1,191 @@
+YTD to MTD conversion
+
+-- Step 1: Create a list of periods
+WITH Periods AS (
+    SELECT '01' AS PERIOD UNION ALL
+    SELECT '02' UNION ALL
+    SELECT '03' UNION ALL
+    SELECT '04' UNION ALL
+    SELECT '05' UNION ALL
+    SELECT '06' UNION ALL
+    SELECT '07' UNION ALL
+    SELECT '08' UNION ALL
+    SELECT '09' UNION ALL
+    SELECT '10' UNION ALL
+    SELECT '11' UNION ALL
+    SELECT '12'
+),
+-- Step 2: Create a list of all unique combinations of SENTITY, SACCOUNT, and other relevant columns
+UniqueCombinations AS (
+    SELECT DISTINCT
+        SENTITY,
+        SACCOUNT,
+        CATEGORY,
+        SACCOUNT2,
+        SENTITYCTP,
+        SDEST1,
+        SDEST2,
+        ENTITY,
+        CURRENCY,
+        ACCOUNT,
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5
+    FROM AW_FIN_000003_000001
+),
+-- Step 3: Create a list of all unique scenarios
+AllScenarios AS (
+    SELECT DISTINCT SCENARIO
+    FROM AW_FIN_000003_000001
+),
+-- Step 4: Generate all possible combinations of SCENARIO, SENTITY, SACCOUNT, and PERIOD
+AllPossibleCombinations AS (
+    SELECT 
+        S.SCENARIO,
+        U.SENTITY,
+        U.SACCOUNT,
+        P.PERIOD,
+        U.CATEGORY,
+        U.SACCOUNT2,
+        U.SENTITYCTP,
+        U.SDEST1,
+        U.SDEST2,
+        U.ENTITY,
+        U.CURRENCY,
+        U.ACCOUNT,
+        U.CTPENTITY,
+        U.DEST1,
+        U.DEST2,
+        U.DEST3,
+        U.DEST4,
+        U.DEST5
+    FROM 
+        AllScenarios AS S
+        CROSS JOIN UniqueCombinations AS U
+        CROSS JOIN Periods AS P
+)
+,
+-- Step 5: Identify missing rows by performing a LEFT JOIN with the actual data
+MissingPeriods AS (
+    SELECT 
+        APC.SCENARIO,
+        APC.SENTITY,
+        APC.SACCOUNT,
+        APC.PERIOD,
+        APC.CATEGORY,
+        APC.SACCOUNT2,
+        APC.SENTITYCTP,
+        APC.SDEST1,
+        APC.SDEST2,
+        APC.ENTITY,
+        APC.CURRENCY,
+        APC.ACCOUNT,
+        APC.CTPENTITY,
+        APC.DEST1,
+        APC.DEST2,
+        APC.DEST3,
+        APC.DEST4,
+        APC.DEST5
+    FROM 
+        AllPossibleCombinations AS APC
+        LEFT JOIN AW_FIN_000003_000001 AS A
+        ON APC.SCENARIO = A.SCENARIO
+        AND APC.SENTITY = A.SENTITY
+        AND APC.SACCOUNT = A.SACCOUNT
+        AND APC.PERIOD = A.PERIOD
+    WHERE A.PERIOD IS NULL
+)
+-- Step 6: Insert missing periods into the dataset with retained information
+INSERT INTO AW_FIN_000003_000001 (OID, SCENARIO, PERIOD, SENTITY, SACCOUNT, CATEGORY, SACCOUNT2, SENTITYCTP, SDEST1, SDEST2, ENTITY, CURRENCY, ACCOUNT, CTPENTITY, DEST1, DEST2, DEST3, DEST4, DEST5, AMOUNT, MTD_AMOUNT, PROVENIENZA, USERUPD, DATEUPD)
+SELECT 
+    NEWID(),
+    MP.SCENARIO, 
+    MP.PERIOD, 
+    MP.SENTITY, 
+    MP.SACCOUNT, 
+    MP.CATEGORY,
+    MP.SACCOUNT2,
+    MP.SENTITYCTP,
+    MP.SDEST1,
+    MP.SDEST2,
+    MP.ENTITY,
+    MP.CURRENCY,
+    MP.ACCOUNT,
+    MP.CTPENTITY,
+    MP.DEST1,
+    MP.DEST2,
+    MP.DEST3,
+    MP.DEST4,
+    MP.DEST5,  
+    0 AS AMOUNT,
+    0 AS MTD_AMOUNT,
+    'DTP_ELAB' AS PROVENIENZA,
+    '#USER#' AS USERUPD,
+    GETDATE() AS DATEUPD
+FROM MissingPeriods AS MP;
+
+-- Step 7: Calculate PreviousAmount and MTD_AMOUNT
+WITH MonthlyAmounts AS (
+    SELECT 
+         SCENARIO, 
+        PERIOD, 
+        CATEGORY,
+        SENTITY, 
+        SACCOUNT, 
+        SACCOUNT2,
+        SENTITYCTP,
+        SDEST1,
+        SDEST2, 
+        ENTITY,
+        CURRENCY,
+        ACCOUNT,
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        AMOUNT, 
+        LAG(AMOUNT) OVER (PARTITION BY SCENARIO,CATEGORY, SENTITY, SACCOUNT,SACCOUNT2, SENTITYCTP,SDEST1,SDEST2,ENTITY,CURRENCY,ACCOUNT,CTPENTITY,DEST1,DEST2,DEST3,DEST4,DEST5 ORDER BY SCENARIO, PERIOD) AS PreviousAmount,
+        CASE 
+            WHEN PERIOD = '01' THEN AMOUNT 
+            ELSE AMOUNT - LAG(AMOUNT) OVER (PARTITION BY SCENARIO,CATEGORY, SENTITY, SACCOUNT,SACCOUNT2, SENTITYCTP,SDEST1,SDEST2,ENTITY,CURRENCY,ACCOUNT,CTPENTITY,DEST1,DEST2,DEST3,DEST4,DEST5  ORDER BY SCENARIO, PERIOD)
+        END AS MTD_AMOUNT
+    FROM AW_FIN_000003_000001
+)
+-- Step 8: Merge results into target table
+MERGE AW_FIN_000003_000001 AS Target
+USING MonthlyAmounts AS Source
+ON Target.SCENARIO = Source.SCENARIO
+    AND Target.PERIOD = Source.PERIOD
+    AND Target.CATEGORY = Source.CATEGORY
+   AND Target.SENTITY = Source.SENTITY
+   AND Target.SACCOUNT = Source.SACCOUNT
+   AND Target.SACCOUNT2 = Source.SACCOUNT2
+   AND Target.SENTITYCTP = Source.SENTITYCTP
+   AND Target.SDEST1 = Source.SDEST1 
+   AND Target.SDEST2 = Source.SDEST2
+   AND Target.ENTITY = Source.ENTITY
+   AND Target.CURRENCY = Source.CURRENCY
+   AND Target.ACCOUNT = Source.ACCOUNT
+   AND Target.CTPENTITY=Source.CTPENTITY
+   AND Target.DEST1 = Source.DEST1
+   AND Target.DEST2 = Source.DEST2
+   AND Target.DEST3 = Source.DEST3
+   AND Target.DEST4 = Source.DEST4
+   AND Target.DEST5 = Source.DEST5
+   AND LEFT(Target.ACCOUNT, 1) NOT IN ('1', '2', '3')
+WHEN MATCHED THEN
+    UPDATE 
+SET Target.MTD_AMOUNT = Source.MTD_AMOUNT
+
+       ;
+
+-- Step 9: Directly update MTD_AMOUNT for specific accounts
+UPDATE AW_FIN_000003_000001
+SET MTD_AMOUNT = AMOUNT
+WHERE LEFT(ACCOUNT, 1) IN ('1', '2', '3')
+;

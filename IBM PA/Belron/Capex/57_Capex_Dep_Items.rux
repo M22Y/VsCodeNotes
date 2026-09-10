@@ -1,0 +1,104 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+#Mart 24-03-2015
+[{'Period', 'Depreciation', 'Depreciation_Start', 'CumAmort_Period', 'CumAmort', 'CumAmort_Start', 'Capitalization'}, {'Forecast', 'Rolling_Fct_Adj'}] = N:
+		IF(DB('97_Actual_Flags', ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years'), ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Months'), !Versions)=1, 0, CONTINUE);
+
+#Mart 2016-24-03
+[{ 'Depreciation', 'CumAmort'}, 'Rolling_Fct_Adj']= N: ['Budget_Final'] + ['Forecast_Final'];
+
+
+['Period', {'Forecast', 'Budget'}] =N:
+IF(
+    !GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Dep_Account')
+	&(DIMIX('t_Months_Continuous', !t_Months_Continuous) >=
+ 		DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month')))
+	&(DIMIX('t_Months_Continuous', !t_Months_Continuous) <
+ 		DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+		+DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life')),
+1 +DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+0);
+
+
+#['All_Capex_List', 'CumAmort_Period', {'Forecast', 'Budget'}] = C: ['Capex_1'] + ['Capex_2'];
+
+['CumAmort_Period', {'Forecast', 'Budget'}] = N:
+IF(!GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'BSAccount_AccAmort')
+	&(DIMIX('t_Months_Continuous', !t_Months_Continuous) >=
+ 		DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month')))
+	&(DIMIX('t_Months_Continuous', !t_Months_Continuous) <
+ 		DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+		+DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life')),
+1 +DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+0);
+
+['Depreciation_Start', {'Forecast', 'Budget'}] =N:
+	IF(!t_Months_Continuous @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'Depreciation_Month')
+ & !GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'Dep_Account'),
+	DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Monthly_Amount'),
+	0);
+
+['CumAmort_Start', {'Forecast', 'Budget'}] =N:
+	IF(!t_Months_Continuous @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'Depreciation_Month')
+ & !GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'BSAccount_AccAmort'),
+	DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Monthly_Amount'),
+	0);
+
+['Depreciation', {'Forecast', 'Budget'}] =N:
+	IF (['Period'] <>0,
+		['Depreciation_Start'] + DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+	0);
+
+['CumAmort', {'Forecast', 'Budget'}] =N:
+	IF (['CumAmort_Period'] <>0,
+		['CumAmort_Start'] + DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+	0);
+
+['Capitalization', {'Forecast', 'Budget'}] =N:
+IF(!t_Months_Continuous @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Acquisition_Month')
+ & !GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'BSAccount'),
+	DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Amount'),
+	0);
+
+
+['Calc_Depreciation', {'Forecast', 'Budget'}] = ['Depreciation'];
+['Calc_CumAmort', {'Forecast', 'Budget'}] =  ['CumAmort'];
+
+
+
+###############################################FEEDERS#####################################
+FEEDERS;
+#Mart 2016-24-03
+['Depreciation', {'Budget_Final', 'Forecast_Final'}] => ['Rolling_Fct_Adj'];
+['CumAmort', {'Budget_Final', 'Forecast_Final'}] => ['Rolling_Fct_Adj'];
+
+['Depreciation_Start'] => ['Period'];
+['CumAmort_Start'] => ['CumAmort_Period'];
+
+['Depreciation', {'Forecast', 'Budget'}] => ['Calc_Depreciation'];
+['CumAmort', {'Forecast', 'Budget'}] => ['Calc_CumAmort'];
+
+[{'Period','Depreciation_Start','Capitalization'} ] => ['Depreciation'];
+[{'CumAmort_Period','CumAmort_Start','Capitalization'} ] => ['CumAmort'];
+
+['Period'] => DB(if(DIMIX('t_Months_Continuous', !t_Months_Continuous) <
+ 		DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+		+DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life'),
+			'57_Capex_Dep_Items', ''), !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('{Clone_t_Months_Continuous_57', !t_Months_Continuous, 'Next_Month'), !m_Capex_Dep_Calc);
+
+['CumAmort_Period'] => DB(if(DIMIX('t_Months_Continuous', !t_Months_Continuous) <
+ 		DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+		+DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life'),
+			'57_Capex_Dep_Items', ''), !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('{Clone_t_Months_Continuous_57', !t_Months_Continuous, 'Next_Month'), !m_Capex_Dep_Calc);
+
+['Depreciation', 'All_Capex_List', {'Forecast', 'Budget'}]=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, !Versions, !t_Months_Continuous, 'New_Capex');
+['Depreciation', 'All_Capex_List', 'Budget_Final']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Rolling_Fct_Adj', !t_Months_Continuous, 'New_Capex');
+
+['Depreciation', 'All_Capex_List', 'Forecast']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Budget', !t_Months_Continuous, 'Frcst_Capex');
+['Depreciation', 'All_Capex_List', 'Forecast_Final']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Rolling_Fct_Adj', !t_Months_Continuous, 'Frcst_Capex');
+
+['CumAmort', 'All_Capex_List', {'Forecast','Budget'}]=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, !Versions, !t_Months_Continuous, 'New_Capex_CumulAmort');
+['CumAmort', 'All_Capex_List', 'Forecast']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Budget', !t_Months_Continuous, 'Frcst_Capex_CumulAmort');
+
+['Capitalization', 'All_Capex_List', 'CY', {'Forecast','Budget'}] => DB('51_BS_Manual', '120000', !Versions,!t_Months_Continuous, 'Inc_Dec$');

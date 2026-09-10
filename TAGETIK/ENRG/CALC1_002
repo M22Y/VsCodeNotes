@@ -1,0 +1,91 @@
+-- CALC1_002
+-- YTD to MTD conversion - Step 3
+
+-- Step 7: Calculate PreviousAmount and MTD_AMOUNT
+WITH MonthlyAmounts AS (
+    SELECT 
+        SCENARIO, 
+        PERIOD, 
+        CATEGORY,
+        ENTITY,
+        CURRENCY,
+        ACCOUNT,
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        AMOUNT, 
+        CASE 
+            WHEN PERIOD = '01' THEN AMOUNT 
+            ELSE AMOUNT - LAG(AMOUNT) OVER (
+                PARTITION BY SCENARIO, PERIOD, ENTITY, ACCOUNT, 
+        CTPENTITY,
+        DEST1,
+        DEST2
+                ORDER BY SCENARIO, PERIOD, SENTITY
+            )
+        END AS MTD_AMOUNT
+    FROM AW_FIN_000003_000001
+)
+
+-- Step 2: Merge results into target table
+MERGE AW_FIN_000003_000001 AS Target
+USING (
+    SELECT 
+        SCENARIO, 
+        PERIOD, 
+        CATEGORY,
+        ENTITY,
+        CURRENCY,
+        ACCOUNT,
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        SUM(MTD_AMOUNT) AS MTD_AMOUNT
+    FROM MonthlyAmounts
+    GROUP BY 
+        SCENARIO, 
+        PERIOD, 
+        CATEGORY,
+        ENTITY,
+        CURRENCY,
+        ACCOUNT,
+        CTPENTITY,
+        DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5
+) AS Source
+ON Target.SCENARIO = Source.SCENARIO
+    AND Target.PERIOD = Source.PERIOD
+    AND Target.CATEGORY = Source.CATEGORY
+    AND Target.ENTITY = Source.ENTITY
+    AND Target.CURRENCY = Source.CURRENCY
+    AND Target.ACCOUNT = Source.ACCOUNT
+    AND Target.CTPENTITY = Source.CTPENTITY
+    AND Target.DEST1 = Source.DEST1
+    AND Target.DEST2 = Source.DEST2
+    AND Target.DEST3 = Source.DEST3
+    AND Target.DEST4 = Source.DEST4
+    AND Target.DEST5 = Source.DEST5
+    AND LEFT(Target.ACCOUNT, 1) NOT IN ('1', '2', '3')
+WHEN MATCHED THEN
+    UPDATE 
+    SET Target.MTD_AMOUNT = Source.MTD_AMOUNT;
+
+-- Step 3: Directly update MTD_AMOUNT for specific accounts
+UPDATE AW_FIN_000003_000001
+SET MTD_AMOUNT = AMOUNT
+WHERE LEFT(ACCOUNT, 1) IN ('1', '2', '3');
+
+-- Step 4: Directly update MTD_AMOUNT for specific accounts (Pnl is Blank)
+UPDATE AW_FIN_000003_000001
+SET MTD_AMOUNT = AMOUNT
+WHERE  MTD_AMOUNT IS NULL AND LEFT(ACCOUNT, 1) NOT IN ('1', '2', '3');
+

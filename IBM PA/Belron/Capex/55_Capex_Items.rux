@@ -1,0 +1,70 @@
+SKIPCHECK;
+FEEDSTRINGS;
+
+#Mart 2014-06-13 to freeze previous close year
+[{'2010', '2011', '2012', '2013'}, 'Forecast'] = N: 0;
+[{'2010', '2011', '2012', '2013', '2014'}, 'Budget'] = N: 0;
+
+
+#STET sur le consolider
+[{'Life', 'Acquisition_Month', 'Depreciation_Month', 'Lease_Expiry_Date'}]= C:0;
+
+['Account']=S: ATTRS('Org_Structure_Leaf', !Org_Structure, 'Capex_Div');
+
+['Dep_Account']=S: DB('59_Capex_Category',
+				DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+				ATTRS('Org_Structure_Leaf', !Org_Structure, 'Capex_Div'), !m_Capex_Details);
+
+['BSAccount']=S: DB('59_Capex_Category',
+				DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+				ATTRS('Org_Structure_Leaf', !Org_Structure, 'Capex_Div'), !m_Capex_Details);
+
+
+['BSAccount_AccAmort']=S: DB('59_Capex_Category',
+				DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+				ATTRS('Org_Structure_Leaf', !Org_Structure, 'Capex_Div'), !m_Capex_Details);
+
+['Life']=N: IF( DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years,'Category') @= 'Leasehold_Improvement',
+		CONTINUE,
+		DB('59_Capex_Category',
+			DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+			ATTRS('Org_Structure_Leaf', !Org_Structure, 'Capex_Div'), !m_Capex_Details));
+
+#Life for Leasehold_Improvement
+['Life'] =N: (['DateE_Yr']-['DateB_Yr']) *12 +['DateE_Mth']-['DateB_Mth'] +1;
+['DateB_Mth'] =N: ATTRN('t_Months', ATTRS('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'), 'Months'),'Month_Nb');
+['DateE_Mth'] =N: NUMBR(DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Month'));
+['DateB_Yr'] =N: NUMBR(DB('}ElementAttributes_t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'), 'Years'));
+['DateE_Yr'] =N: NUMBR(DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Year'));
+
+['Lease_Expiry_Date']= S: DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Expiry_Date');
+['Monthly_Amount'] = ['Amount']\['Life'];
+
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FEEDERS;
+['Amount', {'Forecast','Budget'}] => ['Monthly_Amount'], ['Lease_Expiry_Date'],['Account'];
+['Depreciation_Month', {'Forecast','Budget'}] => ['DateB_Mth'], ['DateB_Yr'], ['DateE_Mth'], ['DateE_Yr'] ;
+
+
+
+
+#Cube 57 Depreciation
+#CSJ 2013-10-24 Ajout de la partie Period
+['Amount', {'Forecast','Budget'}] =>
+	DB('57_Capex_Dep_Items', !Org_Structure,
+		DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Dep_Account'), !Capex_List, !Versions,
+		DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'),'Depreciation_Start');
+
+##Cube 57 Capitalization
+['Amount', {'Forecast','Budget'}] =>
+	DB('57_Capex_Dep_Items', !Org_Structure,
+		DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'BSAccount'), !Capex_List, !Versions,
+		DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Acquisition_Month'), 'Capitalization');
+
+
+#Cube 57 CumAmort
+['Amount', {'Forecast','Budget'}] =>
+	DB('57_Capex_Dep_Items', !Org_Structure,
+		DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'BSAccount_AccAmort'), !Capex_List, !Versions,
+		DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'), 'CumAmort_Start');

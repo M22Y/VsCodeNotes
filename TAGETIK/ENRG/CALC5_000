@@ -1,0 +1,55 @@
+-- CALC5_000
+-- Retained earnings - 3100-00 to 3100 - Step -1
+
+--This special Method will help us to update the source account 3100-00 to Target account (3100) --
+
+-- All source Dimensions will be updated based on Target Dimensions--
+
+-- CYR Fiscal Year Dataset Update --
+
+--Step 1: Update Source Account to Target Account --
+
+UPDATE AW_FIN_000001_000002
+SET 
+SACCOUNT = ACCOUNT,
+SACCOUNT2=ACCOUNT,
+SDEST1=DEST1,
+SDEST2=DEST2
+
+WHERE SACCOUNT='3100-00' AND FSCENARIO IN (SELECT DISTINCT(COD_SCENARIO) FROM SCENARIO_PERIODO
+WHERE FLAG_BLOCCATO='0')
+ ; 
+
+
+--Step 2: Grouping the data before Calculation --
+
+        SELECT SCENARIO,
+        FSCENARIO,
+        PERIOD,
+        FPERIOD,
+        CATEGORY, 
+        SENTITY, 
+        ENTITY,
+        SACCOUNT, 
+        SDEST1,
+        SDEST2,
+        ACCOUNT, 
+        FPERIOD, 
+        SENTITYCTP,
+        CURRENCY,
+        CTPENTITY,
+         DEST1,
+        DEST2,
+        DEST3,
+        DEST4,
+        DEST5,
+        SUM(AMOUNT) AS AMOUNT,
+        SUM(MTD_AMOUNT) AS MTD_AMOUNT,
+        SUM(YTD_AMOUNT) AS YTD_AMOUNT,
+        SUM(ADJ_AMOUNT) AS ADJ_AMOUNT
+    FROM AW_FIN_000001_000002
+ 
+
+GROUP BY 
+ SCENARIO,        FSCENARIO,        PERIOD,        FPERIOD,        CATEGORY,         SENTITY,         ENTITY,        SACCOUNT, SDEST1, SDEST2,         ACCOUNT,         FPERIOD,          DEST1,        DEST2,        DEST3,        DEST4,        DEST5, SENTITYCTP, CURRENCY, CTPENTITY
+;

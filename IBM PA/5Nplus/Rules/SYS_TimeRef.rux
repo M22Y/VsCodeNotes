@@ -1,0 +1,125 @@
+			#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté
+#
+#          	2017-05-25 MBA - Rajout des Weeks et automatisation des Inventory_month forecast
+#	2017-05 - ABO - Ménage et nouvelles règles pour le forecast/budget/actuel
+#	2016-01 - Philippe Comtois : Ajout des conditions sur semaine <10
+#	2015-11 - Philippe Comtois : Automatisation du numéro de semaine
+#	2014-11 - Francis Côté:	Improvement for NOW & Controal Actuals Reference (sync with IBM Controller items)
+#	2014-10 - Francis Côté:	Initial version
+#
+#--------------------------------------------------------------------#
+
+#region  DISABLED Sytem Commands
+#SKIPCHECK;
+#FEEDSTRINGS;
+#endregion
+
+###########################################
+# Skip/Block cells not needed
+#['Budget', {'Date','Month', 'Period_Automation'}] = S:'';
+[ {'Now', 'Actuals', 'Actuals_Control'}, {'Scenario_SRC_INIT', 'Scenario_BCK','LRP2','LRP3','LRP4','LRP5'}]=S:'';
+#[ {'Now', 'Actuals', 'Actuals_Control'}, {'LRP1'}]=S:'';
+['Now', { 'Scenario', 'Period_Automation'}] = S:'';
+[{'Forecast','Budget'}, { 'LRP2','LRP3','LRP4','LRP5'}] = S:'';
+[{'Now','Budget','LRP'},  'Automation_Day'] = 0;
+#[{'Budget', 'Forecast'},  'Day']  =S: '';
+#[{'Budget', 'Forecast'},  'DayNb']  = 0;
+[{'Budget','LRP'},  'DayNb']  = 0;
+
+###########################################
+# Date du Jour...
+[{'Now', 'Actuals_Control', 'Actuals', 'Forecast'}, 'Date'] = S: TODAY(0);
+#['Now', 'DayNb'] = N: NUMBR(SUBST(DB('SYS_TimeRef', !SYS_Version, 'Date'),7,2));
+['Now', 'MonthNb'] = N: NUMBR(SUBST(DB('SYS_TimeRef', !SYS_Version, 'Date'),4,2));
+['Now', 'YearNb'] = N: YEAR(TODAY(1));
+['Now', 'Month'] = S : SUBST(DB('SYS_TimeRef', !SYS_Version, 'Date'),4,2);
+['Now', 'Year'] = S : STR (DB('SYS_TimeRef', !SYS_Version, 'YearNb'),4,0);
+
+['MonthNb'] =N: NUMBR(DB('SYS_TimeRef', !SYS_Version, 'Month'));
+['YearNb'] =N: NUMBR( DB('SYS_TimeRef', !SYS_Version, 'Year') );
+
+['Day'] =S: STR(['DayNb'],2,0);
+['DayValue'] =S: STR(DB('SYS_TimeRef', !SYS_Version, 'DayNb'),2,0);
+['Period'] =S: DB('SYS_TimeRef', !SYS_Version, 'Year') | DB('SYS_TimeRef', !SYS_Version, 'Month');
+# week day:  0 = Sunday, 1 = Monday, ..., 6 = Saturday
+[{'Now', 'Actuals_Control'}, 'WeekDay'] = N: MOD( DAYNO( TODAY )  + 21915, 7);
+
+#['Actuals_Control','DayNb'] = N: DB('SYS_TimeRef', 'Now', 'DayNb');
+
+###########################################
+['WeekNb', 'Now' ] =S: DB('SYS_TimeRef_Calendar', DB('SYS_TimeRef', 'Now', 'Year'), DB('SYS_TimeRef', 'Now', 'DayValue'),DB('SYS_TimeRef', 'Now', 'Month'),'WeekNb');
+['Week', 'Now' ] =S: SUBST(DB('SYS_TimeRef', 'Now', 'WeekNb'),3,2);
+['NbWeek', 'Now'] =N: NUMBR(DB('SYS_TimeRef', !SYS_Version, 'Week'));
+['PrvWeekNb', 'Now' ] =S:
+	IF ( DB('SYS_TimeRef', !SYS_Version, 'NbWeek')<11,
+		'Wk0' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-1,1,0),
+		'Wk' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-1,2,0));
+
+['2PrvWeekNb', 'Now' ] =S:
+	IF (DB('SYS_TimeRef', !SYS_Version, 'NbWeek')<12,
+		'Wk0' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-2,1,0),
+		'Wk' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-2,2,0));
+
+['3PrvWeekNb', 'Now' ] =S:
+	IF (DB('SYS_TimeRef', !SYS_Version, 'NbWeek')<13,
+		'Wk0' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-3,1,0),
+		'Wk' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-3,2,0));
+
+['4PrvWeekNb', 'Now' ] =S:
+	IF (DB('SYS_TimeRef', !SYS_Version, 'NbWeek')<14,
+		'Wk0' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-4,1,0),
+		'Wk' | STR(DB('SYS_TimeRef', !SYS_Version, 'NbWeek')-4,2,0));
+
+##########################################
+# Actuals - Mostly a copy of Actuals_Control (security purpose)
+
+['Actuals','Scenario'] = S: DB('SYS_TimeRef', 'Actuals_Control', 'Scenario');
+['Actuals', 'YearNb'] =  NUMBR( SUBST( DB('SYS_TimeRef', 'Actuals', 'Scenario'),5,4) );
+['Actuals','Year'] = S: DB('SYS_TimeRef', 'Actuals_Control', 'Year');
+['Actuals','MonthNb'] = N: DB('SYS_TimeRef', 'Actuals_Control', 'MonthNb');
+['Actuals','Month'] = S: DB('SYS_TimeRef', 'Actuals_Control', 'Month');
+#['Actuals','DayNb'] = N: DB('SYS_TimeRef', 'Actuals_Control', 'DayNb');
+['Actuals','Period_Automation'] = S: DB('SYS_TimeRef', 'Actuals_Control', 'Period_Automation');
+['Actuals','Automation_Day'] = N: DB('SYS_TimeRef', 'Actuals_Control', 'Automation_Day');
+['Actuals','CompanyHierarchy_Date'] = S: DB('SYS_TimeRef', 'Actuals_Control', 'CompanyHierarchy_Date');
+
+
+###########################################
+#Period Automation - After the selected automation day of the month, we change the Current Fiscal Month. Otherwise we keep previous one.
+['Actuals_Control', 'Month'] = S:IF(DB('SYS_TimeRef', 'Actuals_Control', 'Period_Automation')@='NO', STET, CONTINUE);
+['Actuals_Control', 'Month'] = S:IF(DB('SYS_TimeRef', 'Actuals_Control', 'Period_Automation')@='YES' & DB('SYS_TimeRef', 'Now', 'DayNB') >=  DB('SYS_TimeRef', 'Actuals', 'Automation_Day')   ,
+				DB('SYS_TimeRef', 'Now', 'Month'),
+				DB('}ElementAttributes_t_Months', DB('SYS_TimeRef', 'Now', 'Month') ,'Prev_Mth'));
+
+#Period Automation - After the selected automation day of the month, we change the Current Fiscal Month. Otherwise we keep previous one.
+['Forecast', 'Month'] = S:IF(DB('SYS_TimeRef', 'Forecast', 'Period_Automation')@='NO', STET, CONTINUE);
+['Forecast', 'Month'] = S:IF(DB('SYS_TimeRef', 'Forecast', 'Period_Automation')@='YES' & DB('SYS_TimeRef', 'Now', 'DayNB') >=  DB('SYS_TimeRef', 'Forecast', 'Automation_Day')   ,
+				DB('SYS_TimeRef', 'Now', 'Month'),
+				DB('}ElementAttributes_t_Months', DB('SYS_TimeRef', 'Now', 'Month') ,'Prev_Mth'));
+['Forecast', 'Inventory_Month'] = N:DB('SYS_TimeRef', 'Forecast', 'MonthNb');
+###########################################
+#Forecast - Budget - Actual / YEAR
+['Actuals_Control', 'Year'] =S: SUBST(DB('SYS_TimeRef', 'Actuals_Control', 'Scenario') , LONG(DB('SYS_TimeRef', 'Actuals_Control', 'Scenario'))-3,4);
+['Budget', 'Year'] =S: SUBST(DB('SYS_TimeRef', 'Budget', 'Scenario') , LONG(DB('SYS_TimeRef', 'Budget', 'Scenario'))-3,4);
+['Forecast', 'Year'] =S: SUBST(DB('SYS_TimeRef', 'Forecast', 'Scenario') , LONG(DB('SYS_TimeRef', 'Forecast', 'Scenario'))-3,4);
+
+
+###########################################
+#LRP
+
+['LRP','Scenario'] =S: 'LRP-' | DB('SYS_TimeRef', !SYS_Version, 'Year') |'-1';
+['LRP','LRP2'] =S: 'LRP-' | DB('SYS_TimeRef', !SYS_Version, 'Year') |'-2';
+['LRP','LRP3'] =S: 'LRP-' | DB('SYS_TimeRef', !SYS_Version, 'Year') |'-3';
+['LRP','LRP4'] =S: 'LRP-' | DB('SYS_TimeRef', !SYS_Version, 'Year') |'-4';
+['LRP','LRP5'] =S: 'LRP-' | DB('SYS_TimeRef', !SYS_Version, 'Year') |'-5';
+
+###### ###### ###### ###### ######
+FEEDERS;
+###### ###### ###### ###### ######
+
+['Actuals_Control']  => ['Actuals'] ;
+
+

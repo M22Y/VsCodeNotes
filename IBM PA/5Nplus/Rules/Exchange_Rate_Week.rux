@@ -1,0 +1,49 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#
+#
+#	2015-07-24 Philippe Comtois
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+[] = IF (ATTRS ('t_Scenario', !t_scenario, 'isBkup') @= 'Y', STET, CONTINUE);
+
+#region Conversion des devises 1unit = xUSD
+
+['Period Spot'] =N: IF(ATTRS('Currency', !Currency, 'IsInvert')@='Y', 1\DB('Exchange_Rate_Week', ATTRS('Currency', !Currency, 'MasterCurrency'), !t_Weeks, !t_Scenario,  !m_Index),STET);
+
+#endregion
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+
+#region USD Rates to in>USD elements
+
+['USD-CAD' ]  => ['CAD-USD' ] ;
+['USD-CNY' ]  => ['CNY-USD' ] ;
+['USD-EUR' ]  => ['EUR-USD' ] ;
+['USD-GBP' ]  => ['GBP-USD' ] ;
+['USD-HKD' ]  => ['HKD-USD' ] ;
+['USD-JPY' ]  => ['JPY-USD' ] ;
+['USD-KRW' ]  => ['KRW-USD' ] ;
+['USD-LAK' ]  => ['LAK-USD' ] ;
+['USD-MYR' ]  => ['MYR-USD' ] ;
+['USD-PEN' ]  => ['PEN-USD' ] ;
+['USD-RUB' ]  => ['RUB-USD' ] ;
+#endregion
+
+
+
+
+
+
+
+
+

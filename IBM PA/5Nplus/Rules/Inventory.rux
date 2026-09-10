@@ -1,0 +1,66 @@
+SKIPCHECK;
+
+## If inventory cube is not processing feeders run SYS_CubeFeeders for both FAP_Staging and the Inventory Cube MG 03.05.2026 ##
+
+#To calculate the value of the inventory, 2 accounts needs to be used: ST1599 Inventory - ST1535.
+##############################PAID ATTENTION: when refreshing the account hierarchy on November 14th, the account ST1535 is no longer used, but in the inventory report, the account was substracted from the account Inventory.##############
+#To calculate the opening balance of the inventory
+['Total_Value', 'Opening_Balance', 'Dollars']=N:
+	(DB('FAP_Staging', 'ST1599', !Product, !Journal_Nb, 'C-All_Other', 'C-All_Department', !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment', 'C-All_Segment', !Currency, 'AllTransCurr',
+                 ATTRS('t_Scenario', !t_scenario ,'Version'), ATTRS('t_Scenario', !t_scenario , 'PrevYear') | '12', 'YTD')
+	- DB('FAP_Staging', 'ST1535', !Product, !Journal_Nb, 'C-All_Other', 'C-All_Department', !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment', 'C-All_Segment', !Currency, 'AllTransCurr',
+                 ATTRS('t_Scenario', !t_scenario ,'Version'), ATTRS('t_Scenario', !t_scenario , 'PrevYear') | '12', 'YTD'));
+
+#The total quantity is the acocunt QT1999 - Qty Inventory by Product that has to be used.
+['Quantity_Total', 'Opening_Balance', 'Dollars']=N:
+	DB('FAP_Staging', 'QT1999', !Product, !Journal_Nb, 'C-All_Other', 'C-All_Department', !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment', 'C-All_Segment', !Currency, 'AllTransCurr',
+                 ATTRS('t_Scenario', !t_scenario ,'Version'), ATTRS('t_Scenario', !t_scenario , 'PrevYear') | '12', 'YTD');
+
+#To calculate the total value for the inventory cube
+['Total_Value', 'Dollars']=N:
+	DB('FAP_Staging', 'ST1599', !Product, !Journal_Nb, 'C-All_Other', 'C-All_Department', !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment', 'C-All_Segment', !Currency, 'AllTransCurr',
+                 ATTRS('t_Scenario', !t_scenario ,'Version'), ATTRS('t_Scenario', !t_scenario , 'Year') | !t_Months, 'Monthly')
+	- DB('FAP_Staging', 'ST1535', !Product, !Journal_Nb, 'C-All_Other', 'C-All_Department', !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment', 'C-All_Segment', !Currency, 'AllTransCurr',
+                 ATTRS('t_Scenario', !t_scenario ,'Version'), ATTRS('t_Scenario', !t_scenario , 'Year') | !t_Months, 'Monthly');
+#To calculate the quantity total for the inventory cube
+['Quantity_Total', 'Dollars']=N:
+	DB('FAP_Staging', 'QT1999', !Product, !Journal_Nb, 'C-All_Other', 'C-All_Department', !Entity, !Counter_Cie, 'AllOrigComp', !Closing_Version, 'CT FL', 'CO ALL', 'C-All_Segment', 'C-All_Segment', !Currency, 'AllTransCurr',
+                 ATTRS('t_Scenario', !t_scenario ,'Version'), ATTRS('t_Scenario', !t_scenario , 'Year') | !t_Months, 'Monthly');
+
+#To calculate the value by KG
+['Value_by_KG', 'Dollars']=
+		(['Total_Value']*1000)\
+		['Quantity_Total'];
+
+FEEDERS;
+['Quantity_Total']=> ['Value_by_KG'];
+['Dollars','P050']=> DB (IF( SUBST(!t_Scenario,1,2) @='AC','Inventory',''), !Account, !Product, !Entity, !Counter_Cie, !Journal_Nb, !Closing_Version, !Currency, !t_Months, !t_Scenario,
+!m_Inventaire);
+['Dollars', 'Dec']=> DB (IF( SUBST(!t_Scenario,1,2) @='AC','Inventory',''), !Account, !Product, !Entity, !Counter_Cie, !Journal_Nb, !Closing_Version, !Currency, 'Opening_Balance', 'AC-'| STR(NUMBR(SUBST(!t_Scenario,4,4))+1,4,0),
+!m_Inventaire);
+
+
+
+## feeder to cube Inventory Spending re: inventory quantity & metal costs
+
+['Dollars','Quantity_Total' ]  => DB( IF (  SUBST(!t_Scenario,1,2)@='AC' & !t_Months@='YTD-'|ATTRS('t_months',!t_months,'Last_Period_Desc'),
+							'Inventory_Spending',''), 'Inventory_Product', !Product, !Entity,!t_Months, !t_Scenario, 'Inventory_Opening_Kg');
+
+['Dollars','Quantity_Total' ]  => DB( IF (  SUBST(!t_Scenario,1,2)@='AC'& !Entity@='Group.FSID' & !t_Months@='YTD-'|ATTRS('t_months',!t_months,'Last_Period_Desc'),
+						 'Inventory_Spending',''),'Inventory_Product', !Product, 'Group.FSID',!t_Months, !t_Scenario, 'Inventory_Opening_Kg');
+
+
+['Dollars','Value_By_Kg' ]  => DB( IF (  SUBST(!t_Scenario,1,2)@='AC' & !t_Months@='YTD-'|ATTRS('t_months',!t_months,'Last_Period_Desc'),
+						'Inventory_Spending',''),'Inventory_Product', !Product, !Entity, !t_Months, !t_Scenario, 'Metal_Cost_per_Kg');
+
+
+['Dollars','Value_By_Kg' ]  => DB( IF (  SUBST(!t_Scenario,1,2)@='AC'& !Entity@='Group.FSID' & !t_Months@='YTD-'|ATTRS('t_months',!t_months,'Last_Period_Desc'),
+						'Inventory_Spending',''),'Inventory_Product', !Product, 'group.FSID', !t_Months, !t_Scenario, 'Metal_Cost_per_Kg');
+
+
+['Dollars','Quantity_Total' ]  => DB( IF (  SUBST(!t_Scenario,1,2)@='AC' ,
+                                                              'Inventory_Spending', ''), 'Inventory_Product', !Product,!Entity,!t_Months,!t_Scenario,'Inventory_Opening_Kg');
+
+
+
+

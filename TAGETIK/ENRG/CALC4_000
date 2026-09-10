@@ -1,0 +1,7 @@
+-- CALC4_000
+-- Commentor Update
+
+--- update APPROVED_BY field with USER ID of last USER to update information.
+ 
+UPDATE ${DATASETPARTITION("FIN","FIN004",process.code,$Scenario.code,$Period.code)}
+SET COMMENTOR = USERUPD , COMMENTDATE = DATEUPD WHERE COMMENTS IS NOT NULL;

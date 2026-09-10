@@ -1,0 +1,8 @@
+-- CALC5_001
+-- Opening period for ACT
+
+--This special Method will help us to update copy the previous month data to current month --
+
+UPDATE AW_FIN_000001_000002
+SET MTD_AMOUNT = AMOUNT
+WHERE FPERIOD='01' AND PERIOD='05';

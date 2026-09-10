@@ -1,0 +1,58 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté  --2014--
+#
+#	2014-11-07 - Francis Côté:	Backup Scénario STET
+#	2014-06 - Alexandra Gautier
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_cube','Exchange_Rate','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#region Conversion des devises 1unit = xUSD
+
+[{'Period Average','Period Spot','YTD Average'}] =N: IF(ATTRS('Currency', !Currency, 'IsInvert')@='Y', 1\DB('Exchange_Rate', ATTRS('Currency', !Currency, 'MasterCurrency'), !t_Months, !t_Scenario,  !m_Index),STET);
+
+#endregion
+
+#FX at Quarter level
+[]=C:DB('Exchange_Rate',!Currency,DB('}ElementAttributes_t_Months',!t_Months,'Last_Period'),!t_Scenario,!m_Index);
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+
+#region USD Rates to in>USD elements
+
+['USD-CAD' ]  => ['CAD-USD' ] ;
+['USD-CNY' ]  => ['CNY-USD' ] ;
+['USD-EUR' ]  => ['EUR-USD' ] ;
+['USD-GBP' ]  => ['GBP-USD' ] ;
+['USD-HKD' ]  => ['HKD-USD' ] ;
+['USD-JPY' ]  => ['JPY-USD' ] ;
+['USD-KRW' ]  => ['KRW-USD' ] ;
+['USD-LAK' ]  => ['LAK-USD' ] ;
+['USD-MYR' ]  => ['MYR-USD' ] ;
+['USD-PEN' ]  => ['PEN-USD' ] ;
+['USD-RUB' ]  => ['RUB-USD' ] ;
+#endregion
+
+
+
+
+
+
+
+
+

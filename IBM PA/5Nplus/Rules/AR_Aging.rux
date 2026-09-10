@@ -1,0 +1,49 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by David Hannan
+#
+#	2017-06-07 - Martial Bien-Aimé : Developped for David Hannan Currency link and transformation
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+#endregion
+
+['Total_USD','Days_Overdue'] = STET;
+
+
+['Total_USD'] = N:
+[Currency:'CAD']*DB('Exchange_Rate','CAD-USD',ATTRS('Period', !Period, 'Month'), !t_Scenario,'Period Spot' )
++ [Currency:'CNY']*DB('Exchange_Rate','CNY-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'EUR']*DB('Exchange_Rate','EUR-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'GBP']*DB('Exchange_Rate','GBP-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'HKD']*DB('Exchange_Rate','HKD-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'JPY']*DB('Exchange_Rate','JPY-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'KRW']*DB('Exchange_Rate','KRW-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'LAK']*DB('Exchange_Rate','LAK-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'MYR']*DB('Exchange_Rate','MYR-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'PEN']*DB('Exchange_Rate','PEN-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'RUB']*DB('Exchange_Rate','RUB-USD',ATTRS('Period', !Period, 'Month'),!t_Scenario,'Period Spot')
++ [Currency:'USD'];
+
+['Days_Overdue_Flag'] = N:
+IF( ['Days_Overdue'] >15, ['Days_Overdue']
+,CONTINUE);
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+
+FEEDERS;
+
+[{'CAD', 'CNY', 'EUR','GBP','HKD','JPY','KRW','LAK','MYR','PEN', 'RUB', 'USD'}] => ['Total_USD'];
+
+['Days_Overdue'] => ['Days_Overdue_Flag'] ;
+
+
+#endregion
+
+
+
+

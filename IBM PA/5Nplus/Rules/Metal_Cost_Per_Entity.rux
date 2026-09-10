@@ -1,0 +1,104 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté
+#
+#
+#             2018-02-13 - Abdellatif AZIKI: Changement des regles : Sales Cube to SIM_Commercial cube
+#             2015-06-16 - Francis Côté : Feeder update for SYS_UP1500 in RPT_All cube
+#	 2015-06-03 - Alexandra Gautier : Initial setup -
+#             2021-08-31 - Ravi Gauttom : Added rules for Azure
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','Metal_Cost_Per_Entity','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+
+#[ 'UP2500','Metal_Cost_Unit_USD' ] =N:DB('Inventory_Spending', 'All_Contracts', !Product, !Entity, !t_Months, !t_Scenario, 'Metal_Cost_Avg');
+#[ 'UP2500','Metal_Cost_Unit_USD' ] =N:DB('Metal_Cost_Per_Entity', 'UP2300', !Product,!Counter_Cie , !Counter_Cie, !t_Scenario, 'Metal_Cost_Unit_USD');
+
+
+
+['Sales_Amount_USD','Counter_Cie':'@None' ] =N:
+IF (ATTRS ('t_Scenario', !t_scenario, 'Version') 	@= 'BU'% ATTRS ('t_Scenario', !t_scenario, 'Version')
+					@='LRP2'% ATTRS ('t_Scenario', !t_scenario, 'Version')
+					@='LRP3'% ATTRS ('t_Scenario', !t_scenario, 'Version')
+					@='LRP4'% ATTRS ('t_Scenario', !t_scenario, 'Version')
+					@='LRP5',0,
+
+	IF(NUMBR(!t_Months) <=DB('SYS_TimeRef', 'Actuals', 'MonthNb'),
+				#	DB('Sales', 'All_Contracts', !Product, 'All_Customers', !Entity, !t_Months, !t_Scenario, 'Amount_USD'),
+                                                                                  DB ('SIM_Commercial', 'All_Contracts','All_Industries',!Entity, 'All_Prod_Entity', 'All_Sales_Rep',!Product, 'All_Customers','World', !t_Months,!t_Scenario, 'Amount_USD'),
+
+					STET));
+
+
+['Metal_Cost_Total_USD','UP2300' ] =N:['Volume_Production' ] *['Metal_Cost_Unit_USD' ] ;
+
+['Metal_Cost_Unit_USD','UP2500' ]=N:DB('Metal_Cost_Per_Entity','UP2300',!Product,!Counter_Cie,!Counter_Cie,!t_months,!t_scenario,'Metal_Cost_Unit_USD');
+['Metal_Cost_Total_USD','UP2500' ] =N:['Volume_Production' ] *['Metal_Cost_Unit_USD' ] ;
+
+##RG Added for Azure
+['Sales_Amount_EUR']=N: IF(DB('}ElementAttributes_Entity',!Entity,'Company Type')  @= 'A',
+				['Sales_Amount_USD'] *
+		                           		IF( ATTRS('Entity',!Entity, 'Local Currency')@<>'USD',
+						DB('Exchange_Rate','USD-' | DB('}ElementAttributes_Entity', !Entity, 'Local Currency'), !t_months, !t_Scenario, 'Period Average'),
+						1), CONTINUE);
+['Sales_Amount_USD','UP1500' ]=N:DB('Metal_Cost_Per_Entity','UP2500',!Product,!Counter_Cie,!Entity,!t_months,!t_scenario,'Metal_Cost_Total_USD');
+
+
+
+
+
+#['Sales_Amount_USD','UP1500' ] =N:['Volume_Sales' ] *DB('Inventory_Spending', 'All_Contracts', !Product, DB('sales','All_Contracts',!product,'All_Customers',!Entity,!t_months,!t_scenario,'Prod_Entity'), !t_Months, !t_Scenario, 'Metal_Cost_Avg');
+#['Sales_Amount_USD','UP1500' ] =N:['Volume_Sales' ] *DB('Inventory_Spending', 'All_Contracts', !Product, '5N Korea', !t_Months, !t_Scenario, 'Metal_Cost_Avg');
+
+#['Metal_Cost_Total_USD','UP2500' ] =N:['Volume_Production' ] * (['Metal_Cost_Total_USD','UP2300' ]/['Volume_Production' ,'UP2300' ]);
+#['Metal_Cost_Total_USD','UP2500' ] =N:['Volume_Production' ] *['Metal_Cost_Total_USD','UP2300' ];
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+
+FEEDERS;
+
+['Volume_Sales' ,'UP1500'] => ['Sales_Amount_USD'];
+['Volume_Production' ,'UP2500'] => ['Metal_Cost_Total_USD'] ;
+
+['Metal_Cost_Total_USD']=> DB( IF ( ( SUBST(!t_Scenario,1,3)@='MRF') % ( SUBST(!t_Scenario,1,2)@='BU')% ( SUBST(!t_Scenario,1,3)@='LRP') ,
+					'RPT_All',''),'UP2300', !Product, '0_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Metal_Cost_Total_USD']=> DB( IF ( SUBST(!t_Scenario,1,3)@='MRF' % ( SUBST(!t_Scenario,1,2)@='BU')% ( SUBST(!t_Scenario,1,3)@='LRP') ,
+					'RPT_All',''),'UP2500', !Product, '0_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Sales_Amount_USD']=> DB( IF ( SUBST(!t_Scenario,1,3)@='MRF' % ( SUBST(!t_Scenario,1,2)@='BU')% ( SUBST(!t_Scenario,1,3)@='LRP') ,
+					'RPT_All',''),'UP1000', !Product, '0_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Sales_Amount_USD']=> DB( IF ( SUBST(!t_Scenario,1,3)@='MRF' % ( SUBST(!t_Scenario,1,2)@='BU')% ( SUBST(!t_Scenario,1,3)@='LRP') ,
+					'RPT_All',''),'UP1500', !Product, '0_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+['Sales_Amount_USD']=> DB( IF ( SUBST(!t_Scenario,1,3)@='MRF' % ( SUBST(!t_Scenario,1,2)@='BU')% ( SUBST(!t_Scenario,1,3)@='LRP') ,
+					'RPT_All',''),'SYS_UP1500', !Product, '0_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Volume_Sales']=> DB( IF ( SUBST(!t_Scenario,1,3)@='MRF' % ( SUBST(!t_Scenario,1,2)@='BU')% ( SUBST(!t_Scenario,1,3)@='LRP') ,
+					'RPT_All',''),'SSV100', !Product, '0_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+#['Volume_Sales']=> DB( IF ( SUBST(!t_Scenario,1,3)@='MRF' ,
+	#				'RPT_All',''),'SSV150', !Product, '0_', 'All_Other', 'All_Department', !Entity, !Counter_Cie, 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+
+
+['Volume_Production' ,'UP2300'] => ['Metal_Cost_Total_USD'];
+
+['Sales_Amount_USD'] => ['Sales_Amount_EUR'];
+
+['UP1500',  'AllCounterComp',  'Volume_Sales' ]  => DB('RPT_All', 'SSV150', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');

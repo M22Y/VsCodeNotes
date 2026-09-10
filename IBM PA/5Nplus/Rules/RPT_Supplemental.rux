@@ -1,0 +1,361 @@
+												#--------------------------------------------------------------------#
+#             2018-12-17- Abdellatif AZIKI
+#             2022-01-26- Ravi Gauttom - Added comments copy for EUR to USD
+#             2026-01-16- MG updated line 234 (all new supplemental years need to have the FX rules updated)
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube', 'RPT_Supplental','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+
+#USD for all entities except CIR/MHC/AZUR
+['USD', 'Dollars',{ 'Sup8310_110', 'Sup8310_115', 'Sup8310_120', 'Sup8310_125', 'Sup8310_130', 'Sup8310_135', 'Sup8310_140', 'Sup8310_145', 'Sup8310_150', 'Sup8310_155', 'Sup8310_160', 'Sup8310_165','Sup8310_100','Sup4300_100','Sup4300_110','Sup4300_120','Sup4300_130'}] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Dollars')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'YTD Average'));
+
+['USD', 'Dollars'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Dollars')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+['USD', 'Amounts_Recognized_in_profit_or_loss'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Amounts_Recognized_in_profit_or_loss')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+
+['USD', 'P&L_Expenses_2018'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'P&L_Expenses_2018')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'P&L_Expenses_2019'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'P&L_Expenses_2019')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'P&L_Expenses_2023'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'P&L_Expenses_2023')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'P&L_Expenses_2024'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'P&L_Expenses_2024')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'P&L_Expenses_2025'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'P&L_Expenses_2025')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+
+['USD', 'Commitments_2019'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2019')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2020'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2020')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2021'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2021')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2022'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2022')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2023'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2023')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2024'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2024')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2025'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2025')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2026'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2026')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2027'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2027')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2028'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2028')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2029'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2029')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2030'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2030')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2023_And_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2023_And_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2025_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2025_And_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2026_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2026_And_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2027_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2027_And_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2029_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2029_And_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2030_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2030_And_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Commitments_2031_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Commitments_2031_And_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2022'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2022')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2023'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2023')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2024'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2024')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2025'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2025')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2026'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2026')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2027'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2027')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2028'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2028')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2029'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2029')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2030'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2030')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2027_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2027_&_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2028_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2028_&_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2029_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2029_&_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2030_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2030_&_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'Lease_Payments_2031_&_Thereafter'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Lease_Payments_2031_&_Thereafter')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+
+####Replacement measures for committment and Lease Paymen#####
+
+['USD', { 'P&L_Expenses1', 'P&L_Expenses2', 'P&L_Expenses3',
+	'Commitments1', 'Commitments2', 'Commitments3', 'Commitments4', 'Commitments5', 'Commitments6', 'Commitments7', 'Commitments8',
+	'Lease_Payments1', 'Lease_Payments2', 'Lease_Payments3', 'Lease_Payments4', 'Lease_Payments5', 'Lease_Payments6', 'Lease_Payments7', 'Lease_Payments8'}] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, !m_Supplemental)
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+['USD', 'P&L_Expenses_2019'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'P&L_Expenses_2018')
+		*DB('Exchange_Rate', DB('}ElementAttributes_Entity', !Entity, 'Local Currency') | '-USD', ATTRS('t_Supplemental',!t_Supplemental,'Months'), !t_Scenario, 'Period Spot'));
+
+##############################################
+
+
+['USD', 'Rates'] =N:
+	IF (ATTRS('Entity', !Entity, 'Local Currency') @= 'USD',
+		CONTINUE,
+		DB('RPT_Supplemental',  !Entity, !Sup_Accounts, !Activity_Type, !Categories, ATTRS('Entity', !Entity, 'Local Currency'), !t_Supplemental, !t_Scenario, 'Rates')
+		*1);
+
+
+['SUP3397_110']=-['SUP8700_130'];
+
+['Allowance_Doubtful_Accounts', 'SUP1300_100']=C:['SUP1300_110']+['SUP1300_120']+['SUP1300_130']+['SUP1300_140'];
+
+['Allowance_Doubtful_Accounts']=['Dollars']*['Rates'];
+
+['LCDollars']=['LCAmount']*['SelectFx'];
+
+##Copy comments for USD from EUR for AZUR and AZUR Space
+
+[{'AZUR', 'EARTH'},'USD', {'Issuer', 'Beneficiary','Expiry'}] = S:DB('RPT_Supplemental',!Entity,!Sup_Accounts,!Activity_Type,!Categories,'EUR',!t_Supplemental,!t_Scenario,!m_Supplemental);
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['EUR'] => ['USD']		;
+['Dollars'] => ['USD'];
+['Amounts_Recognized_in_profit_or_loss'] => ['USD'];
+['P&L_Expenses_2018'] => ['USD'];
+['P&L_Expenses_2019'] => ['USD'];
+['P&L_Expenses_2020'] => ['USD'];
+['P&L_Expenses_2021'] => ['USD'];
+['P&L_Expenses_2023'] => ['USD'];
+['P&L_Expenses_2024'] => ['USD'];
+['P&L_Expenses_2025'] => ['USD'];
+
+['Commitments_2019'] => ['USD'];
+['Commitments_2020'] => ['USD'];
+['Commitments_2021'] => ['USD'];
+['Commitments_2022'] => ['USD'];
+['Commitments_2023'] => ['USD'];
+['Commitments_2024'] => ['USD'];
+['Commitments_2025'] => ['USD'];
+['Commitments_2026'] => ['USD'];
+['Commitments_2027'] => ['USD'];
+['Commitments_2028'] => ['USD'];
+['Commitments_2029'] => ['USD'];
+['Commitments_2030'] => ['USD'];
+
+
+['Commitments_2023_And_Thereafter'] => ['USD'];
+['Commitments_2025_&_Thereafter'] => ['USD'];
+['Commitments_2026_&_Thereafter'] => ['USD'];
+['Commitments_2027_&_Thereafter'] => ['USD'];
+['Commitments_2030_&_Thereafter'] => ['USD'];
+['Commitments_2031_&_Thereafter'] => ['USD'];
+
+
+['Lease_Payments_2022'] => ['USD'];
+['Lease_Payments_2023'] => ['USD'];
+['Lease_Payments_2024'] => ['USD'];
+['Lease_Payments_2025'] => ['USD'];
+['Lease_Payments_2026'] => ['USD'];
+['Lease_Payments_2027'] => ['USD'];
+['Lease_Payments_2028'] => ['USD'];
+['Lease_Payments_2029'] => ['USD'];
+['Lease_Payments_2030'] => ['USD'];
+['Lease_Payments_2027_&_Thereafter'] => ['USD'];
+['Lease_Payments_2028_&_Thereafter'] => ['USD'];
+['Lease_Payments_2029_&_Thereafter'] => ['USD'];
+['Lease_Payments_2030_&_Thereafter'] => ['USD'];
+['Lease_Payments_2031_&_Thereafter'] => ['USD'];
+
+['Rates'] => ['USD'];

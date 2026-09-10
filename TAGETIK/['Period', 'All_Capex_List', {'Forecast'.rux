@@ -1,0 +1,15 @@
+['Period', 'All_Capex_List', {'Forecast', 'Budget'}] = C: ['Period', 'Capex_1']+ ['Period', 'Capex_2']+ ['Period', 'Capex_3']+ ['Period', 'Capex_4']+ ['Period', 'Capex_5']+ ['Period', 'Capex_6']+ ['Period', 'Capex_7']+ ['Period', 'Capex_8']+ ['Period', 'Capex_9']+ ['Period', 'Capex_10']+ ['Period', 'Capex_11']+ ['Period', 'Capex_12']+ ['Period', 'Capex_13']+ ['Period', 'Capex_14']+ ['Period', 'Capex_15']+ ['Period', 'Capex_16']+ ['Period', 'Capex_17']+ ['Period', 'Capex_18']+ ['Period', 'Capex_19']+ ['Period', 'Capex_20']+ ['Period', 'Capex_21']+ ['Period', 'Capex_22']+ ['Period', 'Capex_23']+ ['Period', 'Capex_24']+ ['Period', 'Capex_25']+ ['Period', 'Capex_26']+ ['Period', 'Capex_27']+ ['Period', 'Capex_28']+ ['Period', 'Capex_29']+ ['Period', 'Capex_30']+ ['Period', 'Capex_31']+ ['Period', 'Capex_32']+ ['Period', 'Capex_33']+ ['Period', 'Capex_34']+ ['Period', 'Capex_35']+ ['Period', 'Capex_36']+ ['Period', 'Capex_37']+ ['Period', 'Capex_38']+ ['Period', 'Capex_39']+ ['Period', 'Capex_40'];
+
+
+
+
+['Period', 'All_Capex_List', {'Forecast', 'Budget'}] => ['Depreciation', 'All_Capex_List', {'Forecast', 'Budget'}] ;
+
+
+
+
+['Period'] => DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Next_Month'), !m_Capex_Dep_Calc)
+
+
+
+[{'Capex_1', 'Capex_2', 'Capex_3', 'Capex_4', 'Capex_5', 'Capex_6', 'Capex_7', 'Capex_8', 'Capex_9', 'Capex_10', 'Capex_11', 'Capex_12', 'Capex_13', 'Capex_14', 'Capex_15', 'Capex_16', 'Capex_17', 'Capex_18', 'Capex_19', 'Capex_20', 'Capex_21', 'Capex_22', 'Capex_23', 'Capex_24', 'Capex_25', 'Capex_26', 'Capex_27', 'Capex_28', 'Capex_29', 'Capex_30', 'Capex_31', 'Capex_32', 'Capex_33', 'Capex_34', 'Capex_35', 'Capex_36', 'Capex_37', 'Capex_38', 'Capex_39', 'Capex_40'}, {'Forecast', 'Budget'}]=>['All_Capex_List', {'Forecast', 'Budget'}];

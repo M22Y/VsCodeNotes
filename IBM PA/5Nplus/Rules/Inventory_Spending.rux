@@ -1,0 +1,285 @@
+		#####################################################################################
+#--------------------------------------------------------------------#
+#   Designed & Integrated by FPM360
+#   Architectures by Francis Côté
+#
+#     2015-05-28 - Laurent Choisez : Initial setup -
+#     2015-05-29 - Alexandra Gautier : Metal cost from Purchases & inventory
+#     2017-09-07- Abdellatif AZIKI : LRP scenario
+#     2017-09-14- Martial B-A : Reordered (C)
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+
+#Rules on consolidate
+['Metal_Cost_Avg','All_Contracts' ] =C:['Metal_Cost_Total' ]\['Split_Kg' ] ;
+[{'MarkUp_Base','MarkUp_Percent','MarkUp_Fixe','Markup_Factor'} ] =C:0;
+['Split_Perc' ]=C:  ['Split_Kg' ]\ ['Split_Kg','All_Contracts' ];
+
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','Inventory_Spending','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#region Metail Index based on m_Sales:Markup_Base (Picklist formated)
+['Markup_Base'] =N:
+	DB('Metals_Index', !Product, '01', !t_Months, !t_Scenario, DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, !t_Scenario, 'Markup_Index'));
+#ATTRS('Product', !Product, 'Main_Product')
+
+['Markup_Factor'] =N: ['Markup_Base'] * (1 +['Markup_Percent']) + ['MarkUp_Fixe'];
+#endregion
+
+#region Purchases Amount , Purchases in $/kg
+['Volume'] =N: ['Volume_KG'];
+['Amount_LC' ] = N: ['Volume' ]*['Markup_Factor'];
+['Purchases_$Kg' ] =N: ['Amount_LC' ] \ ['Volume_Kg' ] ;
+
+#endregion,
+
+#region Currency conversion
+
+['Amount_USD'] = N: ['Amount_LC'];
+
+###### Ne pas changer pour l'instant SVP ######
+
+#*
+#			IF( ATTRS('Customers',!Customers, 'Currency')@<>'USD',
+#				DB('Exchange_Rate', DB('}ElementAttributes_Customers', !Customers, 'Currency')|'-USD', !t_months, !t_Scenario, 'Period Average'),
+#				1);
+
+#endregion
+
+#region Metal Cost contract from cube Purchases
+
+['Metal_Cost_Per_Kg','Regular' ] =N: IF(DB('}ElementAttributes_Product', !Product, 'Main_Product')@<>'',
+						DB('Purchases',!Contract, DB('}ElementAttributes_Product', !Product, 'Main_Product'), 'All_Supplier', 'MHK', !t_Months, !t_Scenario, 'Price_USD'),
+						DB('Purchases',!Contract,  !Product, 'All_Supplier', 'MHK', !t_Months, !t_Scenario, 'Price_USD'));
+
+
+#endregion
+
+#region Metal Cost inventory from cube inventory
+
+### specificity for FSID
+
+['Metal_Cost_Per_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,2)@='AC' & ATTRS('entity',!Entity,'Parent')@='FSID',
+					DB('Inventory', 'Value_by_KG', !Product, 'Group.FSID', '@None', '0_', 'REPO', 'USD', 'YTD_'|!t_Months, 'AC-'|SUBST(!t_Scenario,4,4), 'Dollars'),
+					CONTINUE);
+
+
+['Metal_Cost_Per_Kg','Inventory_Product' ] = IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+							DB('Inventory_Spending', !Contract, !Product, 'Group.FSID',  !t_Months, 'AC-'|SUBST(!t_Scenario,5,4), 'Metal_Cost_Per_Kg'),
+								IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months)> DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+								DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Metal_Cost_Per_Kg'),
+							CONTINUE));
+
+['Metal_Cost_Per_Kg','Inventory_Product' ] = IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+							DB('Inventory_Spending', !Contract, !Product, 'Group.FSID',  'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,4,4))-1,4,0), 'Metal_Cost_Per_Kg'),
+								IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months)> DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID' ,
+								DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Metal_Cost_Per_Kg'),
+							CONTINUE));
+['Metal_Cost_Per_Kg','Inventory_Product' ] = IF ( SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'LRP', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID' ,
+							DB('Inventory_Spending', !Contract, !Product, 'Group.FSID',  'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,5,4))-2,4,0), 'Metal_Cost_Per_Kg'),
+								IF (SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1'  & NUMBR(!t_Months)> DB('SYS_TimeRef', 'LRP', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+								DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Metal_Cost_Per_Kg'),
+							CONTINUE));
+
+
+### Other entity
+['Metal_Cost_Per_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,2)@='AC' ,
+					DB('Inventory', 'Value_by_KG', !Product, !Entity, '@None', '0_', 'REPO', 'USD', 'YTD_'|!t_Months, 'AC-'|SUBST(!t_Scenario,4,4), 'Dollars'),
+					CONTINUE);
+
+
+
+['Metal_Cost_Per_Kg','Inventory_Product' ] = IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month'),
+							DB('Inventory_Spending', !Contract, !Product, !Entity,  !t_Months, 'AC-'|SUBST(!t_Scenario,5,4), 'Metal_Cost_Per_Kg'),
+								IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months) > DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month'),
+								DB('Inventory_Spending', !Contract, !Product, !Entity, ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Metal_Cost_Per_Kg'),
+							CONTINUE));
+
+['Metal_Cost_Per_Kg','Inventory_Product' ] = IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month') ,
+							DB('Inventory_Spending', !Contract, !Product, !Entity, 'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,4,4))-1,4,0), 'Metal_Cost_Per_Kg'),
+								IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months) > DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month'),
+								DB('Inventory_Spending', !Contract, !Product, !Entity, ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Metal_Cost_Per_Kg'),
+							CONTINUE));
+['Metal_Cost_Per_Kg','Inventory_Product' ] = IF ( SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1'  & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'LRP', 'Inventory_Month'),
+							DB('Inventory_Spending', !Contract, !Product, !Entity, 'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,5,4))-2,4,0), 'Metal_Cost_Per_Kg'),
+								IF (SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1'  & NUMBR(!t_Months) > DB('SYS_TimeRef', 'LRP', 'Inventory_Month'),
+								DB('Inventory_Spending', !Contract, !Product, !Entity, ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Metal_Cost_Per_Kg'),
+							CONTINUE));
+
+
+#endregion
+
+#region Inventory opening actuals & MRF
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month'),
+					DB('Inventory_Spending', !Contract, !Product, !Entity, 'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,4,4))-1,4,0), 'Inventory_Opening_Kg'),
+						IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months)> DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month'),
+						DB('Inventory_Spending', !Contract, !Product, !Entity, ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Inventory_Closing_Kg'),
+					CONTINUE));
+
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month'),
+					DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, 'AC-'|SUBST(!t_Scenario,5,4), 'Inventory_Opening_Kg'),
+						IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months)> DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month'),
+						DB('Inventory_Spending', !Contract, !Product, !Entity, ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Inventory_Closing_Kg'),
+					CONTINUE));
+
+
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1'  & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'LRP', 'Inventory_Month'),
+					DB('Inventory_Spending', !Contract, !Product, !Entity, 'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,5,4))-2,4,0), 'Inventory_Opening_Kg'),
+						IF (SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1'  & NUMBR(!t_Months) > DB('SYS_TimeRef', 'LRP', 'Inventory_Month'),
+						DB('Inventory_Spending', !Contract, !Product, !Entity, ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Inventory_Closing_Kg'),
+					CONTINUE));
+
+
+### specificity for FSID
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,2)@='AC' & ATTRS('entity',!Entity,'Parent')@='FSID',
+					DB('Inventory', 'Quantity_Total', !Product, 'Group.FSID', '@None', '0_', 'REPO', 'USD', 'YTD_'|!t_Months, 'AC-'|SUBST(!t_Scenario,4,4), 'Dollars'),
+					CONTINUE);
+
+
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+					DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', !t_Months, 'AC-'|SUBST(!t_Scenario,5,4), 'Inventory_Opening_Kg'),
+						IF (SUBST(!t_Scenario,1,4)@='MRF-' & NUMBR(!t_Months)> DB('SYS_TimeRef', 'Forecasting', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+						DB('Inventory_Spending', !Contract, !Product, 'SID', ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Inventory_Closing_Kg'),
+					CONTINUE));
+
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month'),
+					DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', 'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,4,4))-1,4,0), 'Inventory_Opening_Kg'),
+						IF (SUBST(!t_Scenario,1,3)@='BU-' & NUMBR(!t_Months)> DB('SYS_TimeRef', 'Budgeting', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+						DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Inventory_Closing_Kg'),
+					CONTINUE));
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1' & NUMBR(!t_Months) <= DB('SYS_TimeRef', 'LRP', 'Inventory_Month'),
+					DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', 'dec', 'AC-'|STR(NUMBR(SUBST(!t_Scenario,5,4))-2,4,0), 'Inventory_Opening_Kg'),
+						IF ( SUBST(!t_Scenario,1,10)@='LRP-'|DB('SYS_TimeRef', 'LRP', 'Year')|'-1'  & NUMBR(!t_Months)> DB('SYS_TimeRef', 'LRP', 'Inventory_Month')& ATTRS('entity',!Entity,'Parent')@='FSID',
+						DB('Inventory_Spending', !Contract, !Product, 'Group.FSID', ATTRS('t_Months',!t_Months,'Prev_Mth'), !t_Scenario, 'Inventory_Closing_Kg'),
+					CONTINUE));
+
+
+
+
+['Inventory_Opening_Kg' ,'Inventory_Product'] =IF (SUBST(!t_Scenario,1,2)@='AC' ,
+					DB('Inventory', 'Quantity_Total', !Product, !Entity, '@None', '0_', 'REPO', 'USD', 'YTD_'|!t_Months, 'AC-'|SUBST(!t_Scenario,4,4), 'Dollars'),
+					CONTINUE);
+
+
+
+
+
+#region Production Costs yield from cube Production costs
+
+#General pour tous les LRP
+
+['Production_Yield_Kg','Not_Affected' ] =N:IF (SUBST(!t_Scenario,1,3)@='MRF' % SUBST(!t_Scenario,1,2)@='BU' % SUBST(!t_Scenario,1,3)@='LRP',
+
+					DB('Production_Cost', !Entity, !Product, 'SSV200', 'USD', !t_Months, !t_Scenario, 'Units_Yield'),
+					Continue);
+
+
+#endregion
+
+
+#region Split Perc
+
+['Split_Perc' ]=N: ['Split_Kg' ]\['Production_Yield_Kg','Not_Affected' ] ;
+
+
+['Split_Kg','Not_Affected' ] =N:['Production_Yield_Kg','Not_Affected' ]-['Split_Kg','All_Contracts' ] ;
+
+#endregion
+
+#Region Inventory Closing Actuals & MRF
+
+['Inventory_Closing_Kg' ] =N:IF (SUBST(!t_Scenario,1,2)@='AC' ,
+						DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, !t_Scenario, 'Inventory_Opening_Kg'),
+						CONTINUE);
+
+
+['Inventory_Closing_Kg' ,'Inventory_Family'] =N:IF (SUBST(!t_Scenario,1,4)@='MRF-' ,
+								DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, !t_Scenario, 'Inventory_Opening_Kg')
+								- DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, !t_Scenario, 'Split_Kg'),
+								CONTINUE);
+
+['Inventory_Closing_Kg' ,'Inventory_Product'] =N:IF (SUBST(!t_Scenario,1,4)@='MRF-' & ATTRS ('Product',!Product,'Inventory_Master')@='Y',
+								DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, !t_Scenario, 'Inventory_Opening_Kg')
+								- DB('Inventory_Spending', 'Inventory_Product', !Product, !Entity, !t_Months, !t_Scenario, 'Split_Kg')
+								- DB('Inventory_Spending', 'Inventory_Family', ATTRS('Product',!Product,'Parent'), !Entity, !t_Months, !t_Scenario, 'Split_Kg'),
+								DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, !t_Scenario, 'Inventory_Opening_Kg')
+								- DB('Inventory_Spending', !Contract, !Product, !Entity, !t_Months, !t_Scenario, 'Split_Kg'));
+
+
+
+#endregion
+
+#region Split Inv, Family
+['Split_Inventory_Family','Inventory_Product' ] =N: IF(ATTRS ('Product',!Product,'Inventory_Master')@='Y',
+								DB('Inventory_Spending', 'Inventory_Family', ATTRS('Product',!Product,'Parent'), !Entity, !t_Months, !t_Scenario, 'Inventory_Closing_Kg')*(-1),
+								STET);
+
+#endregion
+
+#Region Metal cost $ total
+
+
+['Metal_Cost_Total' ] =N:['Split_Kg' ] *['Metal_Cost_Per_Kg' ] ;
+
+#endregion
+
+
+
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['Amount_LC' ]=> ['Amount_USD' ];
+['Volume_Kg' ] =>   ['Markup_Base'], ['Markup_Factor'], ['Purchases_$Kg' ], ['Volume'];
+['Markup_Index'] => ['Markup_Base'];
+
+['Volume'] => ['Amount_LC'];
+
+['Split_Kg' ] => ['Split_Perc' ] ,
+			 ['Metal_Cost_Total' ],
+			['Inventory_Closing_Kg'];
+
+
+[ 'Inventory_Closing_Kg','Inventory_Family'] => DB(IF(ATTRS ('Product',!Product,'Inventory_Master')@='Y',
+								'Inventory_Spending',''),'Inventory_Product', !Product, !Entity, !t_Months, !t_Scenario, 'Split_Inventory_Family');
+
+['Inventory_Opening_Kg']=> ['Inventory_Closing_Kg'];
+
+
+### Purchases incl. Interco
+['Amount_USD', 'All_Contracts'] =>
+	 DB('RPT_All', 'UP2300', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+['Amount_USD', 'All_Contracts'] =>
+	 DB('RPT_All', 'UP2500', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+### Purchases to cover for Actuals
+['UP1000', 'All_Contracts'] =>
+	 DB('RPT_All', 'UP1000', !Product, '0_', 'All_Other', 'All_Department', !Entity, '@None', 'REPO', 'USD', !t_Months, !t_Scenario, 'Dollars');
+
+['Production_Yield_Kg' ]=> ['Split_Kg'];
+['Inventory_Product', 'Inventory_Closing_Kg'] =>  DB( IF (  SUBST(!t_Scenario,1,2)@='AC' & !t_Months @= '12',
+                                                              'Inventory_Spending', ''), 'Inventory_Product',!Product,!Entity, '01' , 'BU-' | STR( NUMBR(ATTRS('t_Scenario', !t_Scenario, 'Year') ) +1,4,0 ), 'Inventory_Opening_Kg')  ;
+
+
+['Inventory_Product', 'Inventory_Closing_Kg'] =>  DB( IF (  SUBST(!t_Scenario,1,2)@='AC' & !t_Months @= '12',
+                                                              'Inventory_Spending', ''), 'Inventory_Product',!Product,!Entity, '01' , 'MRF-' | STR( NUMBR(ATTRS('t_Scenario', !t_Scenario, 'Year') ) +1,4,0 ) , 'Inventory_Opening_Kg')  ;
+
+
+['Inventory_Product', 'Inventory_Closing_Kg'] =>  DB( IF (  SUBST(!t_Scenario,1,2)@='AC' & !t_Months @= '12',
+                                                              'Inventory_Spending', ''), 'Inventory_Product',!Product,!Entity, '01' , 'LRP-' | STR( NUMBR(ATTRS('t_Scenario', !t_Scenario, 'Year') ) +1,4,0) | '-1' , 'Inventory_Opening_Kg')  ;
+
+
+
+['Inventory_Product', 'Inventory_Closing_Kg'] => DB('Inventory_Spending','Inventory_Product',!Product,!Entity, ATTRS('t_Months', !t_Months, 'Next_Mth') ,!t_Scenario,'Inventory_Opening_Kg');
+
+

@@ -1,0 +1,75 @@
+###################################################################
+#   Designed & Integrated by FPM360
+#
+#	2020-06 : MAB : Initial version
+#	2020-08 : AEV : Modification
+#
+###################################################################
+
+SKIPCHECK;
+FEEDSTRINGS;
+# Rule1: Opening balance
+#-------------------------------------------------------------------------------------------------------------------------------------
+['no_currency','Opening_Balance','Quantity'] = N:
+DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,'12',ATTRS('t_Scenario', !t_Scenario, 'Prev_Scenario'),!m_Inventory_Location);
+
+['Opening_Balance','Amount'] = N:
+DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,'12',ATTRS('t_Scenario', !t_Scenario, 'Prev_Scenario'),!m_Inventory_Location);
+
+
+# Rule2: Calculate consolidation on t_Months (because YTD is inputted on month)
+#-------------------------------------------------------------------------------------------------------------------------------------
+['All_Months',{'Quantity','Amount'}] =
+C: DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,DB('SYS_TimeRef','Actuals','Month'),!t_Scenario,!m_Inventory_Location);
+
+[{'YTD_Jan','YTD_Feb','YTD_Mar','YTD_Apr','YTD_May','YTD_Jun','YTD_Jul','YTD_Aug','YTD_Sep','YTD_Oct','YTD_Nov','YTD_Dec'},{'Quantity','Amount'}] =
+C: DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,ATTRS('t_Months',!t_Months, 'Last_Period'),!t_Scenario,!m_Inventory_Location);
+
+[{'Q1','Q2','Q3','Q4'},{'Quantity','Amount'}] = C:
+IF (
+	ELISANC ('t_Months', !t_Months, DB('SYS_TimeRef','Actuals','Month')) = 1,
+	DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,DB('SYS_TimeRef','Actuals','Month'),!t_Scenario,!m_Inventory_Location),
+	DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,ATTRS('t_Months',!t_Months, 'Last_Period'),!t_Scenario,!m_Inventory_Location)
+);
+
+
+# Rule3: Conversion of amount in USD - And display quantity in both local currency and USD
+#-------------------------------------------------------------------------------------------------------------------------------------
+['USD','Amount'] = N: IF (
+	ATTRS ('Entity', !Entity, 'Local Currency') @<> 'USD'
+	#& !Countries @= ATTRS('Inventory_Location',!Inventory_Location,'Country')
+	, DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,ATTRS('Entity', !Entity, 'Local Currency'),!t_Months,!t_Scenario,'Amount')
+		* DB('Exchange_Rate',ATTRS ('Entity', !Entity, 'Local Currency') | '-USD',!t_Months,!t_Scenario,'Period Spot')
+	, STET);
+
+
+
+
+
+
+
+####################################################################
+#############################  FEEDERS  ################################
+####################################################################
+FEEDERS;
+
+# Feeder Rule3
+#-------------------------------------------------------------------------------------------------------------------------------------
+['Amount'] =>
+DB(
+	IF(
+		ATTRS ('Entity', !Entity, 'Local Currency') @<> 'USD'
+		, 'Inventory_Location'
+		, ''
+	)
+	,!Entity,!Inventory_Location,!Countries				,!Product,'USD',!t_Months,!t_Scenario,'Amount'
+);
+
+
+# Feeder Rule1
+#-------------------------------------------------------------------------------------------------------------------------------------
+['no_currency','12','Quantity']  =>
+DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,'Opening_Balance',ATTRS('t_Scenario', !t_Scenario, 'Next_Scenario'),!m_Inventory_Location);
+
+['12','Amount']  =>
+DB('Inventory_Location',!Entity,!Inventory_Location,!Countries,!Product,!Currency,'Opening_Balance',ATTRS('t_Scenario', !t_Scenario, 'Next_Scenario'),!m_Inventory_Location);

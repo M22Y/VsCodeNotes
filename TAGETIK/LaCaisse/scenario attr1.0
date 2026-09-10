@@ -1,0 +1,7 @@
+TGKML 1.0
+
+A := Parameter("$SCE_P").parameterValue.attribute1;
+
+B:= SET($Period(A).code);
+
+result := THIS.GETLEAF(B);

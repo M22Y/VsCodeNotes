@@ -1,0 +1,12 @@
+
+SCENARIO=${$Scenario.code}
+AND ENTITY IN (${$Entity.code})
+AND DIVISION IN (${$Cust_Dim2.code})
+AND 1=0     /* don delete reporting layer*/
+
+-----------------------------------------------------------------------------
+
+SCENARIO=${$Scenario.code}
+AND DIVISION IN (${$Cust_Dim2.code})
+AND ENTITY IN (SELECT DISTINCT COD_DEST2_ELEGER7  AS ENTITY FROM DEST2_GERARCHIA_FLAT WHERE COD_DEST2 IN (${$Cust_Dim2.code}))
+AND 1=0     /* don delete reporting layer*/

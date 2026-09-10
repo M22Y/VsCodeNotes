@@ -1,0 +1,181 @@
+WITH
+PERIOD_FILTER AS (
+SELECT COD_PERIODO
+FROM SCENARIO_PERIODO
+WHERE COD_RACCOLTA='#PROCESS#'
+AND FLAG_BLOCCATO = 0
+AND COD_SCENARIO=(SELECT COD_SCENARIO FROM SCENARIO_PERIODO WHERE COD_RACCOLTA ='#PROCESS#' ORDER BY COD_SCENARIO LIMIT 1)
+),
+PLACEHOLDER AS (
+SELECT NULL AS SCENARIO, NULL AS PERIOD, NULL AS ENTITY, NULL AS ACCOUNT, NULL AS COST_CENTER, NULL AS SNA, NULL AS PROJECT, NULL AS SUPPLIER, NULL AS CATEGORY, NULL AS CURRENCY, NULL AS AMOUNT
+FROM DUMMY
+),
+DATAPULL AS (
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"01").code,$Scenario.attribute4,"01")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"02").code,$Scenario.attribute4,"02")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"03").code,$Scenario.attribute4,"03")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"04").code,$Scenario.attribute4,"04")} PLACEHOLDER
+UNION ALL
+SELECT      
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"05").code,$Scenario.attribute4,"05")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"06").code,$Scenario.attribute4,"06")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"07").code,$Scenario.attribute4,"07")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"08").code,$Scenario.attribute4,"08")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"09").code,$Scenario.attribute4,"09")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"10").code,$Scenario.attribute4,"10")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"11").code,$Scenario.attribute4,"11")} PLACEHOLDER
+UNION ALL
+SELECT 
+     SCENARIO, PERIOD, ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,"12").code,$Scenario.attribute4,"12")} PLACEHOLDER
+),
+MONTHLY_VIEW AS (
+SELECT 
+     SCENARIO,  
+     RIGHT('0' || CAST(PERIOD AS VARCHAR), 2) AS PERIOD,
+     ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, SUM(AMOUNT) AS AMOUNT
+FROM DATAPULL
+
+ /* 
+ ---------------------------------------------------------------------
+ Not used in this case as the values retrieved are in the monthly view
+----------------------------------------------------------------------
+
+ (SELECT 
+     SCENARIO,  
+     CAST(PERIOD AS INTEGER) AS PERIOD,
+     ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, AMOUNT
+    FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,$Period.code).code,$Scenario.attribute4,$Period.code)}  VDSS
+    WHERE 1=1
+    AND SCENARIO = @P0010@
+
+  UNION ALL
+
+  SELECT 
+     SCENARIO,  
+     CAST(PERIOD AS INTEGER) + 1 AS PERIOD,
+     ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY, -AMOUNT
+  FROM ${DATASETPARTITION("P02","000011",process($Scenario.attribute4,$Period.code).code,$Scenario.attribute4,$Period.code)}  VDSS
+  WHERE 1 = 1
+  AND SCENARIO = @P0010@
+  AND PERIOD < 12 
+) DM */
+WHERE 1=1
+AND PERIOD IN (SELECT COD_PERIODO FROM PERIOD_FILTER)
+GROUP BY 
+     SCENARIO,  
+     RIGHT('0' || CAST(PERIOD AS VARCHAR), 2),
+     ENTITY, ACCOUNT, COST_CENTER, SNA, PROJECT, SUPPLIER, CATEGORY, CURRENCY 
+	 ) 
+
+SELECT   monthly.SCENARIO,
+         monthly.PERIOD,
+         monthly.ENTITY,
+         monthly.ACCOUNT,
+		 monthly.COST_CENTER,
+         monthly.SNA, 
+         monthly.PROJECT,
+		 monthly.SUPPLIER,
+		 monthly.CATEGORY,
+		 monthly.CURRENCY,
+         Sum(monthly.m_amount/ tot.m_tot) AS perc_driver
+FROM     (
+                  SELECT   SCENARIO,
+                           PERIOD,
+                           ENTITY,
+                           ACCOUNT,
+						   COST_CENTER,
+                           SNA,
+                           PROJECT,
+						   SUPPLIER,
+						   CATEGORY,
+						   CURRENCY,
+                           Sum(AMOUNT) AS m_amount
+                  FROM     MONTHLY_VIEW
+                  WHERE    SCENARIO=@P0010@
+                  AND      PERIOD IN (SELECT PERIOD FROM PERIOD_FILTER)
+                  GROUP BY SCENARIO,
+                           PERIOD,
+                           ENTITY,
+                           ACCOUNT,
+						   COST_CENTER,
+                           SNA,
+                           PROJECT,
+						   SUPPLIER,
+						   CATEGORY,
+						   CURRENCY
+                  HAVING   sum(AMOUNT)<>0 ) monthly
+JOIN
+         (
+                  SELECT   SCENARIO,
+                           ENTITY,
+                           ACCOUNT,
+						   COST_CENTER,
+                           SNA,
+                           PROJECT,
+						   SUPPLIER,
+						   CATEGORY,
+						   CURRENCY,
+                           sum(AMOUNT) AS m_tot
+                  FROM     MONTHLY_VIEW
+                  WHERE    SCENARIO=@P0010@
+                  AND      PERIOD IN (SELECT PERIOD FROM PERIOD_FILTER)
+                  GROUP BY SCENARIO,
+                           ENTITY,
+                           ACCOUNT,
+						   COST_CENTER,
+                           SNA,
+                           PROJECT,
+						   SUPPLIER,
+						   CATEGORY,
+						   CURRENCY
+                  HAVING   sum(AMOUNT)<>0 ) tot
+ON MONTHLY.SCENARIO=TOT.SCENARIO
+    AND MONTHLY.ENTITY=TOT.ENTITY
+    AND MONTHLY.ACCOUNT=TOT.ACCOUNT
+	AND MONTHLY.COST_CENTER=TOT.COST_CENTER
+    AND MONTHLY.SNA=TOT.SNA
+    AND MONTHLY.PROJECT=TOT.PROJECT
+	AND MONTHLY.SUPPLIER=TOT.SUPPLIER
+	AND MONTHLY.CATEGORY=TOT.CATEGORY
+	AND MONTHLY.CURRENCY=TOT.CURRENCY
+GROUP BY monthly.SCENARIO,
+         monthly.PERIOD,
+         monthly.ENTITY,
+         monthly.ACCOUNT,
+         monthly.COST_CENTER,
+         monthly.SNA,
+         monthly.PROJECT,
+         monthly.SUPPLIER,
+         monthly.CATEGORY,
+         monthly.CURRENCY

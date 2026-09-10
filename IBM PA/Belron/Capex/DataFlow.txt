@@ -1,0 +1,1885 @@
+File: 55_Capex_Items.rux
+====================
+L5: [{'2010', '2011', '2012', '2013'}, 'Forecast'] = N: 0;
+  targets: {'2010', '2011', '2012', '2013'}, 'Forecast'
+
+L6: [{'2010', '2011', '2012', '2013', '2014'}, 'Budget'] = N: 0;
+  targets: {'2010', '2011', '2012', '2013', '2014'}, 'Budget'
+
+L10: [{'Life', 'Acquisition_Month', 'Depreciation_Month', 'Lease_Expiry_Date'}]= C:0;
+  targets: {'Life', 'Acquisition_Month', 'Depreciation_Month', 'Lease_Expiry_Date'}
+
+L12: ['Account']=S: ATTRS('Org_Structure_Leaf', !Org_Structure, 'Capex_Div');
+  targets: 'Account'
+
+L14: ['Dep_Account']=S: DB('59_Capex_Category',
+  sources: 59_Capex_Category
+  targets: 'Dep_Account'
+
+L15: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+  sources: 55_Capex_Items
+
+L18: ['BSAccount']=S: DB('59_Capex_Category',
+  sources: 59_Capex_Category
+  targets: 'BSAccount'
+
+L19: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+  sources: 55_Capex_Items
+
+L23: ['BSAccount_AccAmort']=S: DB('59_Capex_Category',
+  sources: 59_Capex_Category
+  targets: 'BSAccount_AccAmort'
+
+L24: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+  sources: 55_Capex_Items
+
+L27: ['Life']=N: IF( DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years,'Category') @= 'Leasehold_Improvement',
+  sources: 55_Capex_Items
+  targets: 'Life'
+
+L29: DB('59_Capex_Category',
+  sources: 59_Capex_Category
+
+L30: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Category'),
+  sources: 55_Capex_Items
+
+L34: ['Life'] =N: (['DateE_Yr']-['DateB_Yr']) *12 +['DateE_Mth']-['DateB_Mth'] +1;
+  targets: 'Life'
+
+L35: ['DateB_Mth'] =N: ATTRN('t_Months', ATTRS('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'), 'Months'),'Month_Nb');
+  sources: 55_Capex_Items
+  targets: 'DateB_Mth'
+
+L36: ['DateE_Mth'] =N: NUMBR(DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Month'));
+  sources: 58_Capex_LeaseEndDate
+  targets: 'DateE_Mth'
+
+L37: ['DateB_Yr'] =N: NUMBR(DB('}ElementAttributes_t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'), 'Years'));
+  sources: }ElementAttributes_t_Months_Continuous, 55_Capex_Items
+  targets: 'DateB_Yr'
+
+L38: ['DateE_Yr'] =N: NUMBR(DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Year'));
+  sources: 58_Capex_LeaseEndDate
+  targets: 'DateE_Yr'
+
+L40: ['Lease_Expiry_Date']= S: DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Expiry_Date');
+  sources: 58_Capex_LeaseEndDate
+  targets: 'Lease_Expiry_Date'
+
+L41: ['Monthly_Amount'] = ['Amount']\['Life'];
+  targets: 'Monthly_Amount'
+
+L46: ['Amount', {'Forecast','Budget'}] => ['Monthly_Amount'], ['Lease_Expiry_Date'],['Account'];
+  targets: 'Amount', {'Forecast','Budget'}
+  method: FEEDERS
+
+L47: ['Depreciation_Month', {'Forecast','Budget'}] => ['DateB_Mth'], ['DateB_Yr'], ['DateE_Mth'], ['DateE_Yr'] ;
+  targets: 'Depreciation_Month', {'Forecast','Budget'}
+  method: FEEDERS
+
+L54: ['Amount', {'Forecast','Budget'}] =>
+  targets: 'Amount', {'Forecast','Budget'}
+  method: FEEDERS
+
+L55: DB('57_Capex_Dep_Items', !Org_Structure,
+  sources: 57_Capex_Dep_Items
+
+L56: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Dep_Account'), !Capex_List, !Versions,
+  sources: 55_Capex_Items
+
+L57: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'),'Depreciation_Start');
+  sources: 55_Capex_Items
+
+L60: ['Amount', {'Forecast','Budget'}] =>
+  targets: 'Amount', {'Forecast','Budget'}
+  method: FEEDERS
+
+L61: DB('57_Capex_Dep_Items', !Org_Structure,
+  sources: 57_Capex_Dep_Items
+
+L62: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'BSAccount'), !Capex_List, !Versions,
+  sources: 55_Capex_Items
+
+L63: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Acquisition_Month'), 'Capitalization');
+  sources: 55_Capex_Items
+
+L67: ['Amount', {'Forecast','Budget'}] =>
+  targets: 'Amount', {'Forecast','Budget'}
+  method: FEEDERS
+
+L68: DB('57_Capex_Dep_Items', !Org_Structure,
+  sources: 57_Capex_Dep_Items
+
+L69: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'BSAccount_AccAmort'), !Capex_List, !Versions,
+  sources: 55_Capex_Items
+
+L70: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, !t_Years, 'Depreciation_Month'), 'CumAmort_Start');
+  sources: 55_Capex_Items
+
+File: 56_Capex_Dep.rux
+====================
+L28: [{'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Forecast'] = N:
+  targets: {'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Forecast'
+
+L29: IF(DB('97_Actual_Flags', ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years'), ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Months'), 'Forecast')=1, 0, CONTINUE);
+  sources: 97_Actual_Flags
+
+L31: [{'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Rolling_Fct_Adj'] = N:
+  targets: {'WorthtIt', 'Adjustement', 'New_Capex', 'Frcst_Capex', 'WorthIt_CumulAmort', 'Adjustement_CumulAmort', 'New_Capex_CumulAmort', 'Frcst_Capex_CumulAmort'}, 'Rolling_Fct_Adj'
+
+L32: IF(DB('97_Actual_Flags', ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years'), ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Months'), 'Rolling_Fct_Adj')=1, 0, CONTINUE);
+  sources: 97_Actual_Flags
+
+L36: ['Adjustement_CumulAmort', '0860B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0860B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L37: DB('56_Capex_Dep', !Org_Structure, '5029', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L38: +DB('56_Capex_Dep', !Org_Structure, '9014', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L40: ['Adjustement_CumulAmort', '0820B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0820B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L41: DB('56_Capex_Dep', !Org_Structure, '5029A', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L43: ['Adjustement_CumulAmort', '0857B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0857B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L44: DB('56_Capex_Dep', !Org_Structure, '5029B', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L46: ['Adjustement_CumulAmort', '0867B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0867B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L47: DB('56_Capex_Dep', !Org_Structure, '5029C', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L49: ['Adjustement_CumulAmort', '0850B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0850B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L50: DB('56_Capex_Dep', !Org_Structure, '5029E', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L51: +DB('56_Capex_Dep', !Org_Structure, '9014E', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L53: ['Adjustement_CumulAmort', '0830B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0830B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L54: DB('56_Capex_Dep', !Org_Structure, '5029F', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L55: +DB('56_Capex_Dep', !Org_Structure, '9014F', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L57: ['Adjustement_CumulAmort', '0880B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0880B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L58: DB('56_Capex_Dep', !Org_Structure, '5029I', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L59: +DB('56_Capex_Dep', !Org_Structure, '9014I', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L61: ['Adjustement_CumulAmort', '0862B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0862B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L62: DB('56_Capex_Dep', !Org_Structure, '5029L', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L63: +DB('56_Capex_Dep', !Org_Structure, '9014L', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L65: ['Adjustement_CumulAmort', '0840B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0840B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L66: DB('56_Capex_Dep', !Org_Structure, '5029P', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L67: +DB('56_Capex_Dep', !Org_Structure, '9014P', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L69: ['Adjustement_CumulAmort', '0861B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0861B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L70: DB('56_Capex_Dep', !Org_Structure, '5029R', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L71: +DB('56_Capex_Dep', !Org_Structure, '9014R', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L73: ['Adjustement_CumulAmort', '0807B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0807B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L74: DB('56_Capex_Dep', !Org_Structure, '5029S', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L76: ['Adjustement_CumulAmort', '0870B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N:
+  targets: 'Adjustement_CumulAmort', '0870B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L77: DB('56_Capex_Dep', !Org_Structure, '5029V', !Versions, !t_Months_Continuous, 'Adjustement')
+  sources: 56_Capex_Dep
+
+L78: +DB('56_Capex_Dep', !Org_Structure, '9014V', !Versions, !t_Months_Continuous, 'Adjustement');
+  sources: 56_Capex_Dep
+
+L81: ['New_Capex', {'Forecast', 'Budget'}] =N:
+  targets: 'New_Capex', {'Forecast', 'Budget'}
+
+L82: IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+  sources: 95_TimeRef
+
+L83: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', !Versions, !t_Months_Continuous, 'Depreciation'),
+  sources: 57_Capex_Dep_Items
+
+L87: ['New_Capex', 'Rolling_Fct_Adj'] =N:
+  targets: 'New_Capex', 'Rolling_Fct_Adj'
+
+L88: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Budget_Final', !t_Months_Continuous, 'Depreciation');
+  sources: 57_Capex_Dep_Items
+
+L92: ['New_Capex_CumulAmort', {'Forecast', 'Budget'}] =N:
+  targets: 'New_Capex_CumulAmort', {'Forecast', 'Budget'}
+
+L93: IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+  sources: 95_TimeRef
+
+L94: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', !Versions, !t_Months_Continuous, 'CumAmort'),
+  sources: 57_Capex_Dep_Items
+
+L98: ['New_Capex_CumulAmort', 'Rolling_Fct_Adj'] =N:
+  targets: 'New_Capex_CumulAmort', 'Rolling_Fct_Adj'
+
+L99: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Budget_Final', !t_Months_Continuous, 'CumAmort');
+  sources: 57_Capex_Dep_Items
+
+L102: ['Frcst_Capex', 'Forecast'] =N: 0;
+  targets: 'Frcst_Capex', 'Forecast'
+
+L103: ['Frcst_Capex', 'Rolling_Fct_Adj', {'Oct-15', 'Nov-15', 'Dec-15'}] =N: 0;
+  targets: 'Frcst_Capex', 'Rolling_Fct_Adj', {'Oct-15', 'Nov-15', 'Dec-15'}
+
+L104: ['Frcst_Capex', 'Budget'] =N:
+  targets: 'Frcst_Capex', 'Budget'
+
+L105: IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+  sources: 95_TimeRef
+
+L106: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'Depreciation'),
+  sources: 57_Capex_Dep_Items
+
+L108: ['Frcst_Capex', 'Rolling_Fct_Adj'] =N: IF(SUBST(!t_Months_Continuous,5,2)@='25'
+  targets: 'Frcst_Capex', 'Rolling_Fct_Adj'
+
+L109: ,DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Budget_Final', !t_Months_Continuous, 'Frcst_Capex')
+  sources: 56_Capex_Dep
+
+L112: ['Frcst_Capex', 'Rolling_Fct_Adj'] =N:
+  targets: 'Frcst_Capex', 'Rolling_Fct_Adj'
+
+L113: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast_Final', !t_Months_Continuous, 'Depreciation');
+  sources: 57_Capex_Dep_Items
+
+L115: ['Frcst_Capex_CumulAmort', 'Forecast'] =N: 0;
+  targets: 'Frcst_Capex_CumulAmort', 'Forecast'
+
+L116: ['Frcst_Capex_CumulAmort', 'Budget'] =N:
+  targets: 'Frcst_Capex_CumulAmort', 'Budget'
+
+L117: IF(NUMBR(ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years')) = DB('95_TimeRef', !Versions, 'Year'),
+  sources: 95_TimeRef
+
+L118: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast', !t_Months_Continuous, 'CumAmort'),
+  sources: 57_Capex_Dep_Items
+
+L122: ['Frcst_Capex_CumulAmort', 'Rolling_Fct_Adj'] =N:
+  targets: 'Frcst_Capex_CumulAmort', 'Rolling_Fct_Adj'
+
+L123: DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, 'All_Capex_List', 'Forecast_Final', !t_Months_Continuous, 'CumAmort');
+  sources: 57_Capex_Dep_Items
+
+L126: ['WorthIt_CumulAmort', {'Forecast', 'Budget','Rolling_Fct_Adj'}] = N: ['WorthtIt'];
+  targets: 'WorthIt_CumulAmort', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+
+L130: ['WorthtIt',  {'Forecast', 'Budget','Rolling_Fct_Adj'}] => ['WorthIt_CumulAmort'];
+  targets: 'WorthtIt',  {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L131: ['Frcst_Capex', 'Versions':'Budget_Final'] => ['Frcst_Capex', 'Versions':'Rolling_Fct_Adj'];
+  targets: 'Frcst_Capex', 'Versions':'Budget_Final'
+  method: FEEDERS
+
+L134: ['Adjustement', {'5029', '9014'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0860B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029', '9014'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L135: ['Adjustement', '5029A', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0820B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', '5029A', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L136: ['Adjustement', '5029B', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0857B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', '5029B', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L137: ['Adjustement', '5029C', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0867B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', '5029C', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L138: ['Adjustement', {'5029E', '9014E'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0850B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029E', '9014E'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L139: ['Adjustement', {'5029F', '9014F'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0830B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029F', '9014F'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L140: ['Adjustement', {'5029I', '9014I'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0880B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029I', '9014I'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L141: ['Adjustement', {'5029L', '9014L'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0862B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029L', '9014L'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L142: ['Adjustement', {'5029P', '9014P'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0840B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029P', '9014P'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L143: ['Adjustement', {'5029R', '9014R'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0861B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029R', '9014R'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L144: ['Adjustement', '5029S', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0807B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', '5029S', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L145: ['Adjustement', {'5029V', '9014V'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('56_Capex_Dep', !Org_Structure, '0870B', !Versions, !t_Months_Continuous, 'Adjustement_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'Adjustement', {'5029V', '9014V'}, {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L149: ['Total_Depreciation', {'Forecast', 'Budget','Rolling_Fct_Adj'}] =>
+  targets: 'Total_Depreciation', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L150: DB('20_OtherGL', !Org_Structure, ELPAR('GL_Accounts', !GL_Accounts_Depreciation, 1), !Versions,
+  sources: 20_OtherGL
+
+L155: ['Total_Depreciation', {'Forecast', 'Budget','Rolling_Fct_Adj'}] =>
+  targets: 'Total_Depreciation', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+L156: DB('86_ETL_GL', !Org_Structure, !GL_Accounts_Depreciation, !Versions,
+  sources: 86_ETL_GL
+
+L161: ['Total_CumAmort', 'CY', {'Forecast', 'Budget','Rolling_Fct_Adj'}] => DB('51_BS_Manual', '120000', !Versions,!t_Months_Continuous, 'Inc_Dec$');
+  sources: 51_BS_Manual
+  targets: 'Total_CumAmort', 'CY', {'Forecast', 'Budget','Rolling_Fct_Adj'}
+  method: FEEDERS
+
+File: 57_Capex_Dep_Items.rux
+====================
+L5: [{'Period', 'Depreciation', 'Depreciation_Start', 'CumAmort_Period', 'CumAmort', 'CumAmort_Start', 'Capitalization'}, {'Forecast', 'Rolling_Fct_Adj'}] = N:
+  targets: {'Period', 'Depreciation', 'Depreciation_Start', 'CumAmort_Period', 'CumAmort', 'CumAmort_Start', 'Capitalization'}, {'Forecast', 'Rolling_Fct_Adj'}
+
+L6: IF(DB('97_Actual_Flags', ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Years'), ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Months'), !Versions)=1, 0, CONTINUE);
+  sources: 97_Actual_Flags
+
+L9: [{ 'Depreciation', 'CumAmort'}, 'Rolling_Fct_Adj']= N: ['Budget_Final'] + ['Forecast_Final'];
+  targets: { 'Depreciation', 'CumAmort'}, 'Rolling_Fct_Adj'
+
+L12: ['Period', {'Forecast', 'Budget'}] =N:
+  targets: 'Period', {'Forecast', 'Budget'}
+
+L13: IF(!GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Dep_Account')
+  sources: 55_Capex_Items, 95_TimeRef
+
+L15: DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month')))
+  sources: 55_Capex_Items, 95_TimeRef
+
+L17: DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+  sources: 55_Capex_Items, 95_TimeRef
+
+L18: +DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life')),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L19: 1 +DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+  sources: 57_Capex_Dep_Items
+
+L25: ['CumAmort_Period', {'Forecast', 'Budget'}] = N:
+  targets: 'CumAmort_Period', {'Forecast', 'Budget'}
+
+L26: IF(!GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'BSAccount_AccAmort')
+  sources: 55_Capex_Items, 95_TimeRef
+
+L28: DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month')))
+  sources: 55_Capex_Items, 95_TimeRef
+
+L30: DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+  sources: 55_Capex_Items, 95_TimeRef
+
+L31: +DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life')),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L32: 1 +DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+  sources: 57_Capex_Dep_Items
+
+L35: ['Depreciation_Start', {'Forecast', 'Budget'}] =N:
+  targets: 'Depreciation_Start', {'Forecast', 'Budget'}
+
+L36: IF(!t_Months_Continuous @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'Depreciation_Month')
+  sources: 55_Capex_Items, 95_TimeRef
+
+L37: & !GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'Dep_Account'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L38: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Monthly_Amount'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L41: ['CumAmort_Start', {'Forecast', 'Budget'}] =N:
+  targets: 'CumAmort_Start', {'Forecast', 'Budget'}
+
+L42: IF(!t_Months_Continuous @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'Depreciation_Month')
+  sources: 55_Capex_Items, 95_TimeRef
+
+L43: & !GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0) , 'BSAccount_AccAmort'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L44: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Monthly_Amount'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L47: ['Depreciation', {'Forecast', 'Budget'}] =N:
+  targets: 'Depreciation', {'Forecast', 'Budget'}
+
+L49: ['Depreciation_Start'] + DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+  sources: 57_Capex_Dep_Items
+
+L52: ['CumAmort', {'Forecast', 'Budget'}] =N:
+  targets: 'CumAmort', {'Forecast', 'Budget'}
+
+L54: ['CumAmort_Start'] + DB('57_Capex_Dep_Items', !Org_Structure, !GL_Accounts_Depreciation, !Capex_List, !Versions, ATTRS('t_Months_Continuous', !t_Months_Continuous, 'Prev_Month'), !m_Capex_Dep_Calc),
+  sources: 57_Capex_Dep_Items
+
+L57: ['Capitalization', {'Forecast', 'Budget'}] =N:
+  targets: 'Capitalization', {'Forecast', 'Budget'}
+
+L58: IF(!t_Months_Continuous @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Acquisition_Month')
+  sources: 55_Capex_Items, 95_TimeRef
+
+L59: & !GL_Accounts_Depreciation @= DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'BSAccount'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L60: DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Amount'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L64: ['Calc_Depreciation', {'Forecast', 'Budget'}] = ['Depreciation'];
+  targets: 'Calc_Depreciation', {'Forecast', 'Budget'}
+
+L65: ['Calc_CumAmort', {'Forecast', 'Budget'}] =  ['CumAmort'];
+  targets: 'Calc_CumAmort', {'Forecast', 'Budget'}
+
+L72: ['Depreciation', {'Budget_Final', 'Forecast_Final'}] => ['Rolling_Fct_Adj'];
+  targets: 'Depreciation', {'Budget_Final', 'Forecast_Final'}
+  method: FEEDERS
+
+L73: ['CumAmort', {'Budget_Final', 'Forecast_Final'}] => ['Rolling_Fct_Adj'];
+  targets: 'CumAmort', {'Budget_Final', 'Forecast_Final'}
+  method: FEEDERS
+
+L75: ['Depreciation_Start'] => ['Period'];
+  targets: 'Depreciation_Start'
+  method: FEEDERS
+
+L76: ['CumAmort_Start'] => ['CumAmort_Period'];
+  targets: 'CumAmort_Start'
+  method: FEEDERS
+
+L78: ['Depreciation', {'Forecast', 'Budget'}] => ['Calc_Depreciation'];
+  targets: 'Depreciation', {'Forecast', 'Budget'}
+  method: FEEDERS
+
+L79: ['CumAmort', {'Forecast', 'Budget'}] => ['Calc_CumAmort'];
+  targets: 'CumAmort', {'Forecast', 'Budget'}
+  method: FEEDERS
+
+L81: [{'Period','Depreciation_Start','Capitalization'} ] => ['Depreciation'];
+  targets: {'Period','Depreciation_Start','Capitalization'}
+  method: FEEDERS
+
+L82: [{'CumAmort_Period','CumAmort_Start','Capitalization'} ] => ['CumAmort'];
+  targets: {'CumAmort_Period','CumAmort_Start','Capitalization'}
+  method: FEEDERS
+
+L84: ['Period'] => DB(if(DIMIX('t_Months_Continuous', !t_Months_Continuous) <
+  targets: 'Period'
+  method: FEEDERS
+
+L85: DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+  sources: 55_Capex_Items, 95_TimeRef
+
+L86: +DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L89: ['CumAmort_Period'] => DB(if(DIMIX('t_Months_Continuous', !t_Months_Continuous) <
+  targets: 'CumAmort_Period'
+  method: FEEDERS
+
+L90: DIMIX('t_Months_Continuous', DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Depreciation_Month'))
+  sources: 55_Capex_Items, 95_TimeRef
+
+L91: +DB('55_Capex_Items', !Org_Structure, !Capex_List, !Versions, STR(DB('95_TimeRef', !Versions, 'Year'),4,0), 'Life'),
+  sources: 55_Capex_Items, 95_TimeRef
+
+L94: ['Depreciation', 'All_Capex_List', {'Forecast', 'Budget'}]=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, !Versions, !t_Months_Continuous, 'New_Capex');
+  sources: 56_Capex_Dep
+  targets: 'Depreciation', 'All_Capex_List', {'Forecast', 'Budget'}
+  method: FEEDERS
+
+L95: ['Depreciation', 'All_Capex_List', 'Budget_Final']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Rolling_Fct_Adj', !t_Months_Continuous, 'New_Capex');
+  sources: 56_Capex_Dep
+  targets: 'Depreciation', 'All_Capex_List', 'Budget_Final'
+  method: FEEDERS
+
+L97: ['Depreciation', 'All_Capex_List', 'Forecast']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Budget', !t_Months_Continuous, 'Frcst_Capex');
+  sources: 56_Capex_Dep
+  targets: 'Depreciation', 'All_Capex_List', 'Forecast'
+  method: FEEDERS
+
+L98: ['Depreciation', 'All_Capex_List', 'Forecast_Final']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Rolling_Fct_Adj', !t_Months_Continuous, 'Frcst_Capex');
+  sources: 56_Capex_Dep
+  targets: 'Depreciation', 'All_Capex_List', 'Forecast_Final'
+  method: FEEDERS
+
+L100: ['CumAmort', 'All_Capex_List', {'Forecast','Budget'}]=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, !Versions, !t_Months_Continuous, 'New_Capex_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'CumAmort', 'All_Capex_List', {'Forecast','Budget'}
+  method: FEEDERS
+
+L101: ['CumAmort', 'All_Capex_List', 'Forecast']=> DB('56_Capex_Dep', !Org_Structure, !GL_Accounts_Depreciation, 'Budget', !t_Months_Continuous, 'Frcst_Capex_CumulAmort');
+  sources: 56_Capex_Dep
+  targets: 'CumAmort', 'All_Capex_List', 'Forecast'
+  method: FEEDERS
+
+L103: ['Capitalization', 'All_Capex_List', 'CY', {'Forecast','Budget'}] => DB('51_BS_Manual', '120000', !Versions,!t_Months_Continuous, 'Inc_Dec$');
+  sources: 51_BS_Manual
+  targets: 'Capitalization', 'All_Capex_List', 'CY', {'Forecast','Budget'}
+  method: FEEDERS
+
+File: 58_Capex_LeaseEndDate.rux
+====================
+L3: ['Expiry_Date']= S:(DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Day')| '/' | DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Month')| '/' | DB('58_Capex_LeaseEndDate', !Org_Structure, !Versions, 'Year'));
+  sources: 58_Capex_LeaseEndDate, 58_Capex_LeaseEndDate, 58_Capex_LeaseEndDate
+  targets: 'Expiry_Date'
+
+L10: ['Expiry_Date']=>  DB('55_Capex_Items', !Org_Structure, 'All_Capex', !Versions, 'All_Years', 'Lease_Expiry_Date');
+  sources: 55_Capex_Items
+  targets: 'Expiry_Date'
+  method: FEEDERS
+
+File: 59_Capex_Category.rux
+====================
+L4: ['Dep_Account']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);
+  sources: 55_Capex_Items
+  targets: 'Dep_Account'
+  method: FEEDERS
+
+L5: ['BSAccount']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);
+  sources: 55_Capex_Items
+  targets: 'BSAccount'
+  method: FEEDERS
+
+L6: ['BSAccount_AccAmort']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);
+  sources: 55_Capex_Items
+  targets: 'BSAccount_AccAmort'
+  method: FEEDERS
+
+L7: ['Life']=> DB('55_Capex_Items', 'CY', 'All_Capex_List', 'All_Versions', 'All_Years', !m_Capex_Category);
+  sources: 55_Capex_Items
+  targets: 'Life'
+  method: FEEDERS
+
+File: 86_ETL_GL.rux
+====================
+L30: ['Var%_Act-Bud'] = (['Actual'] - ['Budget']) \ ['Budget'];
+  targets: 'Var%_Act-Bud'
+
+L34: ['008120'] = N: ['000120'] +  ['002120'] +  ['002310'] + ['002420']+ ['003120'] + ['004120'];
+  targets: '008120'
+
+L36: ['008130'] = N:['000130'] +  ['002130'] +  ['002315'] + ['002430']+ ['003130'] + ['004130'];
+  targets: '008130'
+
+L38: ['008140'] = N:['000140'] +  ['002140'] +  ['002320'] + ['002440']+ ['003140'] + ['004140'];
+  targets: '008140'
+
+L40: ['008142'] = N:['000145'] +  ['002145'] + ['003142'] + ['004145'];
+  targets: '008142'
+
+L42: ['008150'] = N:['000150'];
+  targets: '008150'
+
+L44: ['008155'] = N:['002325'] +  ['002327'] +  ['002328'] + ['002329']+ ['002330'] + ['002335'];
+  targets: '008155'
+
+L46: ['008157'] = N: ['003144'] + ['003145'] +  ['003146'] +  ['003150'] + ['003154']+ ['003155'] + ['003157'] + ['003158']+ ['003159'];
+  targets: '008157'
+
+L48: ['008160'] = N:['000160'];
+  targets: '008160'
+
+L50: ['008190'] = N:['000144'] +  ['002144'] +  ['002352'] + ['002490']+ ['003190'] + ['004190'];
+  targets: '008190'
+
+L52: ['008191'] = N:['000142'] +  ['002142'] +  ['002351'] + ['002491']+ ['003191'] + ['004191'];
+  targets: '008191'
+
+L54: ['008110'] = N:['000110'] + ['002110'];
+  targets: '008110'
+
+L57: ['008180'] = N:['000180'] +  ['002180'] +  ['002345'] + ['002480']+ ['003180'] + ['004180'];
+  targets: '008180'
+
+L58: ['008181'] = N:['000181'] +  ['002342'] +  ['002181'] + ['002481']+ ['003181'] + ['004181'];
+  targets: '008181'
+
+L59: ['008182'] = N:['000182'] +  ['002343'] +  ['002182'] + ['002482']+ ['003182'] + ['004182'];
+  targets: '008182'
+
+L60: ['008183'] = N:['000183'] +  ['002344'] +  ['002183'] + ['002483']+ ['003183'] + ['004183'];
+  targets: '008183'
+
+L61: ['008184'] = N:['000184'] +  ['002346'] +  ['002184'] + ['002484']+ ['003184'] + ['004184'];
+  targets: '008184'
+
+L62: ['008185'] = N:['000185'] +  ['002347'] +  ['002185'] + ['002485']+ ['003185'] + ['004185'];
+  targets: '008185'
+
+L63: ['008186'] = N:['000186'];
+  targets: '008186'
+
+L64: ['008187'] = N:['000187'] +  ['002348'] +  ['002186'] + ['002486']+ ['003186'] + ['004186'];
+  targets: '008187'
+
+L65: ['008188'] = N:['000188'] +  ['002349'] +  ['002187'] + ['002487']+ ['003187'] + ['004187'];
+  targets: '008188'
+
+L66: ['008189'] = N:['000189'];
+  targets: '008189'
+
+L70: ['008195'] = N:['000195'];
+  targets: '008195'
+
+L72: ['008210'] = N:['000210'] +  ['002210'] +  ['002365'] + ['002510'] + ['003210'] + ['004210'];
+  targets: '008210'
+
+L74: ['008231'] = N:['000220'] +  ['002220'] +  ['003220'] + ['004220'];
+  targets: '008231'
+
+L75: ['008232'] = N:['000239'] +  ['002239'] +  ['002375'] + ['002530'] + ['003239'] + ['004239'];
+  targets: '008232'
+
+L76: ['008233'] = N:['000245'] +  ['002245'] +  ['003245'] + ['004245'];
+  targets: '008233'
+
+L78: ['008235'] = N:['000235'] +  ['002235'] +  ['003235'] + ['004235'];
+  targets: '008235'
+
+L80: ['008236'] = N:['000236'] +  ['002236'] +  ['003236'] + ['004236'];
+  targets: '008236'
+
+L82: ['008241'] = N:['000241'];
+  targets: '008241'
+
+L83: ['008242'] = N:['000242'] +  ['002242'] +  ['003252'] + ['004252'];
+  targets: '008242'
+
+L85: ['008244'] = N:['000244'] +  ['002244'] +  ['003244'] + ['004244'];
+  targets: '008244'
+
+L87: ['008225'] = N:['000225'] +  ['002225'] +  ['003225'] + ['004225'];
+  targets: '008225'
+
+L88: ['008255'] = N:['000255'] +  ['002255'] +  ['003255'] + ['004255'];
+  targets: '008255'
+
+L89: ['008273'] = N:['000273'] +  ['002273'] +  ['002386'] + ['002586']+ ['003273'] + ['004273'];
+  targets: '008273'
+
+L90: ['008274'] = N:['000274'] +  ['002274'] +  ['002387'] + ['002587']+ ['003274'] + ['004274'];
+  targets: '008274'
+
+L91: ['008279'] = N:['000279'] +  ['002279'] +  ['002389'] + ['002579']+ ['003279'] + ['004279'];
+  targets: '008279'
+
+L92: ['008299'] = N:['000199'] +  ['002195'] +  ['002350'] + ['003195'];
+  targets: '008299'
+
+L93: ['008276'] = N:['000276'] +  ['002276'] +  ['003276'] + ['004276'];
+  targets: '008276'
+
+L95: ['008261'] = N:['000261'] +  ['002261'] +  ['003261'] + ['004261'];
+  targets: '008261'
+
+L96: ['008262'] = N:['000262'] +  ['002262'] +  ['003262'] + ['004262'];
+  targets: '008262'
+
+L97: ['008263'] = N:['000263'] +  ['002263'] +  ['003263'] + ['004263'];
+  targets: '008263'
+
+L99: ['008296'] = N:['000266'];
+  targets: '008296'
+
+L100: ['008297'] = N:['000267'] +  ['002267'] +  ['002367'] + ['002567']+ ['003267'] + ['004267'];
+  targets: '008297'
+
+L101: ['008298'] = N:['000268'] +  ['002268'] +  ['002368'] + ['002568']+ ['003268'] + ['004268'];
+  targets: '008298'
+
+L102: ['008295'] = N:['000269'] +  ['002269'] +  ['003269'] + ['004269'];
+  targets: '008295'
+
+L106: ['008265'] = N:['004265'];
+  targets: '008265'
+
+L108: ['008300'] = N:['000300'];
+  targets: '008300'
+
+L112: ['012700'] = N: ['008010'] + ['009500'];
+  targets: '012700'
+
+L114: ['030000'] = N: ['012700'] + ['019000'];
+  targets: '030000'
+
+L116: ['051700'] = N: ['030000'] + ['040001'] + ['050180'];
+  targets: '051700'
+
+L118: ['052000'] = N: ['051700'] + ['051800'] + ['051900'];
+  targets: '052000'
+
+L120: ['052400'] = N: ['052000'] + ['052005'];
+  targets: '052400'
+
+L124: ['Forecast', t_years:{'2009', '2010','2011','2012'}] =N: 0;
+  targets: 'Forecast', t_years:{'2009', '2010','2011','2012'}
+
+L125: ['Budget', t_years:{'2009', '2010','2011','2012'}] =N: 0;
+  targets: 'Budget', t_years:{'2009', '2010','2011','2012'}
+
+L128: [{'Budget', 'Forecast'}, {'2013', '2014'}]= STET;
+  targets: {'Budget', 'Forecast'}, {'2013', '2014'}
+
+L134: [{'Rolling_Forecast', 'Forecast_6_6'},  t_years:{'2009', '2010', '2011', '2012', '2013', '2014'}] = 0;
+  targets: {'Rolling_Forecast', 'Forecast_6_6'},  t_years:{'2009', '2010', '2011', '2012', '2013', '2014'}
+
+L141: ['Actual', 'Dollars$']=N:
+  targets: 'Actual', 'Dollars$'
+
+L142: DB('84_Actuals_GL', !Org_Structure, !GL_Accounts, !Versions, !t_Years, !t_Months, !m_ETL_GL);
+  sources: 84_Actuals_GL
+
+L145: [{'Forecast', 'Rolling_Fct_Adj'}, 'Dollars$']=N:
+  targets: {'Forecast', 'Rolling_Fct_Adj'}, 'Dollars$'
+
+L146: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+  sources: 97_Actual_Flags
+
+L147: DB('86_ETL_GL', !Org_Structure, !GL_Accounts, 'Actual', !t_Years, !t_Months, !m_ETL_GL), CONTINUE);
+  sources: 86_ETL_GL
+
+L151: ['Budget', '2013', 'Dollars$']= N: IF( !GL_Accounts @= ATTRS('GL_Accounts_Line', ELPAR('GL_Accounts', !GL_Accounts, 1), 'Child'),
+  targets: 'Budget', '2013', 'Dollars$'
+
+L152: DB('20_OtherGL', !Org_Structure, ELPAR('GL_Accounts', !GL_Accounts, 1) , !Versions, !t_Years, !t_Months, 'Adjusted_Total'),0);
+  sources: 20_OtherGL
+
+L171: 0020',  '1010',  '1085',  '1085U',  '1285',  '1290',  '1231',  '1232',  '2010',  '2020',  '2030A',  '2036',  '2025',  '2035',  '2050',  '0700',  '0744',  '0704',  '0705',  '0710'} ]=N: DB('51_BS_Manual', ELPAR('GL_Accounts', !GL_Accounts, 1), !Versions, !
+  sources: 51_BS_Manual
+
+L186: [{'3810U','3807','3808','3816','3815','3850','6065G','5027S','3811'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+  targets: {'3810U','3807','3808','3816','3815','3850','6065G','5027S','3811'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L187: -DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'Net_Sales')
+  sources: 10_SalesCOS
+
+L188: -DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf', !GL_Accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'Net_Sales');
+  sources: 10_SalesCOS
+
+L190: [{'4120','4130','4131', '4116', '4170'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+  targets: {'4120','4130','4131', '4116', '4170'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L191: -DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'Net_Sales');
+  sources: 10_SalesCOS
+
+L193: ['4699', 'Dollars$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}]=N:
+  targets: '4699', 'Dollars$', {'Forecast', 'Budget', 'Rolling_Fct_Adj'}
+
+L194: -DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'Net_Sales');
+  sources: 10_SalesCOS
+
+L197: [{'3710U','3707','3708', '3716', '3720', '3750','3711'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+  targets: {'3710U','3707','3708', '3716', '3720', '3750','3711'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L198: DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'COS$_Pure')+
+  sources: 10_SalesCOS
+
+L199: DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+  sources: 10_SalesCOS
+
+L202: [{'4620','4630','4631', '4616', '4670'} , 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+  targets: {'4620','4630','4631', '4616', '4670'} , 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L203: DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+  sources: 10_SalesCOS
+
+L207: ['3255', 'Dollars$', 'Budget']= N:
+  targets: '3255', 'Dollars$', 'Budget'
+
+L210: -DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
+  sources: 10_SalesCOS
+
+L213: ['3255', 'Dollars$', 'Forecast']= N:
+  targets: '3255', 'Dollars$', 'Forecast'
+
+L216: -DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
+  sources: 10_SalesCOS
+
+L220: ['3255', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025']= N:
+  targets: '3255', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025'
+
+L223: -DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Net_Sales')
+  sources: 10_SalesCOS
+
+L228: ['3643', 'Dollars$', 'Budget']= N:
+  targets: '3643', 'Dollars$', 'Budget'
+
+L231: DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
+  sources: 10_SalesCOS
+
+L234: ['3643', 'Dollars$', 'Forecast']= N:
+  targets: '3643', 'Dollars$', 'Forecast'
+
+L237: DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
+  sources: 10_SalesCOS
+
+L239: ['3643', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025']= N:
+  targets: '3643', 'Dollars$', 'Rolling_Fct_Adj', 't_Years':'2025'
+
+L242: DB('10_SalesCOS', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'COS$')
+  sources: 10_SalesCOS
+
+L248: -DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'Net_Sales')
+  sources: 11_SalesCOS_NonPrime
+
+L249: -DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'Net_Sales');
+  sources: 11_SalesCOS_NonPrime
+
+L252: [{'3251',  '3839',  '3849', '4225'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]= N:
+  targets: {'3251',  '3839',  '3849', '4225'}, 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L254: -DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'Net_Sales'),
+  sources: 11_SalesCOS_NonPrime
+
+L255: -DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'Net_Sales'));
+  sources: 11_SalesCOS_NonPrime
+
+L262: DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Externe', !Versions, !t_Years, !t_Months, 'COS$_Pure')
+  sources: 11_SalesCOS_NonPrime
+
+L263: +DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Retail', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+  sources: 11_SalesCOS_NonPrime
+
+L267: -DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'Net_Sales');
+  sources: 11_SalesCOS_NonPrime
+
+L271: DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Interne', !Versions, !t_Years, !t_Months, 'COS$_Pure');
+  sources: 11_SalesCOS_NonPrime
+
+L279: ['0315B','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+  targets: '0315B','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L280: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'PPV$')+
+  sources: 10_SalesCOS
+
+L281: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'PPV$')+
+  sources: 10_SalesCOS
+
+L282: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Inventory_Revaluation$')+
+  sources: 10_SalesCOS
+
+L283: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Inventory_Revaluation$');
+  sources: 10_SalesCOS
+
+L285: ['0315T','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+  targets: '0315T','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L286: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Exchange_Rate$_Impact')+
+  sources: 10_SalesCOS
+
+L287: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Exchange_Rate$_Impact');
+  sources: 10_SalesCOS
+
+L289: ['0410','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}]=N:
+  targets: '0410','Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L290: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'BuyOut$')+
+  sources: 10_SalesCOS
+
+L291: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'BuyOut$');
+  sources: 10_SalesCOS
+
+L293: ['3795', 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}] =N:
+  targets: '3795', 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L294: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Breakage$')+
+  sources: 10_SalesCOS
+
+L295: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Breakage$');
+  sources: 10_SalesCOS
+
+L298: ['4691', 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}] =N:
+  targets: '4691', 'Dollars$', {'Forecast' , 'Budget', 'Rolling_Fct_Adj'}
+
+L299: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Externe', !Versions, !t_Years, !t_Months, 'Unrealized_Profit_on_Trans$')+
+  sources: 10_SalesCOS
+
+L300: DB('10_SalesCOS', !Org_Structure, 'Windshield', 'Retail', !Versions, !t_Years, !t_Months, 'Unrealized_Profit_on_Trans$');
+  sources: 10_SalesCOS
+
+L305: DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'PPV$');
+  sources: 11_SalesCOS_NonPrime
+
+L309: DB('11_SalesCOS_NonPrime', !Org_Structure, ATTRS('GL_Accounts_Leaf',!GL_accounts, 'Products'), 'Total_Segments', !Versions, !t_Years, !t_Months, 'Breakage$');
+  sources: 11_SalesCOS_NonPrime
+
+L313: [{'5029',  '5029A',  '5029B',  '5029C',  '5029E', '5029F', '5029I', '5029L', '5029P', '5029R', '5029S',  '5029T', '5029V', '9014', '9014E', '9014F', '9014I', '9014L', '9014P', '9014R', '9014S', '9014V'}, {'Forecast', 'Rolling_Fct_Adj'}, 'Dollars$']= N:
+  targets: {'5029',  '5029A',  '5029B',  '5029C',  '5029E', '5029F', '5029I', '5029L', '5029P', '5029R', '5029S',  '5029T', '5029V', '9014', '9014E', '9014F', '9014I', '9014L', '9014P', '9014R', '9014S', '9014V'}, {'Forecast', 'Rolling_Fct_Adj'}, 'Dollars$'
+
+L314: IF(DB('97_Actual_Flags', !t_Years, !t_Months, !Versions)=1,
+  sources: 97_Actual_Flags
+
+L316: DB('56_Capex_Dep', !Org_Structure, !GL_accounts, !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation'));
+  sources: 56_Capex_Dep
+
+L318: [{'5029',  '5029A',  '5029B',  '5029C',  '5029E', '5029F', '5029I', '5029L', '5029P', '5029R', '5029S',  '5029T', '5029V', '9014', '9014E', '9014F', '9014I', '9014L', '9014P', '9014R', '9014S', '9014V'}, 'Budget', 'Dollars$']= N:
+  targets: {'5029',  '5029A',  '5029B',  '5029C',  '5029E', '5029F', '5029I', '5029L', '5029P', '5029R', '5029S',  '5029T', '5029V', '9014', '9014E', '9014F', '9014I', '9014L', '9014P', '9014R', '9014S', '9014V'}, 'Budget', 'Dollars$'
+
+L319: DB('56_Capex_Dep', !Org_Structure,  !GL_accounts, !Versions, !t_Months |'-' | SUBST(!t_Years,3,2), 'Total_Depreciation');
+  sources: 56_Capex_Dep
+
+L322: [{'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Dollars$']= N: IF( !GL_Accounts @= ATTRS('GL_Accounts_Line', ELPAR('GL_Accounts', !GL_Accounts, 1), 'Child'),
+  targets: {'Forecast', 'Budget', 'Rolling_Fct_Adj'}, 'Dollars$'
+
+L323: DB('20_OtherGL', !Org_Structure, ELPAR('GL_Accounts', !GL_Accounts, 1) , !Versions, !t_Years, !t_Months, 'Adjusted_Total'),0);
+  sources: 20_OtherGL
+
+L329: ['Budget']=>['Var%_Act-Bud'];
+  targets: 'Budget'
+  method: FEEDERS
+
+L333: ['000120'] => ['008120'];
+  targets: '000120'
+  method: FEEDERS
+
+L334: ['002120'] => ['008120'];
+  targets: '002120'
+  method: FEEDERS
+
+L335: ['002310'] => ['008120'];
+  targets: '002310'
+  method: FEEDERS
+
+L336: ['002420'] => ['008120'];
+  targets: '002420'
+  method: FEEDERS
+
+L337: ['003120'] => ['008120'];
+  targets: '003120'
+  method: FEEDERS
+
+L338: ['004120'] => ['008120'];
+  targets: '004120'
+  method: FEEDERS
+
+L340: ['000130'] => ['008130'];
+  targets: '000130'
+  method: FEEDERS
+
+L341: ['002130'] => ['008130'];
+  targets: '002130'
+  method: FEEDERS
+
+L342: ['002315'] => ['008130'];
+  targets: '002315'
+  method: FEEDERS
+
+L343: ['002430'] => ['008130'];
+  targets: '002430'
+  method: FEEDERS
+
+L344: ['003130'] => ['008130'];
+  targets: '003130'
+  method: FEEDERS
+
+L345: ['004130'] => ['008130'];
+  targets: '004130'
+  method: FEEDERS
+
+L347: ['000140'] => ['008140'];
+  targets: '000140'
+  method: FEEDERS
+
+L348: ['002140'] => ['008140'];
+  targets: '002140'
+  method: FEEDERS
+
+L349: ['002320'] => ['008140'];
+  targets: '002320'
+  method: FEEDERS
+
+L350: ['002440'] => ['008140'];
+  targets: '002440'
+  method: FEEDERS
+
+L351: ['003140'] => ['008140'];
+  targets: '003140'
+  method: FEEDERS
+
+L352: ['004140'] => ['008140'];
+  targets: '004140'
+  method: FEEDERS
+
+L354: ['000145'] => ['008142'];
+  targets: '000145'
+  method: FEEDERS
+
+L355: ['002145'] => ['008142'];
+  targets: '002145'
+  method: FEEDERS
+
+L356: ['003142'] => ['008142'];
+  targets: '003142'
+  method: FEEDERS
+
+L357: ['004145'] => ['008142'];
+  targets: '004145'
+  method: FEEDERS
+
+L359: ['000150'] => ['008150'];
+  targets: '000150'
+  method: FEEDERS
+
+L361: ['002325'] => ['008155'];
+  targets: '002325'
+  method: FEEDERS
+
+L362: ['002327'] => ['008155'];
+  targets: '002327'
+  method: FEEDERS
+
+L363: ['002328'] => ['008155'];
+  targets: '002328'
+  method: FEEDERS
+
+L364: ['002329'] => ['008155'];
+  targets: '002329'
+  method: FEEDERS
+
+L365: ['002330'] => ['008155'];
+  targets: '002330'
+  method: FEEDERS
+
+L366: ['002335'] => ['008155'];
+  targets: '002335'
+  method: FEEDERS
+
+L368: ['003144'] => ['008157'];
+  targets: '003144'
+  method: FEEDERS
+
+L369: ['003145'] => ['008157'];
+  targets: '003145'
+  method: FEEDERS
+
+L370: ['003146'] => ['008157'];
+  targets: '003146'
+  method: FEEDERS
+
+L371: ['003150'] => ['008157'];
+  targets: '003150'
+  method: FEEDERS
+
+L372: ['003154'] => ['008157'];
+  targets: '003154'
+  method: FEEDERS
+
+L373: ['003155'] => ['008157'];
+  targets: '003155'
+  method: FEEDERS
+
+L374: ['003157'] => ['008157'];
+  targets: '003157'
+  method: FEEDERS
+
+L375: ['003158'] => ['008157'];
+  targets: '003158'
+  method: FEEDERS
+
+L376: ['003159'] => ['008157'];
+  targets: '003159'
+  method: FEEDERS
+
+L378: ['000160'] => ['008160'];
+  targets: '000160'
+  method: FEEDERS
+
+L380: ['000144'] => ['008190'];
+  targets: '000144'
+  method: FEEDERS
+
+L381: ['002144'] => ['008190'];
+  targets: '002144'
+  method: FEEDERS
+
+L382: ['002352'] => ['008190'];
+  targets: '002352'
+  method: FEEDERS
+
+L383: ['002490'] => ['008190'];
+  targets: '002490'
+  method: FEEDERS
+
+L384: ['003190'] => ['008190'];
+  targets: '003190'
+  method: FEEDERS
+
+L385: ['004190'] => ['008190'];
+  targets: '004190'
+  method: FEEDERS
+
+L387: ['000142'] => ['008191'];
+  targets: '000142'
+  method: FEEDERS
+
+L388: ['002142'] => ['008191'];
+  targets: '002142'
+  method: FEEDERS
+
+L389: ['002351'] => ['008191'];
+  targets: '002351'
+  method: FEEDERS
+
+L390: ['002491'] => ['008191'];
+  targets: '002491'
+  method: FEEDERS
+
+L391: ['003191'] => ['008191'];
+  targets: '003191'
+  method: FEEDERS
+
+L392: ['004191'] => ['008191'];
+  targets: '004191'
+  method: FEEDERS
+
+L394: ['000110'] => ['008110'];
+  targets: '000110'
+  method: FEEDERS
+
+L395: ['002110'] => ['008110'];
+  targets: '002110'
+  method: FEEDERS
+
+L398: ['000180'] => ['008180'];
+  targets: '000180'
+  method: FEEDERS
+
+L399: ['002180'] => ['008180'];
+  targets: '002180'
+  method: FEEDERS
+
+L400: ['002345'] => ['008180'];
+  targets: '002345'
+  method: FEEDERS
+
+L401: ['002480'] => ['008180'];
+  targets: '002480'
+  method: FEEDERS
+
+L402: ['003180'] => ['008180'];
+  targets: '003180'
+  method: FEEDERS
+
+L403: ['004180'] => ['008180'];
+  targets: '004180'
+  method: FEEDERS
+
+L404: ['000181'] => ['008181'];
+  targets: '000181'
+  method: FEEDERS
+
+L405: ['002342'] => ['008181'];
+  targets: '002342'
+  method: FEEDERS
+
+L406: ['002181'] => ['008181'];
+  targets: '002181'
+  method: FEEDERS
+
+L407: ['002481'] => ['008181'];
+  targets: '002481'
+  method: FEEDERS
+
+L408: ['003181'] => ['008181'];
+  targets: '003181'
+  method: FEEDERS
+
+L409: ['004181'] => ['008181'];
+  targets: '004181'
+  method: FEEDERS
+
+L410: ['000182'] => ['008182'];
+  targets: '000182'
+  method: FEEDERS
+
+L411: ['002343'] => ['008182'];
+  targets: '002343'
+  method: FEEDERS
+
+L412: ['002182'] => ['008182'];
+  targets: '002182'
+  method: FEEDERS
+
+L413: ['002482'] => ['008182'];
+  targets: '002482'
+  method: FEEDERS
+
+L414: ['003182'] => ['008182'];
+  targets: '003182'
+  method: FEEDERS
+
+L415: ['004182'] => ['008182'];
+  targets: '004182'
+  method: FEEDERS
+
+L416: ['000183'] => ['008183'];
+  targets: '000183'
+  method: FEEDERS
+
+L417: ['002344'] => ['008183'];
+  targets: '002344'
+  method: FEEDERS
+
+L418: ['002183'] => ['008183'];
+  targets: '002183'
+  method: FEEDERS
+
+L419: ['002483'] => ['008183'];
+  targets: '002483'
+  method: FEEDERS
+
+L420: ['003183'] => ['008183'];
+  targets: '003183'
+  method: FEEDERS
+
+L421: ['004183'] => ['008183'];
+  targets: '004183'
+  method: FEEDERS
+
+L422: ['000184'] => ['008184'];
+  targets: '000184'
+  method: FEEDERS
+
+L423: ['002346'] => ['008184'];
+  targets: '002346'
+  method: FEEDERS
+
+L424: ['002184'] => ['008184'];
+  targets: '002184'
+  method: FEEDERS
+
+L425: ['002484'] => ['008184'];
+  targets: '002484'
+  method: FEEDERS
+
+L426: ['003184'] => ['008184'];
+  targets: '003184'
+  method: FEEDERS
+
+L427: ['004184'] => ['008184'];
+  targets: '004184'
+  method: FEEDERS
+
+L428: ['000185'] => ['008185'];
+  targets: '000185'
+  method: FEEDERS
+
+L429: ['002347'] => ['008185'];
+  targets: '002347'
+  method: FEEDERS
+
+L430: ['002185'] => ['008185'];
+  targets: '002185'
+  method: FEEDERS
+
+L431: ['002485'] => ['008185'];
+  targets: '002485'
+  method: FEEDERS
+
+L432: ['003185'] => ['008185'];
+  targets: '003185'
+  method: FEEDERS
+
+L433: ['004185'] => ['008185'];
+  targets: '004185'
+  method: FEEDERS
+
+L434: ['000186'] => ['008186'];
+  targets: '000186'
+  method: FEEDERS
+
+L435: ['000187'] => ['008187'];
+  targets: '000187'
+  method: FEEDERS
+
+L436: ['002348'] => ['008187'];
+  targets: '002348'
+  method: FEEDERS
+
+L437: ['002186'] => ['008187'];
+  targets: '002186'
+  method: FEEDERS
+
+L438: ['002486'] => ['008187'];
+  targets: '002486'
+  method: FEEDERS
+
+L439: ['003186'] => ['008187'];
+  targets: '003186'
+  method: FEEDERS
+
+L440: ['004186'] => ['008187'];
+  targets: '004186'
+  method: FEEDERS
+
+L441: ['000188'] => ['008188'];
+  targets: '000188'
+  method: FEEDERS
+
+L442: ['002349'] => ['008188'];
+  targets: '002349'
+  method: FEEDERS
+
+L443: ['002187'] => ['008188'];
+  targets: '002187'
+  method: FEEDERS
+
+L444: ['002487'] => ['008188'];
+  targets: '002487'
+  method: FEEDERS
+
+L445: ['003187'] => ['008188'];
+  targets: '003187'
+  method: FEEDERS
+
+L446: ['004187'] => ['008188'];
+  targets: '004187'
+  method: FEEDERS
+
+L447: ['000189'] => ['008189'];
+  targets: '000189'
+  method: FEEDERS
+
+L451: ['000195'] => ['008195'];
+  targets: '000195'
+  method: FEEDERS
+
+L453: ['000210'] => ['008210'];
+  targets: '000210'
+  method: FEEDERS
+
+L454: ['002210'] => ['008210'];
+  targets: '002210'
+  method: FEEDERS
+
+L455: ['002365'] => ['008210'];
+  targets: '002365'
+  method: FEEDERS
+
+L456: ['002510'] => ['008210'];
+  targets: '002510'
+  method: FEEDERS
+
+L457: ['003210'] => ['008210'];
+  targets: '003210'
+  method: FEEDERS
+
+L458: ['004210'] => ['008210'];
+  targets: '004210'
+  method: FEEDERS
+
+L460: ['000220'] => ['008231'];
+  targets: '000220'
+  method: FEEDERS
+
+L461: ['002220'] => ['008231'];
+  targets: '002220'
+  method: FEEDERS
+
+L462: ['003220'] => ['008231'];
+  targets: '003220'
+  method: FEEDERS
+
+L463: ['004220'] => ['008231'];
+  targets: '004220'
+  method: FEEDERS
+
+L464: ['000239'] => ['008232'];
+  targets: '000239'
+  method: FEEDERS
+
+L465: ['002239'] => ['008232'];
+  targets: '002239'
+  method: FEEDERS
+
+L466: ['002375'] => ['008232'];
+  targets: '002375'
+  method: FEEDERS
+
+L467: ['002530'] => ['008232'];
+  targets: '002530'
+  method: FEEDERS
+
+L468: ['003239'] => ['008232'];
+  targets: '003239'
+  method: FEEDERS
+
+L469: ['004239'] => ['008232'];
+  targets: '004239'
+  method: FEEDERS
+
+L470: ['000245'] => ['008233'];
+  targets: '000245'
+  method: FEEDERS
+
+L471: ['002245'] => ['008233'];
+  targets: '002245'
+  method: FEEDERS
+
+L472: ['003245'] => ['008233'];
+  targets: '003245'
+  method: FEEDERS
+
+L473: ['004245'] => ['008233'];
+  targets: '004245'
+  method: FEEDERS
+
+L475: ['000235'] => ['008235'];
+  targets: '000235'
+  method: FEEDERS
+
+L476: ['002235'] => ['008235'];
+  targets: '002235'
+  method: FEEDERS
+
+L477: ['003235'] => ['008235'];
+  targets: '003235'
+  method: FEEDERS
+
+L478: ['004235'] => ['008235'];
+  targets: '004235'
+  method: FEEDERS
+
+L481: ['000236'] => ['008236'];
+  targets: '000236'
+  method: FEEDERS
+
+L482: ['002236'] => ['008236'];
+  targets: '002236'
+  method: FEEDERS
+
+L483: ['003236'] => ['008236'];
+  targets: '003236'
+  method: FEEDERS
+
+L484: ['004236'] => ['008236'];
+  targets: '004236'
+  method: FEEDERS
+
+L487: ['000241'] => ['008241'];
+  targets: '000241'
+  method: FEEDERS
+
+L488: ['000242'] => ['008242'];
+  targets: '000242'
+  method: FEEDERS
+
+L489: ['002242'] => ['008242'];
+  targets: '002242'
+  method: FEEDERS
+
+L490: ['003252'] => ['008242'];
+  targets: '003252'
+  method: FEEDERS
+
+L491: ['004252'] => ['008242'];
+  targets: '004252'
+  method: FEEDERS
+
+L493: ['000244'] => ['008244'];
+  targets: '000244'
+  method: FEEDERS
+
+L494: ['002244'] => ['008244'];
+  targets: '002244'
+  method: FEEDERS
+
+L495: ['003244'] => ['008244'];
+  targets: '003244'
+  method: FEEDERS
+
+L496: ['004244'] => ['008244'];
+  targets: '004244'
+  method: FEEDERS
+
+L498: ['000225'] => ['008225'];
+  targets: '000225'
+  method: FEEDERS
+
+L499: ['002225'] => ['008225'];
+  targets: '002225'
+  method: FEEDERS
+
+L500: ['003225'] => ['008225'];
+  targets: '003225'
+  method: FEEDERS
+
+L501: ['004225'] => ['008225'];
+  targets: '004225'
+  method: FEEDERS
+
+L502: ['000255'] => ['008255'];
+  targets: '000255'
+  method: FEEDERS
+
+L503: ['002255'] => ['008255'];
+  targets: '002255'
+  method: FEEDERS
+
+L504: ['003255'] => ['008255'];
+  targets: '003255'
+  method: FEEDERS
+
+L505: ['004255'] => ['008255'];
+  targets: '004255'
+  method: FEEDERS
+
+L506: ['000273'] => ['008273'];
+  targets: '000273'
+  method: FEEDERS
+
+L507: ['002273'] => ['008273'];
+  targets: '002273'
+  method: FEEDERS
+
+L508: ['002386'] => ['008273'];
+  targets: '002386'
+  method: FEEDERS
+
+L509: ['002586'] => ['008273'];
+  targets: '002586'
+  method: FEEDERS
+
+L510: ['003273'] => ['008273'];
+  targets: '003273'
+  method: FEEDERS
+
+L511: ['004273'] => ['008273'];
+  targets: '004273'
+  method: FEEDERS
+
+L512: ['000274'] => ['008274'];
+  targets: '000274'
+  method: FEEDERS
+
+L513: ['002274'] => ['008274'];
+  targets: '002274'
+  method: FEEDERS
+
+L514: ['002387'] => ['008274'];
+  targets: '002387'
+  method: FEEDERS
+
+L515: ['002587'] => ['008274'];
+  targets: '002587'
+  method: FEEDERS
+
+L516: ['003274'] => ['008274'];
+  targets: '003274'
+  method: FEEDERS
+
+L517: ['004274'] => ['008274'];
+  targets: '004274'
+  method: FEEDERS
+
+L518: ['000279'] => ['008279'];
+  targets: '000279'
+  method: FEEDERS
+
+L519: ['002279'] => ['008279'];
+  targets: '002279'
+  method: FEEDERS
+
+L520: ['002389'] => ['008279'];
+  targets: '002389'
+  method: FEEDERS
+
+L521: ['002579'] => ['008279'];
+  targets: '002579'
+  method: FEEDERS
+
+L522: ['003279'] => ['008279'];
+  targets: '003279'
+  method: FEEDERS
+
+L523: ['004279'] => ['008279'];
+  targets: '004279'
+  method: FEEDERS
+
+L524: ['000199'] => ['008299'];
+  targets: '000199'
+  method: FEEDERS
+
+L525: ['002195'] => ['008299'];
+  targets: '002195'
+  method: FEEDERS
+
+L526: ['002350'] => ['008299'];
+  targets: '002350'
+  method: FEEDERS
+
+L527: ['003195'] => ['008299'];
+  targets: '003195'
+  method: FEEDERS
+
+L528: ['000276'] => ['008276'];
+  targets: '000276'
+  method: FEEDERS
+
+L529: ['002276'] => ['008276'];
+  targets: '002276'
+  method: FEEDERS
+
+L530: ['003276'] => ['008276'];
+  targets: '003276'
+  method: FEEDERS
+
+L531: ['004276']=>  ['008276'];
+  targets: '004276'
+  method: FEEDERS
+
+L535: ['000261'] => ['008261'];
+  targets: '000261'
+  method: FEEDERS
+
+L536: ['002261'] => ['008261'];
+  targets: '002261'
+  method: FEEDERS
+
+L537: ['003261'] => ['008261'];
+  targets: '003261'
+  method: FEEDERS
+
+L538: ['004261'] => ['008261'];
+  targets: '004261'
+  method: FEEDERS
+
+L539: ['000262'] => ['008262'];
+  targets: '000262'
+  method: FEEDERS
+
+L540: ['002262'] => ['008262'];
+  targets: '002262'
+  method: FEEDERS
+
+L541: ['003262'] => ['008262'];
+  targets: '003262'
+  method: FEEDERS
+
+L542: ['004262'] => ['008262'];
+  targets: '004262'
+  method: FEEDERS
+
+L543: ['000263'] => ['008263'];
+  targets: '000263'
+  method: FEEDERS
+
+L544: ['002263'] => ['008263'];
+  targets: '002263'
+  method: FEEDERS
+
+L545: ['003263'] => ['008263'];
+  targets: '003263'
+  method: FEEDERS
+
+L546: ['004263'] => ['008263'];
+  targets: '004263'
+  method: FEEDERS
+
+L548: ['000266'] => ['008296'];
+  targets: '000266'
+  method: FEEDERS
+
+L549: ['000267'] => ['008297'];
+  targets: '000267'
+  method: FEEDERS
+
+L550: ['002267'] => ['008297'];
+  targets: '002267'
+  method: FEEDERS
+
+L551: ['002367'] => ['008297'];
+  targets: '002367'
+  method: FEEDERS
+
+L552: ['002567'] => ['008297'];
+  targets: '002567'
+  method: FEEDERS
+
+L553: ['003267'] => ['008297'];
+  targets: '003267'
+  method: FEEDERS
+
+L554: ['004267'] => ['008297'];
+  targets: '004267'
+  method: FEEDERS
+
+L555: ['000268'] => ['008298'];
+  targets: '000268'
+  method: FEEDERS
+
+L556: ['002268'] => ['008298'];
+  targets: '002268'
+  method: FEEDERS
+
+L557: ['002368'] => ['008298'];
+  targets: '002368'
+  method: FEEDERS
+
+L558: ['002568'] => ['008298'];
+  targets: '002568'
+  method: FEEDERS
+
+L559: ['003268'] => ['008298'];
+  targets: '003268'
+  method: FEEDERS
+
+L560: ['004268'] => ['008298'];
+  targets: '004268'
+  method: FEEDERS
+
+L561: ['000269'] => ['008295'];
+  targets: '000269'
+  method: FEEDERS
+
+L562: ['002269'] => ['008295'];
+  targets: '002269'
+  method: FEEDERS
+
+L563: ['003269'] => ['008295'];
+  targets: '003269'
+  method: FEEDERS
+
+L564: ['004269'] => ['008295'];
+  targets: '004269'
+  method: FEEDERS
+
+L569: ['004265'] => ['008265'];
+  targets: '004265'
+  method: FEEDERS
+
+L571: ['000300'] => ['008300'];
+  targets: '000300'
+  method: FEEDERS
+
+L575: ['008010'] => ['012700'];
+  targets: '008010'
+  method: FEEDERS
+
+L576: ['009500'] => ['012700'];
+  targets: '009500'
+  method: FEEDERS
+
+L578: ['012700'] => ['030000'];
+  targets: '012700'
+  method: FEEDERS
+
+L579: ['019000'] => ['030000'];
+  targets: '019000'
+  method: FEEDERS
+
+L581: ['030000'] => ['051700'];
+  targets: '030000'
+  method: FEEDERS
+
+L582: ['040001'] => ['051700'];
+  targets: '040001'
+  method: FEEDERS
+
+L583: ['050180'] => ['008265'];
+  targets: '050180'
+  method: FEEDERS
+
+L586: ['051700']=> ['052000'];
+  targets: '051700'
+  method: FEEDERS
+
+L587: ['051800']=> ['052000'];
+  targets: '051800'
+  method: FEEDERS
+
+L588: ['051900']=> ['052000'];
+  targets: '051900'
+  method: FEEDERS
+
+L591: ['052000']=> ['052400'];
+  targets: '052000'
+  method: FEEDERS
+
+L592: ['052005']=> ['052400'];
+  targets: '052005'
+  method: FEEDERS
+
+L597: ['Actual', 'Dollars$']=> DB(IF(DB('97_Actual_Flags', !t_Years, !t_Months, 'Forecast')=1, '86_ETL_GL', ''),
+  sources: 97_Actual_Flags
+  targets: 'Actual', 'Dollars$'
+  method: FEEDERS
+
+L600: ['Actual', 'Dollars$']=> DB(IF(DB('97_Actual_Flags', !t_Years, !t_Months, 'Rolling_Fct_Adj')=1, '86_ETL_GL', ''),
+  sources: 97_Actual_Flags
+  targets: 'Actual', 'Dollars$'
+  method: FEEDERS
+
+Metadata summary:
+55_Capex_Items_attrs:
+  - 95_TimeRef
+  - Acquisition_Month
+  - All_Capex
+  - BSAccount
+  - BSAccount_AccAmort
+  - CY
+  - Category
+  - Dep_Account
+  - Depreciation_Month

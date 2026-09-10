@@ -1,0 +1,63 @@
+
+
+
+
+
+
+
+
+
+
+
+
+TGKML 1.0
+PAR:= Parameter("$DEST2_001_P").parameterValue.Lowest.trimset(1).code;
+A:= THIS.LOWEST.SELECT("$CUST_DIM2.CODE","=", PAR);
+result := A;
+
+TGKML 1.0
+result := this.getnode($CUST_DIM2.CODE);
+
+
+
+
+
+TGKML 1.0
+PAR:= Parameter("$Cust_Dim2(HIERARCHY("001"))").parameterValue.Lowest.trimset(1).code;
+A:= THIS.LOWEST.SELECT("$CUST_DIM2.CODE","=", PAR);
+result := A;
+
+TGKML 1.0
+result := this.lowest.select($Cust_Dim2(HIERARCHY("001")).code);
+
+
+TGKML 1.0
+result := this.getnode("1002");
+
+
+
+
+TGKML 1.0
+
+A:= THIS.SELECT("$CUST_DIM2.CODE","=", $Cust_Dim2(HIERARCHY("001")).code);
+result := A;
+
+-----------------------------------------------------------
+
+
+
+TGKML 1.0
+PAR:= Parameter("$SCE_P").parameterValue.lowest.attribute1;
+A:= THIS.LOWEST.SELECT("$PERIOD.CODE","=", PAR);
+result := A;
+
+
+TGKML 1.0
+ATT := Parameter("$SCE_P").parameterValue.lowest.attribute1;
+PER := THIS.LOWEST.SELECT("$PERIOD.CODE","=", ATT);
+result := PER;
+
+
+TGKML 1.0
+ATT := Parameter("$SCE_P").parameterValue.lowest.attribute1;
+result := this.getnode(ATT);

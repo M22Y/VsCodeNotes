@@ -1,0 +1,39 @@
+#####################################################################################
+#--------------------------------------------------------------------#
+#
+#	2015-07-17 - Philippe Comtois : Cube Creation
+#
+#--------------------------------------------------------------------#
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+#endregion
+
+#region Entities enter in their Local Currency, USD based need to be set, other use Exch.Rate
+
+['Total_USD'] = N:
+IF (DB('}ElementAttributes_Account', !Account, 'Account Type')@='C' % DB('}ElementAttributes_Account', !Account, 'Account Type')@='I' % DB('}ElementAttributes_Account', !Account, 'Account Type')@='U',
+				  (['CAD' ] * DB('Exchange_Rate', 'CAD-USD', !t_Months, !t_Scenario, 'Period Average')
+				+ ['CNY' ] * DB('Exchange_Rate', 'CNY-USD', !t_Months, !t_Scenario, 'Period Average')
+				+ ['EUR' ] * DB('Exchange_Rate', 'EUR-USD', !t_Months, !t_Scenario, 'Period Average')
+				+ ['GBP' ] * DB('Exchange_Rate', 'GBP-USD', !t_Months, !t_Scenario, 'Period Average')
+				+ ['HKD' ] * DB('Exchange_Rate', 'HKD-USD', !t_Months, !t_Scenario, 'Period Average')
+				+ ['PEN' ] * DB('Exchange_Rate', 'PEN-USD', !t_Months, !t_Scenario, 'Period Average')
+				+ ['USD' ]),
+
+				  (['CAD' ] * DB('Exchange_Rate', 'CAD-USD', !t_Months, !t_Scenario, 'Period Spot')
+				+ ['CNY' ] * DB('Exchange_Rate', 'CNY-USD', !t_Months, !t_Scenario, 'Period Spot')
+				+ ['EUR' ] * DB('Exchange_Rate', 'EUR-USD', !t_Months, !t_Scenario, 'Period Spot')
+				+ ['GBP' ] * DB('Exchange_Rate', 'GBP-USD', !t_Months, !t_Scenario, 'Period Spot')
+				+ ['HKD' ] * DB('Exchange_Rate', 'HKD-USD', !t_Months, !t_Scenario, 'Period Spot')
+				+ ['PEN' ] * DB('Exchange_Rate', 'PEN-USD', !t_Months, !t_Scenario, 'Period Spot')
+				+ ['USD' ]));
+
+#endregion
+
+############################# +++++++++++++++++  FEEDERS  +++++++++++++++++ #############################
+FEEDERS;
+
+['Dollars'] => ['USD'], ['Total_USD' ] ;

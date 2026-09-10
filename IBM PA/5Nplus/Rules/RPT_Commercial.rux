@@ -1,0 +1,53 @@
+FORMAT==100
+#####################################################################################
+#--------------------------------------------------------------------#
+
+#      2018-03-21 - Abdellatif AZIKI: New cube RPT_Commercial
+#      2021-11-08 - Ravi Gauttom : Updated prinicple element names for departments (instead of aliases)
+#      2022-09-02 Matthew Glucksman : Updated calculation at consolidation level Sales_$/KG
+#      2023-07-25 Ravi Gauttom : Updated feeders to new cube for backlog (PROD)
+#--------------------------------------------------------------------#
+#####################################################################################
+
+#region  Sytem Commands
+SKIPCHECK;
+FEEDSTRINGS;
+
+['Sales_$kg' ] =c: ['Amount_USD' ] \ ['Volume_kg' ];
+['Sales_LC/kg' ] =c: ['Amount_LC'] \ ['Volume_kg' ];
+
+#endregion
+
+#region STET on Backup
+###########
+# Planning Model
+###########
+# Skip Calculations if scenario is frozen/backup & cube is considered into FCT/BUD model
+[]=N: IF(ATTRS('t_Scenario',!t_Scenario,'isFrozen')@='YES' &  DB('SYS_Controls_Cube','SIM_Commercial','PlanningCube')@='YES' ,STET,CONTINUE);
+[]=N: IF (ATTRS ('t_Scenario', !t_Scenario, 'isBackup') @= 'YES', STET, CONTINUE);
+
+#Pour eliminer les Quantités Tolling (P916,P917,P012 et P159) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+
+
+#Pour eliminer les Quantités Tolling EFM (P012) afin de ne pas compter les volumes tollés pour le metal qui ne nous appartient pas
+
+
+['Volume_KG','C-D797']=C:['Volume_KG','C-P049']+['Volume_KG', 'C-S108']+['Volume_KG', 'C-P149']+['Volume_KG', 'C-P299']+['Volume_KG', 'C-P349']+['Volume_KG', 'C-P419']+['Volume_KG', 'C-P429']+['Volume_KG', 'C-P439']+['Volume_KG', 'C-P449']+['Volume_KG', 'C-P499']+['Volume_KG', 'C-P959']+['Volume_KG', 'C-S958']+['Volume_KG', 'C-P399']+['Volume_KG', 'C-A049']+['Volume_KG', 'C-P099']+['Volume_KG', 'C-P100']+['Volume_KG', 'C-P199']+['Volume_KG', 'C-P249']+['Volume_KG', 'C-P749']+['Volume_KG', 'C-S099'];
+['Internal_Volume','C-D797']=C:['Internal_Volume','C-P049']+['Internal_Volume', 'C-S108']+['Internal_Volume', 'C-P149']+['Internal_Volume', 'C-P299']+['Internal_Volume', 'C-P349']+['Internal_Volume', 'C-P419']+['Internal_Volume', 'C-P429']+['Internal_Volume', 'C-P439']+['Internal_Volume', 'C-P449']+['Internal_Volume', 'C-P499']+['Internal_Volume', 'C-P959']+['Internal_Volume', 'C-S958']+['Internal_Volume', 'C-P399']+['Internal_Volume', 'C-A049']+['Internal_Volume', 'C-P099']+['Internal_Volume', 'C-P100']+['Internal_Volume', 'C-P199']+['Internal_Volume', 'C-P249']+['Internal_Volume', 'C-P749']+['Internal_Volume', 'C-S099'];
+['External_Volume','C-D797']=C:['External_Volume','C-P049']+['External_Volume', 'C-S108']+['External_Volume', 'C-P149']+['External_Volume', 'C-P299']+['External_Volume', 'C-P349']+['External_Volume', 'C-P419']+['External_Volume', 'C-P429']+['External_Volume', 'C-P439']+['External_Volume', 'C-P449']+['External_Volume', 'C-P499']+['External_Volume', 'C-P959']+['External_Volume', 'C-S958']+['External_Volume', 'C-P399']+['External_Volume', 'C-A049']+['External_Volume', 'C-P099']+['External_Volume', 'C-P100']+['External_Volume', 'C-P199']+['External_Volume', 'C-P249']+['External_Volume', 'C-P749']+['External_Volume', 'C-S099'];
+['Volume','C-D797']=C:['Volume','C-P049']+['Volume', 'C-S108']+['Volume', 'C-P149']+['Volume', 'C-P299']+['Volume', 'C-P349']+['Volume', 'C-P419']+['Volume', 'C-P429']+['Volume', 'C-P439']+['Volume', 'C-P449']+['Volume', 'C-P499']+['Volume', 'C-P959']+['Volume', 'C-S958']+['Volume', 'C-P399']+['Volume', 'C-A049']+['Volume', 'C-P099']+['Volume', 'C-P100']+['Volume', 'C-P199']+['Volume', 'C-P249']+['Volume', 'C-P749']+['Volume', 'C-S099'];
+
+['Volume_KG', 'Total Products']=C:['Volume_KG', 'C-D497']+['Volume_KG', 'C-D797']+['Volume_KG', 'C-D897']+['Volume_KG', 'C-D997'];
+['Internal_Volume', 'Total Products']=C:['Internal_Volume', 'C-D497']+['Internal_Volume', 'C-D797']+['Internal_Volume', 'C-D897']+['Internal_Volume', 'C-D997'];
+['External_Volume', 'Total Products']=C:['External_Volume', 'C-D497']+['External_Volume', 'C-D797']+['External_Volume', 'C-D897']+['External_Volume', 'C-D997'];
+['Volume', 'Total Products']=C:['Volume', 'C-D497']+['Volume', 'C-D797']+['Volume', 'C-D897']+['Volume', 'C-D997'];
+
+FEEDERS;
+['Volume_KG']=>DB('RPT_All','SSV100',!Product,'0_','All_Other','All_Department','AZUR','AllCounterComp','REPO','EUR',!t_Months,!t_Scenario,'Dollars');
+['Volume_KG']=>DB('RPT_All','SSV100',!Product,'0_','All_Other','All_Department','EARTH','AllCounterComp','REPO','EUR',!t_Months,!t_Scenario,'Dollars');
+
+##RG Added for feeders to the new cube
+['Units']=>DB('SIM_Backlog',!Product,!Customers,!Entity, DB('}ElementAttributes_t_Scenario', !t_Scenario, 'Year') | !t_Months,'USD',DB('}ElementAttributes_t_Scenario', !t_Scenario, 'Version'),'All_Backlogs','Sales Units');
+['Amount_USD']=>DB('SIM_Backlog',!Product,!Customers,!Entity, DB('}ElementAttributes_t_Scenario', !t_Scenario, 'Year') | !t_Months,'USD',DB('}ElementAttributes_t_Scenario', !t_Scenario, 'Version'),'All_Backlogs','Sales Amount');
+

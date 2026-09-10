@@ -1,0 +1,267 @@
+I'll walk through the entire process from start to finish. Let me organize them by their actual logical flow:
+
+Read [](file:///c%3A/Users/MY22/OneDrive%20-%20Raymond%20Chabot%20Grant%20Thornton/Documents/GitHub/VsCodeNotes/TAGETIK/ENRG/CALC1_002)
+
+Read [](file:///c%3A/Users/MY22/OneDrive%20-%20Raymond%20Chabot%20Grant%20Thornton/Documents/GitHub/VsCodeNotes/TAGETIK/ENRG/CALC1_003)
+
+Read [](file:///c%3A/Users/MY22/OneDrive%20-%20Raymond%20Chabot%20Grant%20Thornton/Documents/GitHub/VsCodeNotes/TAGETIK/ENRG/CALC1_004)
+
+Perfect. Let me give you a complete walkthrough organized by **what the business logic is trying to do**, not by file names:
+
+---
+
+## **THE BIG PICTURE**
+
+You're converting **calendar year data (Jan-Dec)** into **fiscal year data** while calculating **retained earnings properly**. The process has 5 main phases:
+
+---
+
+## **PHASE 1: FILL IN MISSING PERIODS** (Data Cleanup)
+**Files: CALC1_003 & CALC1_004**
+
+### What's the problem?
+When you import calendar year data, you might have:
+- Some accounts in January but not February
+- Some entities missing data for certain months
+- Gaps in the data that will break calculations
+
+### What the script does:
+```
+Step 1: Create a list of all 12 months (01-12)
+Step 2: Get all unique combinations of (Entity, Account, Dimensions, etc.)
+Step 3: Get all unique scenarios (like '2024', '2025')
+Step 4: CROSS JOIN them all together
+   → This creates EVERY POSSIBLE combination that SHOULD exist
+   
+Step 5: Compare against actual data
+   → Find what's MISSING
+   
+Step 6: INSERT the missing combinations with $0
+   → Now every account has every month, even if just $0
+```
+
+**In plain English:** "Make sure every account has data for every single month. If month is missing, add it with $0."
+
+---
+
+## **PHASE 2: CONVERT CUMULATIVE TO MONTHLY** (YTD → MTD)
+**Files: CALC1_000, CALC1_001, CALC1_002, CALC1_003, CALC1_004**
+
+### What's the problem?
+You receive data from the system as **Year-To-Date (YTD)** cumulative totals:
+```
+January:   $100
+February:  $250  (not $150, but $250 total)
+March:     $400  (not $150, but $400 total)
+```
+
+You need **Month-To-Date (MTD)** which is just the current month:
+```
+January:   $100
+February:  $150  (current month only)
+March:     $150  (current month only)
+```
+
+### What the script does:
+
+**CALC1_000:** Data prep - standardize column names
+
+**CALC1_001:** Group/aggregate the data before calculations
+
+**CALC1_002 & CALC1_003:** The core conversion:
+```
+For every account & dimension combination:
+   
+   IF Month = January
+      MTD = AMOUNT (it's the first month, so YTD = MTD)
+   
+   ELSE
+      MTD = Current Month Amount - Previous Month Amount
+      (This "backs out" the previous months to get just this month)
+      
+   Example:
+   March: $400 - Feb($250) = $150 MTD ✓
+```
+
+**Special handling for Balance Sheet Accounts (1, 2, 3):**
+```
+For Balance Sheet accounts:
+   MTD_AMOUNT = AMOUNT
+   (Balance sheets show a snapshot, not cumulative like P&L)
+```
+
+**Result:** Now you have both AMOUNT (YTD) and MTD_AMOUNT (monthly) columns.
+
+---
+
+## **PHASE 3: CONVERT MONTHLY BACK TO CUMULATIVE** (MTD → YTD)
+**Files: CALC2_000, CALC2_001**
+
+### What's the problem?
+Wait, didn't we just do this? Yes, but now we need to be smarter about it because we're moving to **fiscal year periods** (not calendar year).
+
+### What the script does:
+
+**CALC2_000:**
+```
+For P&L accounts (NOT 1,2,3):
+   Use a CUMULATIVE SUM window function
+   → Sum all MTD_AMOUNT from Jan through current month
+   → This creates proper YTD_AMOUNT for fiscal year
+   
+   Example: 
+   Jan MTD:  $100  → YTD = $100
+   Feb MTD:  $150  → YTD = $100+$150 = $250
+   Mar MTD:  $150  → YTD = $100+$150+$150 = $400
+```
+
+**CALC2_001:**
+```
+For Balance Sheet accounts:
+   YTD_AMOUNT = AMOUNT
+   (They don't cumulate like P&L does)
+```
+
+**Result:** Now you have proper YTD_AMOUNT calculated for fiscal year structure.
+
+---
+
+## **PHASE 4: CALCULATE & UPDATE RETAINED EARNINGS** (THE ACCOUNTING LOGIC)
+**Files: CALC3_000, CALC3_001, CALC5_000**
+
+### What's the problem?
+At the end of the year, the company's **Net Income** needs to flow into **Retained Earnings (account 3100)** for next year.
+
+In accounting:
+```
+Retained Earnings = Prior Year RE + Current Year Net Income - Dividends
+```
+
+You're calculating: **Current Year Net Income = SUM of all P&L accounts**
+
+### What the script does:
+
+**CALC5_000 (Step -1: Cleanup):**
+```
+Update any old retained earnings codes (3100-00) to standard code (3100)
+This standardizes the dimension mappings so calculations work correctly
+```
+
+**CALC3_000 (Step -2: Calculate Net Income):**
+```
+Filter for:
+   - Period = 12 (December, end of year)
+   - Accounts NOT starting with 1,2,3 
+     (These are P&L accounts: 4=Revenue, 5=COGS, 6=Expenses, 7=Other, etc.)
+   - Only "E" (Expense) and "N" (Normal) type accounts from the chart
+
+Calculate:
+   SUM(AMOUNT) = Total of all P&L accounts
+   → This is your NET INCOME for the year
+
+Update:
+   Account 3100 (Retained Earnings) in the NEXT year's scenario
+   Set ADJ_AMOUNT = this net income
+   
+   Example:
+   If 2024 Net Income = $500,000
+   Then 2025 Opening RE adjustment = $500,000 added
+```
+
+**CALC3_001 (Step 3: Update RE Balance through the year):**
+```
+Now retained earnings needs to show the right balance each month
+
+For account 3100 each month:
+
+   IF Month is 01-04 (first quarter):
+      YTD = AMOUNT + ADJ_AMOUNT
+      (Opening RE balance + the contribution we added)
+   
+   ELSE (remaining months):
+      YTD = ADJ_AMOUNT + Prior_Quarter_Amount
+      (Keep the adjustment + pull forward the balance from 4 months back)
+
+This makes RE evolve correctly as the year progresses
+```
+
+**CALC5_000 (Step 2: Final Aggregation):**
+```
+Group and consolidate all the data:
+   SUM all AMOUNT columns
+   SUM all MTD_AMOUNT columns
+   SUM all YTD_AMOUNT columns
+   SUM all ADJ_AMOUNT columns
+
+This cleans up any duplicates and gives final numbers by:
+   Scenario, Period, Entity, Account, and all dimensions
+```
+
+---
+
+## **PHASE 5: METADATA & FINAL CLEANUP**
+**File: CALC4_000**
+
+### What it does:
+```
+Update the audit trail:
+   COMMENTOR = USERUPD (who last updated it)
+   COMMENTDATE = DATEUPD (when it was updated)
+
+This happens only if COMMENTS field is not empty
+(Tracks who made changes for audit purposes)
+```
+
+---
+
+## **PHASE 6: OPENING PERIOD FOR NEW FISCAL YEAR**
+**File: CALC5_001**
+
+### What it does:
+```
+Special handling for Period 01 opening:
+
+WHERE FPERIOD='01' AND PERIOD='05'
+
+This says:
+   IF Fiscal Period 1 AND Calendar Period 5 (May)
+   Then: MTD_AMOUNT = AMOUNT
+
+Reason: If your fiscal year starts in May (period 05),
+the first fiscal period (01) needs to be seeded with data
+```
+
+---
+
+## **SUMMARY IN FLOWCHART ORDER**
+
+```
+1. Calendar Year Trial Balance (Jan-Dec, YTD cumulative)
+   ↓
+2. Fill in any missing months with $0
+   ↓
+3. Convert YTD → MTD (break cumulative into monthly amounts)
+   ↓
+4. Convert MTD → YTD for fiscal year (cumulative for fiscal periods)
+   ↓
+5. Calculate Net Income = SUM of all P&L for year
+   ↓
+6. Roll Net Income forward to Retained Earnings (3100) next year
+   ↓
+7. Calculate RE balance through each month of year
+   ↓
+8. Consolidate and aggregate final numbers
+   ↓
+9. Update metadata (audit trail)
+```
+
+---
+
+## **FOR YOUR OCTOBER FISCAL YEAR START:**
+
+You'll need to change:
+- **CALC3_000 Line 21**: `FPERIOD = '12'` → `FPERIOD = '09'` (Sept is month 9 of your FY)
+- **CALC3_001 Lines 30-31**: Change "01-04" quarter logic → "01-03" (your Q1 is only 3 months)
+- **CALC5_001 Line 8**: Adjust the opening period mapping to match your FY start (Oct = period 01)
+
+Does this clarify the entire flow? What specific part would you like me to dive deeper into?
