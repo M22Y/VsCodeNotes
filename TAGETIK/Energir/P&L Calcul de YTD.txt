@@ -1,0 +1,27 @@
+P&L	Calcul de YTD		
+	Periode 01 Fiscal		Exactement le MTD Calendrier (voir prise d'ecran)
+	Periode 02 Fiscal		MTD Calendrier + YTD de mois d'avant (=P01)
+	…		
+	Periode 12 Fiscal		MTD Calendrier + YTD de mois d'avant (=P11)
+			
+			
+	Notes: 		
+	MTD Calendrier (pour Avril, 01 Calendrier c'est le montant source = YTD Calendrier)		
+	MTD Calendrier pour le reste des mois est YTD Calendrier mois en cours - YTD Calendrier mois d'avant		
+
+
+
+Bilan	Tous les comptes sauf Retained earnings		
+	Calcul de YTD		
+	Periode 01 Fiscal		YTD Calendrier
+	Periode 02 Fiscal		YTD Calendrier
+	…		
+	Periode 12 Fiscal		YTD Calendrier
+			
+			
+	Retained Earnings		
+	Calcul de YTD = sur le compte source = '32510000'		
+	Periode 01 Fiscal		YTD Calendrier + Net Income précédent
+	Periode 02 Fiscal		Periode 01 Fiscal
+	…		
+	Periode 12 Fiscal		Periode 11 Fiscal
