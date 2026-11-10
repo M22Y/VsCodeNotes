@@ -1,0 +1,62 @@
+// Exclude certain nodes or hierarchies
+TGKML 1.0
+
+toInclude := SET(this.children);
+toExclude := SET($Account(HIERARCHY("001")).getNode("NORMDELIVCOS"));
+
+result := toInclude - toExclude;
+
+
+// Retrieve original scenario from consolidation scenario
+TGKML 1.0
+
+result := $Scenario.originalScenario.item(0);
+
+// Dynamic selection of actual or forecast scenario based on scenario coding convention
+TGKML 1.0
+
+result := $Scenario.GETLEAF(IF(VALUE(MID($Scenario.ref4.code,7,1))<=1,$Scenario.ref4.code,
+CONCATENATE(VALUE(LEFT($Scenario.code,4))-1,"ACT_USD"))).item(0);
+
+// Select previous quarter based on month parameter selection
+TGKML 1.0
+
+Per :=
+	if(AND(value(@PER_M.code) >= 3, value(@PER_M.code) <= 6)) then $Period.getLeaf("03")
+	else 
+		if(AND(value(@PER_M.code) >= 7, value(@PER_M.code) <= 9)) then $Period.getLeaf("06")
+			else if(AND(value(@PER_M.code) >= 10, value(@PER_M.code) <= 12)) then $Period.getLeaf("09")
+			end
+		end
+	end;
+
+result := Per;
+
+// To use in advanced selection for parameter to limit choice to parents and element code starting with 1
+TGKML 1.0
+result := SET(this.ALLDESCENDANTS.select("LEFT($ANL_INTORDER.code)=1 || $ANL_INTORDER(HIERARCHY(10)).ISLEAF=0"));
+
+// When "this" is a node of all variation accounts, grab all variation accounts associated with selected normal balance sheet account
+TGKML 1.0
+
+result := this.lowest.select("LEFT($Account.code,len(@BS_ACCT.code)) = @BS_ACCT.code");
+
+// From a node, exclude an element (or a set of elements)
+TGKML 1.0
+
+toExclude := SET($Account(HIERARCHY("001")).getleaf("7696"));
+
+result := set(this - toExclude);
+
+// Select different sets of entities based on scenario code
+TGKML 1.0
+
+P_ENTITIES := this.lowest.select("LEFT($Entity.code,1) =" + QT + "P" +QT);
+LEGAL_ENTITIES := this.lowest.select("LEFT($Entity.code,1) <>" + QT + "P" +QT);
+
+result := IF(RIGHT($Scenario.code,3) == "AGM",OrFilter(LEGAL_ENTITIES),OrFilter(P_ENTITIES));
+
+// Insert grandchildren of currently selected node
+TGKML 1.0
+
+result := this.descendants(2);

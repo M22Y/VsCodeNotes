@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Processes('{{processName}}')/tm1.Execute"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \t\"Parameters\": [{\"Name\":\"pWaitSec\", \"Value\":\"5\"},{\"Name\":\"pDebug\", \"Value\":0}]\r
+
+    }\r\n"
+order: 1000

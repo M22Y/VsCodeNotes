@@ -1,0 +1,9 @@
+$kind: collection
+description: ""
+auth:
+  - id: 975aa791-fd0b-49c9-a8c0-3bb63745c960
+    type: apikey
+    name: apikey auth
+    credentials:
+      value: "{{vault:apikey}}"
+      key: apikey

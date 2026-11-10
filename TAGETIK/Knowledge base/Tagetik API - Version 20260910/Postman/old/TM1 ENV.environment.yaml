@@ -1,0 +1,22 @@
+name: TM1 ENV
+values:
+  - key: serverName
+    value: localhost
+  - key: httpPortNumber
+    value: '8882'
+  - key: protocol
+    value: https
+  - key: cubeName
+    value: General Ledger
+  - key: viewName
+    value: Default
+  - key: dimensionName
+    value: Account
+  - key: hierarchyName
+    value: Account
+  - key: processName
+    value: Bedrock.Server.Wait
+  - key: choreName
+    value: CXTM1SaveDataAll
+  - key: elementName
+    value: '1'

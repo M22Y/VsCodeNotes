@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api-key/aih/data/v1/DEV_TGK_RCGT_001/001/$metadata"
+method: GET
+order: 1000

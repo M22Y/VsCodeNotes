@@ -1,0 +1,504 @@
+swagger: '2.0'
+info:
+  title: TM1 REST API
+  description: The Complete TM1 REST API Collection
+  version: 1.0.0
+paths:
+  /api/v1/Cubes:
+    get:
+      summary: Cubes Get
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Cubes/$count:
+    get:
+      summary: Cubes Count Excluding Control Objects
+      description: Retrieve the Cube Count
+      consumes:
+        - application/json
+      parameters:
+        - name: $filter
+          in: query
+          type: string
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Cubes
+  '/api/v1/Cubes(''{cubeName}'')/Dimensions':
+    parameters:
+      - name: cubeName
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Cube Get Dimensions
+      description: List the Dimensions in a Cube
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Cubes
+  '/api/v1/Cubes(''{cubeName}'')':
+    parameters:
+      - name: cubeName
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Cube Get
+      consumes:
+        - application/json
+      responses: {}
+      security:
+        - BasicAuth: []
+      tags:
+        - Cubes
+  '/api/v1/Cubes(''{cubeName}'')/tm1.Update':
+    parameters:
+      - name: cubeName
+        in: path
+        type: string
+        required: true
+    post:
+      summary: Cell Update
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/ExecuteMDX:
+    post:
+      summary: MDX Execute
+      consumes:
+        - application/json
+      parameters:
+        - name: $expand
+          in: query
+          type: string
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Cubes
+  '/api/v1/Cubes(''{cubeName}'')/Views(''{viewName}'')/tm1.Execute':
+    parameters:
+      - name: cubeName
+        in: path
+        type: string
+        required: true
+      - name: viewName
+        in: path
+        type: string
+        required: true
+    post:
+      summary: View Execute
+      consumes:
+        - application/json
+      parameters:
+        - name: $expand
+          in: query
+          type: string
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Cubes('System Info')/Views:
+    post:
+      summary: View Creation (Subset)
+      description: View Creation
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Cubes('Sales Quota')/Views:
+    post:
+      summary: View Create (Subset Dynamic)
+      description: 'Create a new View with, dynamic, Subsets'
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Cubes
+  '/api/v1/Cubes(''{cubeName}'')/Views':
+    parameters:
+      - name: cubeName
+        in: path
+        type: string
+        required: true
+    post:
+      summary: View Creation (MDX)
+      description: View Creation
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Cubes('System Info')/Views('TempView'):
+    patch:
+      summary: View Update
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Cubes
+    delete:
+      summary: View Delete
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Dimensions:
+    get:
+      summary: Dimensions Get
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Dimensions
+    post:
+      summary: Dimension Create
+      description: Create a new Dimension
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Dimensions
+  /api/v1/Dimensions/$count:
+    get:
+      summary: Dimensions Count
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Dimensions
+  '/api/v1/Dimensions(''{dimensionName}'')':
+    parameters:
+      - name: dimensionName
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Dimension Get
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Dimensions
+  '/api/v1/Dimensions(''{dimensionName}'')/Hierarchies':
+    parameters:
+      - name: dimensionName
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Dimension Get Hierarchies
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Dimensions
+  /api/v1/Dimensions('Account')/Hierarchies('Account')/Members:
+    get:
+      summary: Dimension Element List
+      consumes:
+        - application/json
+      parameters:
+        - name: $select
+          in: query
+          type: string
+        - name: $expand
+          in: query
+          type: string
+        - name: $format
+          in: query
+          type: string
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Dimensions
+  /api/v1/Dimensions('New Dimension'):
+    delete:
+      summary: Dimension Delete
+      description: Delete a Dimension
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Dimensions
+  '/api/v1/Dimensions(''{dimensionName}'')/Hierarchies(''{hierarchyName}'')/Elements(''{elementName}'')':
+    parameters:
+      - name: dimensionName
+        in: path
+        type: string
+        required: true
+      - name: hierarchyName
+        in: path
+        type: string
+        required: true
+      - name: elementName
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Element Get
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Dimensions
+  '/api/v1/Dimensions(''{dimensionName}'')/Hierarchies(''{hierarchyName}'')/Elements':
+    parameters:
+      - name: dimensionName
+        in: path
+        type: string
+        required: true
+      - name: hierarchyName
+        in: path
+        type: string
+        required: true
+    post:
+      summary: Element Create
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Dimensions
+  '/api/v1/Dimensions(''{dimensionName}'')/Hierarchies(''{hierarchyName}'')/ElementAttributes':
+    parameters:
+      - name: dimensionName
+        in: path
+        type: string
+        required: true
+      - name: hierarchyName
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Attributes Get
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Dimensions
+  '/api/v1/Processes(''{processName}'')/tm1.Execute':
+    parameters:
+      - name: processName
+        in: path
+        type: string
+        required: true
+    post:
+      summary: Process Execute
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Processes
+  '/api/v1/Processes(''{processName}'')':
+    parameters:
+      - name: processName
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Process Get
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Processes
+  /api/v1/Processes:
+    get:
+      summary: Processes Get
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Processes
+  /api/v1/Processes('Bedrock.Cube.Clone'):
+    patch:
+      summary: Process Update
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Processes
+  /api/v1/Processes('z TEMP 10'):
+    delete:
+      summary: Process Delete
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Processes
+  '/api/v1/Chores(''{choreName}'')/tm1.Execute':
+    parameters:
+      - name: choreName
+        in: path
+        type: string
+        required: true
+    post:
+      summary: Chore Execute
+      consumes:
+        - application/json
+      responses: {}
+      tags:
+        - Chores
+  '/api/v1/Chores(''{choreName}'')':
+    parameters:
+      - name: choreName
+        in: path
+        type: string
+        required: true
+    patch:
+      summary: Chore Update
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Chores
+  /api/v1/Configuration:
+    get:
+      summary: Configuration
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/$metadata:
+    get:
+      summary: Metadata
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/Threads:
+    get:
+      summary: Threads Get
+      consumes:
+        - application/json
+      parameters:
+        - name: $expand
+          in: query
+          type: string
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/MessageLogEntries:
+    get:
+      summary: Message Log Top 5
+      consumes:
+        - application/json
+      parameters:
+        - name: $orderby
+          in: query
+          type: string
+        - name: $top
+          in: query
+          type: integer
+        - name: Authorization
+          in: header
+          type: string
+        - name: Prefer
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Administration
+  '/api/v1/Processes(''Cub.GeneralLedger.Demo'')/ErrorLogs(''2017-02-14T01{26}{44Z}'')/Content':
+    get:
+      summary: Process Error Logs
+      consumes:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/Sessions:
+    get:
+      summary: Sessions Get
+      consumes:
+        - application/json
+      parameters:
+        - name: $expand
+          in: query
+          type: string
+        - name: Authorization
+          in: header
+          type: string
+      responses: {}
+      tags:
+        - Administration
+host: '{{serverName}}:{{httpPortNumber}}'
+schemes:
+  - https
+securityDefinitions:
+  BasicAuth:
+    type: basic
+security:
+  - BasicAuth: []

@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('{{cubeName}}')"
+method: GET
+headers:
+  Content-Type: application/json
+auth:
+  type: basic
+  credentials:
+    username: admin
+    password: ""
+order: 7000

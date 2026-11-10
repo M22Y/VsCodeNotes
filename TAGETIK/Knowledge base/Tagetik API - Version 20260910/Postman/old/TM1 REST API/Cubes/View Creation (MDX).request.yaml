@@ -1,0 +1,18 @@
+$kind: http-request
+description: View Creation
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('{{cubeName}}')/Views"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \   \"@odata.type\":\"ibm.tm1.api.v1.MDXView\",\r
+
+    \   \"Name\":\"TempViewByMDX\",\r
+
+    \   \"MDX\":\"SELECT NON EMPTY {[Period].[Jan], [Period].[Feb], [Period].[Mar]} ON COLUMNS, NON EMPTY {[Account].AllMembers} ON ROWS FROM [General Ledger] where([Version].[Actual], [General Ledger Measure].[Amount], [Currency].[Local], [Region].[1], [Department].[1], [Year].[2012])\"\r
+
+    }"
+order: 13000

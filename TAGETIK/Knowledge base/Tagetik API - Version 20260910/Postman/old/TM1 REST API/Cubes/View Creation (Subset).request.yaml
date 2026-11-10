@@ -1,0 +1,42 @@
+$kind: http-request
+description: View Creation
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('System Info')/Views"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \   \"@odata.type\":\"ibm.tm1.api.v1.NativeView\",\r
+
+    \   \"Name\":\"TempView\",\r
+
+    \   \"Columns\":[\r
+
+    \      {\r
+
+    \         \"Subset@odata.bind\":\"Dimensions('System Info Parameter')/Hierarchies('System Info Parameter')/Subsets('Default')\"\r
+
+    \      }\r
+
+    \   ],\r
+
+    \   \"Rows\":[\r
+
+    \      {\r
+
+    \         \"Subset@odata.bind\":\"Dimensions('System Info Measures')/Hierarchies('System Info Measures')/Subsets('Default')\"\r
+
+    \      }\r
+
+    \   ],\r
+
+    \   \"SuppressEmptyColumns\":false,\r
+
+    \   \"SuppressEmptyRows\":false,\r
+
+    \   \"FormatString\":\"0.#########\\fG|0|\"\r
+
+    }"
+order: 11000

@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes?$select=Name&$filter=Dimensions/any(dimension: dimension/Name eq '{{dimensionName}}')"
+method: GET
+queryParams:
+  $select: Name
+  $filter: "Dimensions/any(dimension: dimension/Name eq '{{dimensionName}}')"
+order: 3000

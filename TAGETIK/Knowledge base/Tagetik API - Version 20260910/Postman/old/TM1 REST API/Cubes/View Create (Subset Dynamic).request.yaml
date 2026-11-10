@@ -1,0 +1,94 @@
+$kind: http-request
+description: Create a new View with, dynamic, Subsets
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('Sales Quota')/Views"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \    \"@odata.type\": \"tm1.NativeView\",\r
+
+    \    \"Name\": \"TempView\",\r
+
+    \    \"Rows\": [\r
+
+    \        {\r
+
+    \            \"Subset\": {\r
+
+    \                \"Hierarchy@odata.bind\": \"Dimensions('Employee')/Hierarchies('Employee')\",\r
+
+    \                \"Expression\": \"[Employee].Members\"\r
+
+    \            }\r
+
+    \        }\r
+
+    \    ],\r
+
+    \    \"Columns\": [\r
+
+    \        {\r
+
+    \            \"Subset\": {\r
+
+    \                \"Hierarchy@odata.bind\": \"Dimensions('Period')/Hierarchies('Period')\",\r
+
+    \                \"Expression\": \"[Period].Members\"\r
+
+    \            }\r
+
+    \        }\r
+
+    \    ],\r
+
+    \    \"Titles\": [\r
+
+    \        {\r
+
+    \            \"Subset\": {\r
+
+    \                \"Hierarchy@odata.bind\": \"Dimensions('Version')/Hierarchies('Version')\",\r
+
+    \                \"Expression\": \"[Version].Members\"\r
+
+    \            },\r
+
+    \            \"Selected@odata.bind\": \"Dimensions('Version')/Hierarchies('Version')/Elements('Actual')\"\r
+
+    \        },\r
+
+    \        {\r
+
+    \            \"Subset\": {\r
+
+    \                \"Hierarchy@odata.bind\": \"Dimensions('Year')/Hierarchies('Year')\",\r
+
+    \                \"Expression\": \"[Year].Members\"\r
+
+    \            },\r
+
+    \            \"Selected@odata.bind\": \"Dimensions('Year')/Hierarchies('Year')/Elements('2008')\"\r
+
+    \        },\r
+
+    \        {\r
+
+    \            \"Subset\": {\r
+
+    \                \"Hierarchy@odata.bind\": \"Dimensions('Sales Quota Measure')/Hierarchies('Sales Quota Measure')\",\r
+
+    \                \"Expression\": \"[Sales Quota Measure].Members\"\r
+
+    \            },\r
+
+    \            \"Selected@odata.bind\": \"Dimensions('Sales Quota Measure')/Hierarchies('Sales Quota Measure')/Elements('Amount')\"\r
+
+    \        }\r
+
+    \    ]\r
+
+    }"
+order: 12000

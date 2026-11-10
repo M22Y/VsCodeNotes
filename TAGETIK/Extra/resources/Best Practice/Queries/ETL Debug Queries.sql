@@ -1,0 +1,21 @@
+--Tab 1: Get ETL Dimensions Information
+SELECT
+COD_MAPPATURA,
+COD_DIMENSIONE,
+CONCAT('CAMPO',COD_DIMENSIONE)
+DESC_DIMENSIONE,
+DESC_DIMENSIONE_BREVE
+
+FROM MAP_DIMENSIONE
+WHERE COD_MAPPATURA = '0010'
+
+--Tab 2: Get Extracted data
+SELECT * FROM MAP_DATI_ACQUISITI
+WHERE COD_MAPPATURA = '0010'
+
+
+--Tab 3: Get Transformed DATABASE
+SELECT * FROM MAP_DATI_TRASFORMATI
+WHERE COD_MAPPATURA = '0010'
+
+--Add the ETL Dimension ETL on top of the Tab 2 & Tab 3 with excel vlookup for better/quicker analysis

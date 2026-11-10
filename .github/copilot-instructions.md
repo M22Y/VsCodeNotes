@@ -1,115 +1,24 @@
-# Copilot Instructions for VsCodeNotes
+# VsCodeNotes Project Instructions
 
-## Repository Overview
-This is a financial analytics and data consolidation workspace containing code, configurations, and documentation for:
-- **IBM Planning Analytics (PA/TM1)**: Budgeting and forecasting for Belron (car glass repair)
-- **CCH TAGETIK**: Financial consolidation platform with SQL-based data integration
-- Scripts and queries for ETL, data transformation, and analytical reporting
+This workspace contains IBM Planning Analytics (TM1) and CCH TAGETIK financial analytics assets, including SQL, rules, processes, and documentation.
 
-## Critical Architecture Patterns
+Treat these workspace instructions as required for every task. Before answering or editing, identify and follow the relevant section; do not skip applicable guidance.
 
-### 1. IBM PA Belron Environment
-**Location**: `IBM PA/Belron/`
+## TAGETIK
 
-- **RUX Files** (.rux): TM1 rules files defining calculations for cubes
-  - `20_OtherGL.rux`: Core General Ledger cube with rolling forecast adjustments
-  - `56.rux`, `57.rux`: Referenced source cubes for Capex and other GL items
-  - Key pattern: Rules contain `SKIPCHECK;`, `FEEDSTRINGS;` sections and `FEEDERS` for data flow tracking
-  - Scenario structure: Actual, Budget_Final, Budget, Rolling_Forecast, Forecast, Forecast_Final, Rolling_Fct_Adj
+- **Before any TAGETIK answer or change, consult the knowledge base**: [TAGETIK/Knowledge base/](../TAGETIK/Knowledge%20base/). Search the relevant manuals, data-model references, API documentation, and examples before relying on assumptions.
+- Apply knowledge-base guidance to the actual workspace files and patterns. When sources disagree or do not cover a case, inspect nearby TAGETIK examples and clearly state uncertainty.
+- Preserve existing SQL dialect, Tagetik placeholders/formulas, dimension codes, and naming conventions. Validate query syntax against the target Tagetik tool where possible; SQL functions can vary by query context.
+- TAGETIK files are grouped by client or subject under `TAGETIK/`; keep changes within the relevant area.
 
-- **PROC Files** (.proc): TM1 process templates for data transformation
-  - `Trsf_All_version_to_Rolling_Fct_Adj(Bud Cubes)_Loop.proc`: Version transformation workflow
-  - Use these as templates; they contain loop logic for cube operations
+## IBM Planning Analytics
 
-- **PowerShell Automation** (.ps1):
-  - `analyze_tm1_rules.ps1`: Parses RUX files to extract data flow and generate Graphviz diagrams
-  - `dependencies.ps1`: Maps cube dependencies
-  - Pattern: Parse SKIPCHECK, FEEDERS, and DB() references to understand data lineage
+- TM1 rules use `.rux` files and processes use `.proc` files. Follow nearby files for syntax and conventions.
+- When tracing calculations or dependencies, inspect `DB()` references, `SKIPCHECK`, `FEEDERS`, and related cube rules. Do not infer behavior from one directive alone.
+- Keep changes scoped to the relevant environment and preserve historical comments unless they are being updated as part of the task.
 
-### 2. TAGETIK SQL Integration
-**Location**: `TAGETIK/` with subdirectories: HRN/, LaCaisse/, PCC/, QSL/
+## General
 
-- **Data Flow**: Sources (JDE, DataHub, Excel) → SQL transformations → TAGETIK module import
-- **Key Concepts**:
-  - **Vue 1.1**: Cumulative balances (P&L, balance sheet) + volumes
-  - **Vue 1.2**: Monthly statistics (volumes, CPL by business unit, department, product)
-  - **Vue 2**: Intercompany data
-  - **Vue 3**: Detailed transactions
-  - Dimensions are dynamically generated from: Scenario, Period, Entity, Account, Product, Department/Customer Type
-
-- **SQL Patterns** (see QSL/, PCC/ subdirectories):
-  - Common CTEs: PERIOD_FILTER, resource hierarchies (ED_RESOURCE_GERARCHIA_FLAT)
-  - Filtering logic: Scenario codes containing 'BDG' (Budget) or 'FCT' (Forecast)
-  - Origin validation: TEXT_ORIGIN checks for data source (e.g., 'AW004_INPUT_DE050')
-  - Reconciliation: IFERROR patterns for balance validation
-
-- **TGKML Formulas**: Custom TAGETIK expressions for period/scenario lookup
-  - Pattern: `A:=IF($PERIOD.code=="03","03",...)` for period-based logic
-  - Uses code() function for quarter extraction, select() for dimension filtering
-
-## Key File Examples
-
-| File | Purpose | Key Pattern |
-|------|---------|------------|
-| [20_OtherGL.rux](IBM%20PA/Belron/20_OtherGL.rux#L23) | GL cube rules | STET (Statement Rules), Rolling_Fct_Adj calculation baseline |
-| [analyze_tm1_rules.ps1](IBM%20PA/Belron/analyze_tm1_rules.ps1#L25) | RUX analysis | Extract DB() refs and FEEDERS to map data flow |
-| [QSL/SM050.sql](TAGETIK/QSL/SM050.sql) | Stevedoring cost allocations | CASE logic, IFERROR, COUNTIF validation |
-| [HRN/BRD Flux de données.md](TAGETIK/HRN/BRD%20Flux%20de%20données.md) | Data architecture | Vue definitions and dimension mapping |
-
-## Common Workflows
-
-### Understanding Data Lineage
-1. For TM1/PA: Parse .rux files → look for `DB()` function calls and FEEDERS sections
-2. For TAGETIK: Trace SQL from table names (raccolta_prospetto_controllo, ED_RESOURCE_GERARCHIA_FLAT) backwards through CTEs
-3. Use PowerShell scripts to auto-generate dependency diagrams
-
-### Scenario Naming Conventions
-- Budgets: contain "BDG" or "Budget" in code
-- Forecasts: contain "FCT", "Forecast", "Rolling_Forecast"
-- Example: `Budget_Final`, `Rolling_Fct_Adj`, `Forecast_Final`
-
-### Version Management
-- Multiple "Original - Dev" and "Original - Prod" folders track different deployment states
-- "NEW" file prefixes indicate unreleased changes
-- Date stamps in filenames (e.g., 20250308) track versions by deployment date
-
-## Development Conventions
-
-- **Comments**: Historical notes embedded in files (see RUX headers for change logs with dates and names)
-- **Naming**: French and English mixed (Flux = Flow, Prospetto = Report View)
-- **File Organization**: Group related artifacts (e.g., all QSL queries for one subject matter area together)
-- **Graphviz Outputs**: .dot files used to visualize data dependencies as .jpg diagrams
-
-## Integration Points
-
-- **External Systems**: JDE (financial data), DataHub (consolidated source), HANA (reporting)
-- **Manual Entry**: TAGETIK forms accept manual intercompany declarations and supplementary GL entries
-- **Validation Logic**: Frequent use of COUNTIF and reconciliation checks (sums must match, resources must exist)
-
----
-
-## When Analyzing New Code
-1. Check for scenario/period/entity filtering patterns (ubiquitous in TAGETIK SQL)
-2. Look for SKIPCHECK in RUX (indicates no validation on calculations)
-3. Trace DB() references in RUX rules to find cube dependencies
-4. For SQL, identify if using Vue 1.1 (cumulative) vs 1.2 (monthly) logic
-5. Check file naming: "Rolling_Fct_Adj" is a critical aggregated scenario combining months 2-12 with month 1 baseline
-
-## DATI_SALDI_LORDI
-
-This is a fixed table in tagetik that holds $ amounts in YTD, used for consolidation and storing data in the Financial workspace (not for journal nor intercos)
-
-Example :
-
-| OID_DATI_SALDI_LORDI | COD_SCENARIO | COD_PERIODO | COD_AZIENDA | COD_CONTO | COD_DEST1 | COD_DEST2   | COD_DEST3 | COD_DEST4 | COD_DEST5 | COD_CATEGORIA | IMPORTO   | COD_VALUTA | IMPORTO_VALUTA_ORIGINARIA | COD_VALUTA_ORIGINARIA | PROVENIENZA | USERUPD | DATEUPD |
-|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| 46e0a219-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E230 | 701310 | NA    | 7001   | NA    | NA    | NA | $AMOUNT | 86069.33  | USD | 86069.33  | USD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a21b-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E200 | 701940 | NA    | 6004   | NA    | NA    | NA | $AMOUNT | 1350.21   | CAD | 1350.21   | CAD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a21d-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E245 | 400120 | NA    | 8401   | 14115 | 3927  | NA | $AMOUNT | -917.4    | USD | -917.4    | USD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a21f-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E260 | 601170 | NA    | 6002   | NA    | NA    | NA | $AMOUNT | 459.06    | CAD | 459.06    | CAD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a221-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E340 | 700110 | NA    | NA340  | NA    | NA    | NA | $AMOUNT | 2109      | CAD | 2109      | CAD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a223-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E100 | 402170 | NA    | 1001   | NA    | 1461  | NA | $AMOUNT | -25000    | CAD | -25000    | CAD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a225-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E200 | 600750 | NA    | 4008   | NA    | NA    | NA | $AMOUNT | 12360.12  | CAD | 12360.12  | CAD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a227-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E240 | 500710 | 5512  | 8101   | NA    | NA    | NA | $AMOUNT | 703691.53 | USD | 703691.53 | USD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a229-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E245 | 402180 | NA    | 8401   | 17395 | 2490  | NA | $AMOUNT | -715.4    | USD | -715.4    | USD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
-| 46e0a22b-145a-11ef-8899-dbf324122222 | 2023ACT | 9 | E240 | 501010 | NA    | 8102   | NA    | NA    | NA | $AMOUNT | 7093.33   | USD | 7093.33   | USD | MAP_001_001 | JOSEPH.ESTHER@RCGT.COM | 2024-05-17 14:32 |
+- Read relevant files and examples before changing them; make focused changes and preserve existing behavior.
+- Use the repository’s established naming and formatting, including its French/English terminology.
+- Run the smallest relevant validation available and report anything that could not be verified.

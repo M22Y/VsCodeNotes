@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Dimensions('{{dimensionName}}')/Hierarchies('{{hierarchyName}}')/ElementAttributes"
+method: GET
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+  Content-Type: application/json
+order: 10000

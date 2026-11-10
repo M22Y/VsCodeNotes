@@ -1,0 +1,52 @@
+---- READ ME -----
+Load to Financial Workspace (MTD → YTD) Special method
+
+This Special Method loads data from a source dataset into DATI_SALDI_LORDI and converts MTD values into YTD balances.
+
+How it works
+Deletes existing data for the selected Scenario, Entity and Origin.
+Aggregates source data at the target dimensional grain.
+Generates all fiscal periods (01-12).
+Creates missing periods using a CROSS JOIN between dimensions and calendar periods.
+Calculates YTD values using a cumulative window function.
+Loads the final YTD dataset into DATI_SALDI_LORDI.
+Example
+
+Source (MTD):
+
+Period	Amount01	100
+02	50
+05	25
+
+Result (YTD):
+
+Period	Amount01	100
+02	150
+03	150
+04	150
+05	175
+Parameters to configure
+
+Dataset parameters
+
+&SOURCE_TABLE&
+
+String/Column Mapping parameters
+
+&SCENARIO&
+&PERIOD&
+&ENTITY&
+&ACCOUNT&
+&CATEGORY&
+&CURRENCY&
+&CURRENCY_TRANSAC&
+&IMPORTO&
+&IMPORTO_VALUTA_ORIGINARIA&
+&COD_DEST1& to &COD_DEST5&
+
+String/Constant parameter
+
+&ORIGIN&  - This is used to make the origin dynamic -- Origin here = PROVENIENZA in DSL
+Important
+
+Source amounts must be MTD values. If the source data is already YTD, this method should not be used.

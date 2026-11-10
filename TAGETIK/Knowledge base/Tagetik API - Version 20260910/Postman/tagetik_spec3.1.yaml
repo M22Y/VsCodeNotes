@@ -1,0 +1,21 @@
+openapi: 3.1.0
+info:
+  title: CCH TAGETIK REST API
+  version: 1.0.0
+  description: 'API to interact with CCH Tagetik metadata definitions'
+servers:
+  - url: 'https://rcgt-dev.api.saastagetik.com'
+paths:
+  /api-key/aih/data/v1/DEV_TGK_RCGT_001/001/$metadata:
+    get:
+      summary: Metadata
+      description : 'Fetch metadata definition'
+      produces:
+        - application/json
+      responses: 
+        '200':
+          description: 'Successful response containing the schema and metadata definition'
+          schema:
+            type: json
+      tags:
+        - Metadata

@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Dimensions('{{dimensionName}}')/Hierarchies"
+method: GET
+order: 4000

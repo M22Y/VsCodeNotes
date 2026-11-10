@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes"
+method: GET
+headers:
+  - key: Authorization
+    value: "{{basic_auth_11eb}}"
+    disabled: true
+order: 1000

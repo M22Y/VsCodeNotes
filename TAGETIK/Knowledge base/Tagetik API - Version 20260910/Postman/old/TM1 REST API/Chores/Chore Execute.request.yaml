@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Chores('{{choreName}}')/tm1.Execute"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: ""
+order: 1000

@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('{{cubeName}}')/Views('{{viewName}}')/tm1.Execute?$expand=Cells"
+method: POST
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+  Content-Type: application/json
+queryParams:
+  $expand: Cells
+body:
+  type: text
+  content: ""
+order: 10000

@@ -1,0 +1,9 @@
+$kind: http-request
+description: Retrieve the Cube Count
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes/$count?$filter=not startswith(Name,'}')"
+method: GET
+headers:
+  Authorization: "{{basic_auth_0mhf}}"
+queryParams:
+  $filter: not startswith(Name,'}')
+order: 4000

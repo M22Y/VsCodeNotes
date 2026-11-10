@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/ExecuteMDX?$expand=Cells"
+method: POST
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+  Content-Type: application/json
+queryParams:
+  $expand: Cells
+body:
+  type: text
+  content: |-
+    {
+    	"MDX": "SELECT {[Account].[Operating Profit]} ON COLUMNS, {[Version].[Actual]} ON ROWS FROM [General Ledger]"
+    }
+order: 9000

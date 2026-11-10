@@ -1,0 +1,9 @@
+How to get the entity currency from the Dimension Currency 
+
+TGKML 1.0
+
+a:= $Entity.currency.code;
+b:= $Currency.GETLEAF(a);
+
+result := b;
+

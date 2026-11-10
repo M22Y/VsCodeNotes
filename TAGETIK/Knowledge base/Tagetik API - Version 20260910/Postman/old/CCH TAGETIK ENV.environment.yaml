@@ -1,0 +1,6 @@
+name: CCH TAGETIK ENV
+values:
+  - key: baseUrl
+    value: 'https://rcgt-dev.api.saastagetik.com'
+  - key: apikey
+    value: ''

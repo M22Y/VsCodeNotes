@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Processes('z TEMP 10')"
+method: DELETE
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: ""
+order: 5000

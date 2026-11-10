@@ -1,0 +1,14 @@
+$kind: collection
+description: The Complete TM1 REST API Collection
+variables:
+  - key: basic_auth_11eb
+    secret: true
+  - key: basic_auth_0mhf
+    secret: true
+auth:
+  - id: 827c5f74-59de-4119-9644-ece69434087c
+    type: basic
+    name: basic auth
+    credentials:
+      username: admin
+      password: ""

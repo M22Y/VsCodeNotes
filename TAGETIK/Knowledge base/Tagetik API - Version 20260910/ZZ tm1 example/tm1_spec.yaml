@@ -1,0 +1,536 @@
+openapi: 3.0.0
+info:
+  title: TM1 REST API
+  version: 1.0.0
+  description: The Complete TM1 REST API Collection
+servers:
+  - url: "{{serverName}}:{{httpPortNumber}}"
+paths:
+  /api/v1/Cubes:
+    get:
+      summary: Cubes Get
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Cubes/$count:
+    get:
+      summary: Cubes Count Excluding Control Objects
+      parameters:
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          example: not startswith(Name,'}')
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_0mhf}}"
+      responses: {}
+      tags:
+        - Cubes
+      description: Retrieve the Cube Count
+  /api/v1/Cubes('{cubeName}')/Dimensions:
+    get:
+      summary: Cube Get Dimensions
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_0mhf}}"
+      responses: {}
+      tags:
+        - Cubes
+      description: List the Dimensions in a Cube
+    parameters:
+      - name: cubeName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{cubeName}}"
+  /api/v1/Cubes('{cubeName}'):
+    get:
+      summary: Cube Get
+      responses: {}
+      tags:
+        - Cubes
+      security:
+        - BasicAuth: []
+    parameters:
+      - name: cubeName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{cubeName}}"
+  /api/v1/Cubes('{cubeName}')/tm1.Update:
+    post:
+      summary: Cell Update
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Cubes
+    parameters:
+      - name: cubeName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{cubeName}}"
+  /api/v1/ExecuteMDX:
+    post:
+      summary: MDX Execute
+      parameters:
+        - name: $expand
+          in: query
+          schema:
+            type: string
+          example: Cells
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Cubes('{cubeName}')/Views('{viewName}')/tm1.Execute:
+    post:
+      summary: View Execute
+      parameters:
+        - name: $expand
+          in: query
+          schema:
+            type: string
+          example: Cells
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Cubes
+    parameters:
+      - name: cubeName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{cubeName}}"
+      - name: viewName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{viewName}}"
+  /api/v1/Cubes('System Info')/Views:
+    post:
+      summary: View Creation (Subset)
+      responses: {}
+      tags:
+        - Cubes
+      description: View Creation
+  /api/v1/Cubes('Sales Quota')/Views:
+    post:
+      summary: View Create (Subset Dynamic)
+      responses: {}
+      tags:
+        - Cubes
+      description: Create a new View with, dynamic, Subsets
+  /api/v1/Cubes('{cubeName}')/Views:
+    post:
+      summary: View Creation (MDX)
+      responses: {}
+      tags:
+        - Cubes
+      description: View Creation
+    parameters:
+      - name: cubeName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{cubeName}}"
+  /api/v1/Cubes('System Info')/Views('TempView'):
+    patch:
+      summary: View Update
+      responses: {}
+      tags:
+        - Cubes
+    delete:
+      summary: View Delete
+      responses: {}
+      tags:
+        - Cubes
+  /api/v1/Dimensions:
+    get:
+      summary: Dimensions Get
+      responses: {}
+      tags:
+        - Dimensions
+    post:
+      summary: Dimension Create
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_0mhf}}"
+      responses: {}
+      tags:
+        - Dimensions
+      description: Create a new Dimension
+  /api/v1/Dimensions/$count:
+    get:
+      summary: Dimensions Count
+      responses: {}
+      tags:
+        - Dimensions
+  /api/v1/Dimensions('{dimensionName}'):
+    get:
+      summary: Dimension Get
+      responses: {}
+      tags:
+        - Dimensions
+    parameters:
+      - name: dimensionName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{dimensionName}}"
+  /api/v1/Dimensions('{dimensionName}')/Hierarchies:
+    get:
+      summary: Dimension Get Hierarchies
+      responses: {}
+      tags:
+        - Dimensions
+    parameters:
+      - name: dimensionName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{dimensionName}}"
+  /api/v1/Dimensions('Account')/Hierarchies('Account')/Members:
+    get:
+      summary: Dimension Element List
+      parameters:
+        - name: $select
+          in: query
+          schema:
+            type: string
+          example: Name,Ordinal,Weight
+        - name: $expand
+          in: query
+          schema:
+            type: string
+          example: >-
+            Parent($select=Name),Level($select=Number),Element($select=Name,Type,Attributes)
+        - name: $format
+          in: query
+          schema:
+            type: string
+          example: application/json;odata.metadata=none
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Dimensions
+  /api/v1/Dimensions('New Dimension'):
+    delete:
+      summary: Dimension Delete
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_0mhf}}"
+      responses: {}
+      tags:
+        - Dimensions
+      description: Delete a Dimension
+  /api/v1/Dimensions('{dimensionName}')/Hierarchies('{hierarchyName}')/Elements('{elementName}'):
+    get:
+      summary: Element Get
+      responses: {}
+      tags:
+        - Dimensions
+    parameters:
+      - name: dimensionName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{dimensionName}}"
+      - name: hierarchyName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{hierarchyName}}"
+      - name: elementName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{elementName}}"
+  /api/v1/Dimensions('{dimensionName}')/Hierarchies('{hierarchyName}')/Elements:
+    post:
+      summary: Element Create
+      responses: {}
+      tags:
+        - Dimensions
+    parameters:
+      - name: dimensionName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{dimensionName}}"
+      - name: hierarchyName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{hierarchyName}}"
+  /api/v1/Dimensions('{dimensionName}')/Hierarchies('{hierarchyName}')/ElementAttributes:
+    get:
+      summary: Attributes Get
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Dimensions
+    parameters:
+      - name: dimensionName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{dimensionName}}"
+      - name: hierarchyName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{hierarchyName}}"
+  /api/v1/Processes('{processName}')/tm1.Execute:
+    post:
+      summary: Process Execute
+      responses: {}
+      tags:
+        - Processes
+    parameters:
+      - name: processName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{processName}}"
+  /api/v1/Processes('{processName}'):
+    get:
+      summary: Process Get
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Processes
+    parameters:
+      - name: processName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{processName}}"
+  /api/v1/Processes:
+    get:
+      summary: Processes Get
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Processes
+  /api/v1/Processes('Bedrock.Cube.Clone'):
+    patch:
+      summary: Process Update
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Processes
+  /api/v1/Processes('z TEMP 10'):
+    delete:
+      summary: Process Delete
+      responses: {}
+      tags:
+        - Processes
+  /api/v1/Chores('{choreName}')/tm1.Execute:
+    post:
+      summary: Chore Execute
+      responses: {}
+      tags:
+        - Chores
+    parameters:
+      - name: choreName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{choreName}}"
+  /api/v1/Chores('{choreName}'):
+    patch:
+      summary: Chore Update
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Chores
+    parameters:
+      - name: choreName
+        in: path
+        required: true
+        schema:
+          type: string
+        example: "{{choreName}}"
+  /api/v1/Configuration:
+    get:
+      summary: Configuration
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/$metadata:
+    get:
+      summary: Metadata
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/Threads:
+    get:
+      summary: Threads Get
+      parameters:
+        - name: $expand
+          in: query
+          schema:
+            type: string
+          example: Session
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/MessageLogEntries:
+    get:
+      summary: Message Log Top 5
+      parameters:
+        - name: $orderby
+          in: query
+          schema:
+            type: string
+          example: ID desc
+        - name: $top
+          in: query
+          schema:
+            type: integer
+          example: 5
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+        - name: Prefer
+          in: header
+          schema:
+            type: string
+          example: odata.track-changes
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/Processes('Cub.GeneralLedger.Demo')/ErrorLogs('2017-02-14T01{26}{44Z}')/Content:
+    get:
+      summary: Process Error Logs
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Administration
+  /api/v1/Sessions:
+    get:
+      summary: Sessions Get
+      parameters:
+        - name: $expand
+          in: query
+          schema:
+            type: string
+          example: User
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: "{{basic_auth_11eb}}"
+      responses: {}
+      tags:
+        - Administration
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+security:
+  - BasicAuth: []

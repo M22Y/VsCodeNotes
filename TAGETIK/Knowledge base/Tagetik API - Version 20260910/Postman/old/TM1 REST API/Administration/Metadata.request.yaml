@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/$metadata"
+method: GET
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+order: 2000

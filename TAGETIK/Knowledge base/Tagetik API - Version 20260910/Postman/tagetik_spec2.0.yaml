@@ -1,0 +1,24 @@
+swagger: '2.0'
+info:
+  title: CCH TAGETIK REST API
+  description: 'API to interact with CCH Tagetik metadata definitions'
+  version: 1.0.0
+paths:
+  /api-key/aih/data/v1/DEV_TGK_RCGT_001/001/$metadata:
+    get:
+      summary: Fetch Metadata
+      description : Fetch metadata defintion
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: "Successful response containing the schema and metadata definition"
+          schema:
+            type: string
+      tags:
+        - Metadata
+host: 'rcgt-dev.api.saastagetik.com'
+schemes:
+  - https

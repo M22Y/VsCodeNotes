@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Chores('{{choreName}}')"
+method: PATCH
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+        "@odata.context": "$metadata#Chores/$entity",
+        "@odata.etag": "W/\"78865\"",
+        "Name": "CXTM1SaveDataAll",
+        "StartTime": "2011-02-16T11:00Z",
+        "DSTSensitive": false,
+        "Active": false,
+        "ExecutionMode": "SingleCommit",
+        "Frequency": "P0DT00H00M10S"
+    }
+order: 2000

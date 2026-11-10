@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Dimensions/$count"
+method: GET
+headers:
+  Content-Type: application/json
+order: 2000

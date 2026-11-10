@@ -1,0 +1,15 @@
+$kind: http-request
+description: Create a new Dimension
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Dimensions"
+method: POST
+headers:
+  Authorization: "{{basic_auth_0mhf}}"
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \    \"Name\": \"New Dimension\"\r
+
+    }"
+order: 6000

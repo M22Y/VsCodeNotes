@@ -1,0 +1,40 @@
+a := this.lowest;
+b := this.lowest.select("Entity.code","=","0101");
+c := a-b;
+result := c;
+
+
+a := this.lowest.select("$Account.code");
+b := this.lowest.select("LEFT($Account.code,2)","=","76");
+
+result := a-b;
+
+
+a := this.getnode("C420000").lowest.select("$Account.code","=","7627900");
+b := this.getnode("C420000").lowest.select("LEFT($Account.code,3)","=","686");
+c := this.getnode("C410000").lowest;
+
+result := a+b+c;
+
+
+
+
+a := this.getnode("C420000").lowest.select("$Account.code","=","7627900");
+b := this.getnode("C420000").lowest.select("LEFT($Account.code,3)","=","686");
+c := this.getnode("C410000").lowest;
+
+result := a+b+c;
+
+a := this.getnode("C420000").select("$Account.code","=","7627900");
+b := this.getnode("C420000").select("LEFT($Account.code,3)","=","686");
+c := this.getnode("C410000");
+
+a := this.getleaf("7627900");
+b := this.getnode("C420000").descendants(2).select("LEFT($Account.code,3)","=","686");
+c := this.getnode("C410000");
+
+result := a+b+c;
+
+
+F_TGK_UNICODE('decode', d1.desc_dest10) as SNA
+

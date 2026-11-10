@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Processes('Cub.GeneralLedger.Demo')/ErrorLogs('2017-02-14T01:26:44Z')/Content"
+method: GET
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+  Content-Type: application/json
+order: 5000

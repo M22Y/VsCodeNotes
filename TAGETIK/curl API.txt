@@ -1,0 +1,4 @@
+
+curl --request POST "https://t0b2282cea61fd920b.api.demohub.saastagetik.com/oauth2/oauth2/token" --user "42cRr5HMk17dvB8Xm5tTqsPkBe6ysEWS:jSyk3H9pww3YuVWhrABtThcHfd6Ge7Xk" --header "cchtagetik-tenant-id: 0b2282cea61fd920b" --header "Content-Type: application/x-www-form-urlencoded" --data "grant_type=client_credentials"
+
+

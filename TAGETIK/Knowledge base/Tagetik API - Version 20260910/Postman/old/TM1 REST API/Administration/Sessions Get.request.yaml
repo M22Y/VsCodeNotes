@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Sessions?$expand=User"
+method: GET
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+queryParams:
+  $expand: User
+order: 6000

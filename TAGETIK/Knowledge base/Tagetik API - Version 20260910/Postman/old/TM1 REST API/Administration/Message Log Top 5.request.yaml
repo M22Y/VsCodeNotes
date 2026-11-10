@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/MessageLogEntries?$orderby=ID desc&$top=5"
+method: GET
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+  Prefer: odata.track-changes
+queryParams:
+  $orderby: ID desc
+  $top: "5"
+order: 4000

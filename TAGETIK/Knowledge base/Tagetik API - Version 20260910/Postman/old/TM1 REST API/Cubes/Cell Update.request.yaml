@@ -1,0 +1,40 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('{{cubeName}}')/tm1.Update"
+method: POST
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \t\"Cells\":[\r
+
+    \t    {\"Tuple@odata.bind\": [\r
+
+    \t        \"Dimensions('Version')/Hierarchies('Version')/Elements('Actual')\",\r
+
+    \t        \"Dimensions('Year')/Hierarchies('Year')/Elements('2018')\",\r
+
+    \t        \"Dimensions('Period')/Hierarchies('Period')/Elements('Jan')\",\r
+
+    \t        \"Dimensions('Currency')/Hierarchies('Currency')/Elements('Local')\",\r
+
+    \t        \"Dimensions('Region')/Hierarchies('Region')/Elements('England')\",\r
+
+    \t        \"Dimensions('Department')/Hierarchies('Department')/Elements('Executive General and Administration')\",\r
+
+    \t        \"Dimensions('Account')/Hierarchies('Account')/Elements('Meals')\",\r
+
+    \t        \"Dimensions('General Ledger Measure')/Hierarchies('General Ledger Measure')/Elements('Amount')\"\r
+
+    \t        ]\r
+
+    \t    }\r
+
+    \    ],\r
+
+    \t\"Value\":\"1234\"\r
+
+    }"
+order: 8000

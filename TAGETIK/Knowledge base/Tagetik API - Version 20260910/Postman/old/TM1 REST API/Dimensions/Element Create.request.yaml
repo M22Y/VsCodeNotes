@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Dimensions('{{dimensionName}}')/Hierarchies('{{hierarchyName}}')/Elements"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \    \"Name\": \"New Element\"\r
+
+    }"
+order: 9000

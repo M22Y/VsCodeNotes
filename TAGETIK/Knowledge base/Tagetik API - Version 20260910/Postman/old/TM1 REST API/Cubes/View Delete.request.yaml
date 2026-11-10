@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('System Info')/Views('TempView')"
+method: DELETE
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: ""
+order: 15000

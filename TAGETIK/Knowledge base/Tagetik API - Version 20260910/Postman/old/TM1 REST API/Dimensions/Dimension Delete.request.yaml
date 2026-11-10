@@ -1,0 +1,10 @@
+$kind: http-request
+description: Delete a Dimension
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Dimensions('New Dimension')"
+method: DELETE
+headers:
+  Authorization: "{{basic_auth_0mhf}}"
+body:
+  type: text
+  content: ""
+order: 7000

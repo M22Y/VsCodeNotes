@@ -1,0 +1,3 @@
+$kind: collection
+description: Contains requests for retrieving OData metadata from the CCH Tagetik REST API. The metadata endpoint (`$metadata`) returns the full Entity Data Model (EDM) for the specified data source, describing available entity sets, their properties, and relationships. This is typically the starting point for understanding the structure of the API and the data it exposes.
+order: 3000

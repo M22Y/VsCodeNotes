@@ -1,0 +1,9 @@
+$kind: http-request
+description: Retrieve just the names of all the available Cubes
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes?$select=Name"
+method: GET
+headers:
+  Authorization: "{{basic_auth_0mhf}}"
+queryParams:
+  $select: Name
+order: 2000

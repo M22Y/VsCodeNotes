@@ -1,0 +1,7 @@
+$kind: http-request
+description: List the Dimensions in a Cube
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('{{cubeName}}')/Dimensions"
+method: GET
+headers:
+  Authorization: "{{basic_auth_0mhf}}"
+order: 6000

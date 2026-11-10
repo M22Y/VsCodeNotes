@@ -1,0 +1,48 @@
+swagger: '2.0'
+info:
+  title: CCH TAGETIK REST API
+  description: API to interact with CCH Tagetik metadata definitions
+  version: 1.0.0
+host: rcgt-dev.api.saastagetik.com
+basePath: /
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /api-key/aih/data/v1/DEV_TGK_RCGT_001/001/$metadata:
+    get:
+      summary: Fetch Metadata
+      description: Fetch metadata defintion
+      parameters:
+        - name: Accept
+          in: header
+          required: true
+          type: string
+          default: application/json
+          x-ms-visibility: internal
+      responses:
+        '200':
+          description: Successful response containing the schema and metadata definition
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties: true
+              description: Accepts any dynamic parent headers, types, and custom dimensions
+      tags:
+        - Metadata
+      operationId: Metadata
+definitions: {}
+parameters: {}
+responses: {}
+security:
+  - api_key: []
+tags: []
+securityDefinitions:
+  api_key:
+    type: apiKey
+    in: header
+    name: apikey

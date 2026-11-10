@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Cubes('System Info')/Views('TempView')"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: "{\r
+
+    \   \"Columns\":[\r
+
+    \      {\r
+
+    \         \"Subset@odata.bind\":\"Dimensions('System Info Parameter')/Hierarchies('System Info Parameter')/Subsets('TempSubset1')\"\r
+
+    \      }\r
+
+    \   ]\r
+
+    }"
+order: 14000

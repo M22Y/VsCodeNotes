@@ -1,0 +1,52 @@
+/*  
+Special method : Load to Financial workspace
+Description : Load data from a partition to Dati_Saldi_Lordi for a specific Entity/Division contexte
+*/
+
+DELETE FROM DATI_SALDI_LORDI
+WHERE COD_SCENARIO = ${$Scenario.code}
+AND COD_DEST3 IN (SELECT DISTINCT CUSTOM_DIM_3 FROM #TARGET_PARTITION#)
+AND COD_AZIENDA IN (SELECT DISTINCT DIVISION FROM #TARGET_PARTITION#)
+AND PROVENIENZA = 'TECH_040';
+
+INSERT INTO DATI_SALDI_LORDI (
+  OID_DATI_SALDI_LORDI,
+  COD_SCENARIO,
+  COD_PERIODO,
+  COD_AZIENDA,
+  COD_CONTO,
+  COD_DEST1,
+  COD_DEST2,
+  COD_DEST3,
+  COD_DEST4,
+  COD_DEST5,
+  COD_CATEGORIA,
+  IMPORTO,
+  COD_VALUTA,
+  IMPORTO_VALUTA_ORIGINARIA,
+  COD_VALUTA_ORIGINARIA,
+  PROVENIENZA,
+  USERUPD,
+  DATEUPD
+)
+SELECT
+  NEWID()                               AS OID_DATI_SALDI_LORDI,
+  SCENARIO                                 AS COD_SCENARIO,
+  PERIOD                                   AS COD_PERIODO,
+  DIVISION                                 AS COD_AZIENDA,
+  ACCOUNT_CODE                             AS COD_CONTO,
+  CUSTOM_DIM_1                             AS COD_DEST1,
+  'NONE'                                   AS COD_DEST2,
+  CUSTOM_DIM_3                             AS COD_DEST3,
+  'NONE'                                   AS COD_DEST4,
+  CUSTOM_DIM_5                             AS COD_DEST5,
+  CATEGORY                                 AS COD_CATEGORIA,
+  AMOUNT                                   AS IMPORTO,
+  CURRENCY                                 AS COD_VALUTA,
+  AMOUNT                                   AS IMPORTO_VALUTA_ORIGINARIA,
+  CURRENCY                                 AS COD_VALUTA_ORIGINARIA,
+  'TECH_040'                                  AS PROVENIENZA,
+  '#USER#'                                 AS USERUPD,
+  GETDATE()                               AS DATEUPD
+FROM #TARGET_PARTITION#
+WHERE AMOUNT <> 0;

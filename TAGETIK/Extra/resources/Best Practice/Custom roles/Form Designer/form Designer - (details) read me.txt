@@ -1,0 +1,17 @@
+-- Read me -- 
+Licence used : Power User licence 
+Role used with a $Consolidator system role
+
+The Excel file attached has the following functions :
+- From an existing report, create, edit or add a new matrix. (functionalities of Matrix available)
+- Add form filter, tab filters
+- report in navigation, DE form
+- Add or modify existing parameters
+- Copy/Paste existing reports
+
+Can't do :
+- Create new report
+- Delete existing report
+- Modify the new of existing report
+- Batch Import (Admin Licence needed)
+- Query in a report  (Admin licence needed)

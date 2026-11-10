@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{protocol}}://{{serverName}}:{{httpPortNumber}}/api/v1/Dimensions('Account')/Hierarchies('Account')/Members?$select=Name,Ordinal,Weight&$expand=Parent($select=Name),Level($select=Number),Element($select=Name,Type,Attributes)&$format=application/json;odata.metadata=none"
+method: GET
+headers:
+  Authorization: "{{basic_auth_11eb}}"
+queryParams:
+  $select: Name,Ordinal,Weight
+  $expand: Parent($select=Name),Level($select=Number),Element($select=Name,Type,Attributes)
+  $format: application/json;odata.metadata=none
+order: 5000
